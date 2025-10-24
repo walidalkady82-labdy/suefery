@@ -3,17 +3,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/models.dart';
+import '../firebase_options.dart';
+import '../services/logging_service.dart';
 
+final _log = LoggerReprository('orderDispatchBloc');
 // Helper function for Firebase Initialization (must be run once)
 Future<FirebaseFirestore> initializeFirestore() async {
-  // Global variables provided by the canvas environment
-  const String appId = bool.fromEnvironment('dart.vm.product') ? 'prod-app-id' : 'default-app-id';
-  final Map<String, dynamic> firebaseConfig = const bool.fromEnvironment('dart.vm.product') ? {} : {}; // Mocking empty config if not provided
 
   // Check if Firebase is already initialized
   if (Firebase.apps.isEmpty) {
     // Use FirebaseOptions.fromMap for initialization
-    await Firebase.initializeApp(options: FirebaseOptions.fromMap(firebaseConfig));
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   }
   
   // Set up authentication for the current user session
@@ -69,17 +69,17 @@ class UpdateOrderProgress extends OrderDispatchEvent {
 }
 
 class _UpdateOrders extends OrderDispatchEvent {
-  final List<OrderModel> orders;
+  final List<StructuredOrder> orders;
   const _UpdateOrders(this.orders);
 }
 
 
 // --- State ---
 class OrderDispatchState {
-  final List<OrderModel> allOrders;
+  final List<StructuredOrder> allOrders;
   final bool isLoading;
   // Filtered lists for convenience
-  List<OrderModel> get allUnassignedOrders => allOrders
+  List<StructuredOrder> get allUnassignedOrders => allOrders
       .where((o) => o.status == OrderStatus.New)
       .toList();
 
@@ -89,7 +89,7 @@ class OrderDispatchState {
   });
 
   OrderDispatchState copyWith({
-    List<OrderModel>? allOrders,
+    List<StructuredOrder>? allOrders,
     bool? isLoading,
   }) {
     return OrderDispatchState(
@@ -124,11 +124,11 @@ class OrderDispatchBloc extends Bloc<OrderDispatchEvent, OrderDispatchState> {
     // Track all orders globally for simplicity in this public demo
     _orderSubscription = ordersCollection.snapshots().listen((snapshot) {
       final orders = snapshot.docs.map((doc) {
-        return OrderModel.fromMap(doc.data() as Map<String, dynamic>);
+        return StructuredOrder.fromMap(doc.data() as Map<String, dynamic>);
       }).toList();
 
       add(_UpdateOrders(orders));
-    });
+    }) as Stream<QuerySnapshot<Object?>>?;
 
     emit(state.copyWith(isLoading: true));
   }
@@ -137,9 +137,9 @@ class OrderDispatchBloc extends Bloc<OrderDispatchEvent, OrderDispatchState> {
     try {
       final docRef = _firestore.collection(_collectionPath).doc(event.order.orderId.toString());
       await docRef.set(event.order.toMap());
-      print('Order ${event.order.orderId} started successfully.');
+      _log.i('Order ${event.order.orderId} started successfully.');
     } catch (e) {
-      print('Error starting new order: $e');
+      _log.e('Error starting new order: $e');
     }
   }
 
@@ -153,9 +153,9 @@ class OrderDispatchBloc extends Bloc<OrderDispatchEvent, OrderDispatchState> {
         'status': OrderStatus.Assigned.name,
         'progress': 0.1, // Initial progress
       });
-      print('Order ${event.orderId} accepted by rider ${event.riderId}');
+      _log.i('Order ${event.orderId} accepted by rider ${event.riderId}');
     } catch (e) {
-      print('Error accepting order: $e');
+      _log.e('Error accepting order: $e');
     }
   }
 
@@ -167,9 +167,9 @@ class OrderDispatchBloc extends Bloc<OrderDispatchEvent, OrderDispatchState> {
         'status': event.status.name,
         'progress': event.status == OrderStatus.Delivered ? 1.0 : 0.0,
       });
-      print('Order ${event.orderId} status updated to ${event.status.name}');
+      _log.i('Order ${event.orderId} status updated to ${event.status.name}');
     } catch (e) {
-      print('Error updating order status: $e');
+      _log.e('Error updating order status: $e');
     }
   }
 
@@ -177,9 +177,9 @@ class OrderDispatchBloc extends Bloc<OrderDispatchEvent, OrderDispatchState> {
     try {
       final docRef = _firestore.collection(_collectionPath).doc(event.orderId.toString());
       await docRef.update({'progress': event.progress});
-      print('Order ${event.orderId} progress updated to ${event.progress}');
+      _log.i('Order ${event.orderId} progress updated to ${event.progress}');
     } catch (e) {
-      print('Error updating order progress: $e');
+      _log.e('Error updating order progress: $e');
     }
   }
 
@@ -188,7 +188,7 @@ class OrderDispatchBloc extends Bloc<OrderDispatchEvent, OrderDispatchState> {
   }
 
   @override
-  Future<void> close() {
+  Future<void> close() async {
     // Cancel the Firestore listener when the BLoC is closed
     _orderSubscription?.cancel();
     return super.close();

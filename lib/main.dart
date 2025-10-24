@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'app_localizations.dart';
 import 'app_container.dart';
-import 'firebase_service.dart';
-import 'order_history_bloc.dart';
-import 'history_screen.dart';
+import 'app_localizations.dart';
+import 'blocs/order_history_bloc.dart';
+import 'screens/order_history.dart';
+import 'services/firebase_service.dart';
+import 'services/logging_service.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
+final _log = LoggerReprository('main');
 void main() {
   // Ensure Flutter engine is initialized before running the app
+  _log.i('initializing localization...');
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const SUEFERYApp());
+  _log.i('App initialized...');
 }
 
 /// The root widget of the SUEFERY application.
@@ -41,16 +46,20 @@ class SUEFERYApp extends StatelessWidget {
             ),
             useMaterial3: true,
             appBarTheme: const AppBarTheme(
-              color: Color(0xFF00796B),
+              backgroundColor : Color(0xFF00796B),
               iconTheme: IconThemeData(color: Colors.white),
               titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
           // Set up localization delegate
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: const [
+            CustomLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           locale: const Locale('en', ''), // Default locale
-          
           home: const HomeScreen(),
         ),
       ),
@@ -94,7 +103,7 @@ class HomeScreen extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => const HistoryScreen(),
+                  builder: (_) => const OrderHistoryScreen(),
                 ));
               },
               icon: const Icon(Icons.history),

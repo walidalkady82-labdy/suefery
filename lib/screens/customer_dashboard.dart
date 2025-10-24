@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:suefery/app_strings.dart';
+import 'package:suefery/blocs/auth_bloc.dart';
+import 'package:suefery/blocs/order_dispatch_bloc.dart';
+import 'package:suefery/models/order_status.dart';
+import 'package:suefery/models/user_role.dart';
 import 'dart:math';
-
-import '../blocs/auth/auth_bloc.dart';
-import '../blocs/order_dispatch/order_dispatch_bloc.dart';
 import '../models/models.dart';
-import '../widgets/order_history_card.dart';
 
 class CustomerDashboard extends StatefulWidget {
   const CustomerDashboard({super.key});
@@ -204,7 +205,7 @@ class _HomeTab extends StatelessWidget {
 // --- TAB 2: History View ---
 
 class _HistoryTab extends StatelessWidget {
-  final List<OrderModel> pastOrders;
+  final List<> pastOrders;
   final bool isLoading;
 
   const _HistoryTab({required this.pastOrders, required this.isLoading});

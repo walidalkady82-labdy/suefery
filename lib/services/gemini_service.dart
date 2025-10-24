@@ -100,7 +100,7 @@ class GeminiService {
   }
 
   // Helper function to process the raw JSON output into a ParsedOrder model
-  ParsedOrder parseGeminiResponse(Map<String, dynamic> jsonResponse) {
+  StructuredOrder parseGeminiResponse(Map<String, dynamic> jsonResponse) {
     final parsedOrderJson = jsonResponse['parsed_order'] ?? {};
     final confirmed = parsedOrderJson['order_confirmed'] ?? false;
     final itemsList = parsedOrderJson['requested_items'] as List<dynamic>? ?? [];
@@ -113,7 +113,10 @@ class GeminiService {
       );
     }).toList();
 
-    return ParsedOrder(orderConfirmed: confirmed, requestedItems: items);
+    return StructuredOrder(
+      orderConfirmed: confirmed, 
+      requestedItems: items
+    );
   }
 
   // Simple fetch retry mechanism (implementation omitted for brevity in file block)
@@ -122,4 +125,6 @@ class GeminiService {
     // For this environment, we rely on the framework providing a simple fetch.
     return fetch(url, options); 
   }
+  
 }
+

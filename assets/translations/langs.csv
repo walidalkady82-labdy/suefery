@@ -1,0 +1,81 @@
+﻿str,en_US,ar_EG
+appTitle,HSEAssist,مساعد الإمان
+home,Home , الرئيسي
+login, Login, تسجيل الدخول
+error,error {}, خطأ {}
+select,select,إختيار
+notFound,is not found,لا يمكن إيجاده
+please,Please,رجاءاً
+enter,enter, إدخال
+required,required,احصل علي
+get,You need to get,يجب الحصول علي
+to,to,ل
+with,with,مع
+communicate,communicate,التواصل
+workplace,Workplace,مكان العمل
+Invitation ,Invitation ,دعوة
+admin,admin,المدير
+add,Add,ضف
+email, email,البريد إلكتروني
+user,User, مستخدم
+password, password, كلمة السر
+forgot,forgot,نسيت
+google,google,جوجل
+no,No,لا
+na,No available,لا يوجد
+account,account,حساب
+register,Register, سجل
+ok, Ok, تم
+location,Location,موقع
+success,Success, تم بنجاح
+confirm,confirm,تأكيد
+firstName, First Name, الإسم الاول
+lastName, Last Name, الإسم الاخير
+new,new,جديد
+name,name,الإسم
+check,check,فحص
+reset,reset,إعادة تعيين
+profile, Profile, ملف شخصي
+gameQuize,Quize Game,لعبة الألغاز
+settings, Settings, إعدادات
+logout, Logout, تسجيل الخروج
+send,Send,إرسال
+managedLocations,Managed locations,المواقع المدارة
+incident,Incident,حادثة
+incidents,Incidents,حوادث
+hazard,Hazard,مخاطرة
+hazards,hazards,مخاطر
+task,Task,مهمة
+tasks,Tasks,مهام
+data,data,بيانات
+availableM,availableM,متاح
+availableF,availableF,متاحة
+reported,reported,تم الإبلاغ بهم
+view,view,معاينة
+due,due,واجبة الإداء
+miniSession,Mini Session,جلسة صغيرة
+miniSessions,Mini Sessions,جلسات صغيرة
+summery,Summery,ملخص
+emty,empty,فارغ
+emtyF,empty,فارغة
+invalidM, invalid, غير صحيح
+invalidF, invalid, غير صحيحة
+matchM,match, مطابق
+matchF,match, مطابقة
+address,address,عنوان
+details,details,التفاصيل
+extra,extra,مزيد من
+type, Type, نوع
+approve,approve,موافق
+reject,reject,أرفض
+feedback,feedback,تعليق
+and,and,و
+general,general,عام
+language,language, اللغة
+darkMode, Dark Mode, واجهة داكنة
+remove,remove,إالغاء
+information,information,معلومات
+save, Save, حفظ
+photo,photo,صورة
+ad,ad,إعلان
+edit,edit,تحرير
