@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'services/firebase_service.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'core/localizations/app_localizations.txt';
+import 'data/services/firebase_service.dart';
+import 'presentation/auth/auth_checker.dart';
 
 /// A wrapper widget that handles the asynchronous initialization of Firebase
 /// and authentication before rendering the main application.
@@ -97,6 +100,58 @@ class _ErrorView extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The root widget of the SUEFERY application.
+class SUEFERYApp extends StatelessWidget {
+  const SUEFERYApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Wrap the app with AppContainer to ensure Firebase is ready
+    final l10n = AppLocalizations.of(context)!;
+    return AppContainer(
+      child: MaterialApp(
+          title:l10n.appTitle,
+          // Theme with the primary SUEFERY color palette
+          theme: ThemeData(
+            primaryColor: const Color(0xFF00796B), // Teal 700 (SUEFERY Primary)
+            colorScheme: ColorScheme.fromSwatch(
+              primarySwatch: Colors.teal,
+            ).copyWith(
+              secondary: const Color(0xFFFFA000), // Amber 700 (Accent)
+            ),
+            useMaterial3: true,
+            appBarTheme: const AppBarTheme(
+              backgroundColor : Color(0xFF00796B),
+              iconTheme: IconThemeData(color: Colors.white),
+              titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+          // Set up localization delegate
+          localizationsDelegates: [
+              //AppLocalizations.delegate, // Custom app localizations
+              GlobalMaterialLocalizations.delegate, // Material widgets localizations
+              GlobalWidgetsLocalizations.delegate,  // Basic widgets localizations
+              GlobalCupertinoLocalizations.delegate, // Cupertino widgets localizations
+            ],
+            // 2. Define supported locales
+            supportedLocales: const [
+              Locale('en', ''), // English
+              Locale('ar', ''), // arabic
+              // Add all supported locales here
+            ],
+            // 3. Optional: Set a fallback locale if the device locale isn't supported
+            // localeResolutionCallback: (locale, supportedLocales) {
+            //   if (supportedLocales.contains(locale)) {
+            //     return locale;
+            //   }
+            //   return supportedLocales.first; // Fallback to the first supported locale
+            // },
+          home: const AuthChecker(),
+        ),
     );
   }
 }

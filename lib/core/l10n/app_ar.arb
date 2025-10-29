@@ -1,0 +1,43 @@
+{
+  "@@locale": "ar",
+  
+  "appTitle": "سويفيري تطبيق متعدد الأدوار",
+  "customerTitle": "سويفيري تطبيق العميل",
+  "riderTitle": "سويفيري تطبيق الراكب (حصن اللوجستيات)",
+  "partnerTitle": "سويفيري تطبيق الشريك",
+  
+  "welcomeCustomer": "أهلاً بك أيها العميل! ابدأ طلبك الحواري (S1)",
+  "welcomeRider": "لوحة تحكم الراكب",
+  "welcomePartner": "لوحة تحكم الشريك",
+  
+  "switchRider": "التحويل إلى عرض الراكب",
+  "switchCustomer": "التحويل إلى عرض العميل",
+  "switchPartner": "التحويل إلى عرض الشريك",
+  "languageSwitch": "تبديل اللغة (English)",
+  
+  "logInPrompt": "الرجاء تسجيل الدخول",
+  "loginButton": "تسجيل الدخول",
+  "signUpButton": "التسجيل",
+  "googleSignin": "تسجيل الدخول باستخدام جوجل",
+  "toSignup": "للتسجيل",
+  
+  "emailHint": "البريد الإلكتروني",
+  "passwordHint": "كلمة المرور",
+  "confirmPasswordHint": "تأكيد كلمة المرور",
+  
+  "historyTitle": "سجل الطلبات",
+  "buttonHistory": "عرض سجل الطلبات",
+  
+  "orderId": "معرّف الطلب",
+  "orderTotal": "المجموع",
+  "orderStatus": "الحالة",
+  "orderSummary": "الملخص",
+  
+  "statusDelivered": "تم التوصيل",
+  "loadingHistory": "جارٍ تحميل سجل الطلبات...",
+  "noHistory": "لم يتم العثور على طلبات سابقة.",
+  
+  "emailRequiredErrorMessage": "البريد الإلكتروني مطلوب",
+  "emailInvalidErrorMessage": "البريد الإلكتروني غير صالح",
+  "passwordRequiredErrorMessage": "كلمة المرور مطلوبة"
+}

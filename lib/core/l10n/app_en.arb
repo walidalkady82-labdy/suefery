@@ -1,0 +1,95 @@
+{
+  "@@locale": "en",
+  "appTitle": "SUEFERY Multi-Role App",
+  "@appTitle": {"description": "The main title for the complete multi-role application."},
+  
+  "customerTitle": "SUEFERY Customer App",
+  "@customerTitle": {"description": "The title for the Customer-facing application or section."},
+  
+  "riderTitle": "SUEFERY Rider App (Logistics Moat)",
+  "@riderTitle": {"description": "The title for the Rider-facing application or section."},
+  
+  "partnerTitle": "SUEFERY Partner App",
+  "@partnerTitle": {"description": "The title for the Partner-facing application or section."},
+  
+  "welcomeCustomer": "Welcome Customer! Start your Conversational Order (S1)",
+  "@welcomeCustomer": {"description": "A greeting for the Customer."},
+  
+  "welcomeRider": "Rider Dashboard",
+  "@welcomeRider": {"description": "A greeting for the Rider."},
+  
+  "welcomePartner": "Partner Dashboard",
+  "@welcomePartner": {"description": "A greeting for the Partner."},
+  
+  "switchRider": "Switch to Rider View",
+  "@switchRider": {"description": "Label for a button/option to switch view to the Rider interface."},
+  
+  "switchCustomer": "Switch to Customer View",
+  "@switchCustomer": {"description": "Label for a button/option to switch view to the Customer interface."},
+  
+  "switchPartner": "Switch to Partner View",
+  "@switchPartner": {"description": "Label for a button/option to switch view to the Partner interface."},
+  
+  "languageSwitch": "Switch Language (العربية)",
+  "@languageSwitch": {"description": "Label for a language selection option, specifically mentioning Arabic."},
+  
+  "logInPrompt": "Please Log In",
+  "@logInPrompt": {"description": "The call-to-action or prompt displayed on the login screen."},
+  
+  "loginButton": "login",
+  "@loginButton": {"description": "The text for the standard login button."},
+  
+  "signUpButton": "sign up",
+  "@signUpButton": {"description": "The text for the standard sign-up button."},
+  
+  "googleSignin": "google SignIn",
+  "@googleSignin": {"description": "Label for the Google Sign-In option."},
+  
+  "toSignup": "To Signup",
+  "@toSignup": {"description": "Label/link for navigating to the Sign Up screen."},
+  
+  "emailHint": "Email",
+  "@emailHint": {"description": "Placeholder text for the email input field."},
+  
+  "passwordHint": "Password",
+  "@passwordHint": {"description": "Placeholder text for the password input field."},
+  
+  "confirmPasswordHint": "Confirm Password",
+  "@confirmPasswordHint": {"description": "Placeholder text for the password confirmation input field."},
+  
+  "historyTitle": "Order History",
+  "@historyTitle": {"description": "Title for the Order History screen or section."},
+  
+  "buttonHistory": "View Order History",
+  "@buttonHistory": {"description": "Text for the button to navigate to the order history."},
+  
+  "orderId": "Order ID",
+  "@orderId": {"description": "Label/text for viewing the detailed order history."},
+  
+  "orderTotal": "Total",
+  "@orderTotal": {"description": "Label for the unique identifier of an order."},
+  
+  "orderStatus": "Status",
+  "@orderStatus": {"description": "Label for the current state of an order."},
+  
+  "orderSummary": "Summary",
+  "@orderSummary": {"description": "Label for a brief overview of an order."},
+  
+  "statusDelivered": "Delivered",
+  "@statusDelivered": {"description": "The specific status text indicating an order has been completed."},
+  
+  "loadingHistory": "Loading Order History...",
+  "@loadingHistory": {"description": "Message displayed while the application is fetching past orders."},
+  
+  "noHistory": "No past orders found.",
+  "@noHistory": {"description": "Message displayed when the user has no previous orders."},
+  
+  "emailRequiredErrorMessage": "Email is required",
+  "@emailRequiredErrorMessage": {"description": "Error message when the email field is left empty."},
+  
+  "emailInvalidErrorMessage": "Email is Invalid",
+  "@emailInvalidErrorMessage": {"description": "Error message when the entered email format is incorrect."},
+  
+  "passwordRequiredErrorMessage": "Password is required",
+  "@passwordRequiredErrorMessage": {"description": "Error message when the password field is left empty."}
+}

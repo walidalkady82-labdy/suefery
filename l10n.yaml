@@ -1,0 +1,3 @@
+arb-dir: lib/core/l10n # Directory for your ARB files
+template-arb-file: app_en.arb # Template file name (usually English)
+output-localization-file: app_localizations.dart # Generated Dart class name

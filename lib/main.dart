@@ -1,123 +1,83 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:suefery/presentation/auth/auth_cubit.dart';
+import 'package:suefery/firebase_options.dart';
+import 'package:suefery/data/services/gemini_service.dart';
 import 'app_container.dart';
-import 'app_localizations.dart';
-import 'blocs/order_history_bloc.dart';
-import 'screens/order_history.dart';
-import 'services/firebase_service.dart';
-import 'services/logging_service.dart';
+import 'core/localizations/app_localizations.txt';
+import 'data/services/auth_service.dart';
+import 'data/services/preferences_service.dart';
+import 'presentation/history/order_history_cubit.dart';
+import 'presentation/history/customer_order_history.dart';
+import 'data/services/firebase_service.dart';
+import 'data/services/logging_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 final _log = LoggerReprository('main');
-void main() {
+Future<void> main() async {
   // Ensure Flutter engine is initialized before running the app
-  _log.i('initializing localization...');
+  _log.i('initializing app...');
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const SUEFERYApp());
+  _log.i('loading environment variables...');
+  await _initEnvironmentVars();
+  _log.i('loading firebaseApp...');
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    _log.e("Firebase Init Error: $e");
+  }
+  if (!kIsWeb) {
+    FlutterError.onError = (errorDetails) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+    // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+    PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+    };
+  }
+  _log.i('loading sevices...');
+  final PrefsService prefsService = PrefsService();
+  final AuthService authService = AuthService(prefsService);
+  final GeminiService geminiService = GeminiService();
+  //final FirebaseService firebaseService = FirebaseService();
+  _log.i('initializing app...');
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        // GLOBAL CUBITS (Available to ALL screens/features)
+        BlocProvider(
+          // AuthCubit depends on AuthService
+          create: (context) => AuthCubit(authService),
+        ),
+        BlocProvider(
+          // GeminiCubit depends on GeminiService
+          create: (context) => GeminiCubit(geminiService),
+        ),
+        BlocProvider(
+          // GeminiCubit depends on GeminiService
+          create: (context) => OrderHistoryCubit(),
+        ),
+        // FEATURE CUBITS (Can be added here or on specific routes)
+        // BlocProvider(create: (_) => BookingCubit()),
+      ],
+      child: const AppContainer(child:SUEFERYApp() ),
+    ),
+  );
   _log.i('App initialized...');
 }
 
-/// The root widget of the SUEFERY application.
-class SUEFERYApp extends StatelessWidget {
-  const SUEFERYApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // Wrap the app with AppContainer to ensure Firebase is ready
-    return AppContainer(
-      child: MultiBlocProvider(
-        providers: [
-          // Provide the OrderHistoryBloc to the widget tree
-          BlocProvider(
-            create: (context) {
-              return OrderHistoryBloc()..add(LoadOrderHistory());
-            },
-          ),
-        ],
-        child: MaterialApp(
-          title: 'SUEFERY',
-          // Theme with the primary SUEFERY color palette
-          theme: ThemeData(
-            primaryColor: const Color(0xFF00796B), // Teal 700 (SUEFERY Primary)
-            colorScheme: ColorScheme.fromSwatch(
-              primarySwatch: Colors.teal,
-            ).copyWith(
-              secondary: const Color(0xFFFFA000), // Amber 700 (Accent)
-            ),
-            useMaterial3: true,
-            appBarTheme: const AppBarTheme(
-              backgroundColor : Color(0xFF00796B),
-              iconTheme: IconThemeData(color: Colors.white),
-              titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ),
-          // Set up localization delegate
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [
-            CustomLocalizationsDelegate(),
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          locale: const Locale('en', ''), // Default locale
-          home: const HomeScreen(),
-        ),
-      ),
-    );
-  }
-}
-
-/// A simple screen to host the HistoryScreen for demonstration.
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // The AppLocalizations class must be initialized here
-    final loc = AppLocalizations.of(context)!;
-    
-    // Display the current user ID to confirm successful authentication
-    final userId = FirebaseService.instance.userId;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.translate('home_title')),
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Welcome to SUEFERY!', style: Theme.of(context).textTheme.headlineMedium),
-            const SizedBox(height: 10),
-            // MANDATORY: Display the full user ID for multi-user collaboration
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SelectableText(
-                'Current User ID (Firestore Path): $userId',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => const OrderHistoryScreen(),
-                ));
-              },
-              icon: const Icon(Icons.history),
-              label: Text(loc.translate('view_history')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                textStyle: const TextStyle(fontSize: 18),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+Future<void> _initEnvironmentVars() async {
+  // DotEnv dotenv = DotEnv() is automatically called during import.
+  // If you want to load multiple dotenv files or name your dotenv object differently, you can do the following and import the singleton into the relavant files:
+  // DotEnv another_dotenv = DotEnv()
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    _log.i('Error loading .env file: $e');
   }
 }

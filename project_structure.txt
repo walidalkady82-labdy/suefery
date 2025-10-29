@@ -1,0 +1,29 @@
+/lib
+├── core/
+│   ├── injection_container.dart        // Primary Dependency Injection setup
+│   ├── common_widgets/                 // Shared UI components (e.g., LoadingIndicator)
+│   └── errors/                         // Error models and exception handlers
+│
+├── data/
+│   ├── models/                         // Data models (User, Booking, GeminiResponse)
+│   ├── repositories/                   // Abstract repository interfaces
+│   └── services/                       
+│       ├── **auth_service.dart** // ⚡ Global Service: Handles Firebase/API Auth calls
+│       └── **gemini_service.dart** // ⚡ Global Service: Handles AI/LLM API calls
+│
+├── domain/
+│   ├── usecases/                       // Business logic functions (e.g., GetBookingDetails)
+│   └── repositories/                   // Repository implementations (e.g., AuthRepoImpl)
+│
+├── presentation/
+│   ├── auth/                           // Login, Register screens
+│   │   └── **auth_cubit.dart** // BLoC for Auth state management
+│   ├── home/                           // Main dashboard
+│   ├── booking/                        // Feature-specific files
+│   │   ├── booking_page.dart
+│   │   └── booking_cubit.dart          // Feature BLoC
+│   └── gemini_assistant/
+│       ├── **gemini_cubit.dart** // BLoC for Gemini interaction
+│       └── assistant_page.dart
+│
+└── main.dart                           // Top-level App setup
