@@ -1,5 +1,6 @@
 
-import '../../core/localizations/app_localizations.txt';
+
+import 'package:suefery/core/l10n/app_localizations.dart';
 
 mixin Validator {
   // Email validation

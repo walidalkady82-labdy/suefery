@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'core/localizations/app_localizations.txt';
+import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'data/services/firebase_service.dart';
 import 'presentation/auth/auth_checker.dart';
 
@@ -111,10 +111,9 @@ class SUEFERYApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Wrap the app with AppContainer to ensure Firebase is ready
-    final l10n = AppLocalizations.of(context)!;
-    return AppContainer(
-      child: MaterialApp(
-          title:l10n.appTitle,
+    final strings = context.l10n;
+    return MaterialApp(
+          title:strings.appTitle,
           // Theme with the primary SUEFERY color palette
           theme: ThemeData(
             primaryColor: const Color(0xFF00796B), // Teal 700 (SUEFERY Primary)
@@ -151,7 +150,6 @@ class SUEFERYApp extends StatelessWidget {
             //   return supportedLocales.first; // Fallback to the first supported locale
             // },
           home: const AuthChecker(),
-        ),
-    );
+        );
   }
 }

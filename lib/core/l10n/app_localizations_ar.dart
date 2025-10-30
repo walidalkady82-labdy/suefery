@@ -100,4 +100,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get passwordRequiredErrorMessage => 'كلمة المرور مطلوبة';
+
+  @override
+  String get tabAIOrder => 'أطلب';
+
+  @override
+  String get tabBrowse => 'فحص المتاجر';
+
+  @override
+  String get partnerStore => 'متجر  شركاء';
+
+  @override
+  String get total => 'الإجمالى';
+
+  @override
+  String get fastestDeliveryZone => 'منطقة التوصيل الأسرع';
 }

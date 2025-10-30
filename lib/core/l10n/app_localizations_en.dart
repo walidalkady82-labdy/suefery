@@ -101,4 +101,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordRequiredErrorMessage => 'Password is required';
+
+  @override
+  String get tabAIOrder => 'AI Orders';
+
+  @override
+  String get tabBrowse => 'Browse Stores';
+
+  @override
+  String get partnerStore => 'Partner Stores';
+
+  @override
+  String get total => 'Total';
+
+  @override
+  String get fastestDeliveryZone => 'Fastest Delivery Zone';
 }

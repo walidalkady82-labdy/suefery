@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../localizations/app_localizations.txt';
+import 'package:suefery/core/l10n/app_localizations.dart';
 
 class OrderHistoryCard extends StatelessWidget {
   final Map<String, dynamic> order;

@@ -39,5 +39,12 @@
   
   "emailRequiredErrorMessage": "البريد الإلكتروني مطلوب",
   "emailInvalidErrorMessage": "البريد الإلكتروني غير صالح",
-  "passwordRequiredErrorMessage": "كلمة المرور مطلوبة"
+  "passwordRequiredErrorMessage": "كلمة المرور مطلوبة",
+
+  "tabAIOrder": "أطلب",
+  "tabBrowse": "فحص المتاجر",
+
+  "partnerStore": "متجر  شركاء",
+   "total": "الإجمالى",
+   "fastestDeliveryZone": "منطقة التوصيل الأسرع"
 }

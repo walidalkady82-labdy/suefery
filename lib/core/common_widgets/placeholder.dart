@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../localizations/app_localizations.txt';
+import 'package:suefery/core/l10n/l10n_extension.dart';
 
 class Placeholder extends StatelessWidget {
   final String titleKey;
@@ -7,11 +7,11 @@ class Placeholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context)!;
+    final strings = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: Text(strings.translate(titleKey)),
-        backgroundColor: Colors.grey.shade700,
+        title: Text(strings.appTitle),
+        backgroundColor: const Color.fromARGB(255, 207, 150, 150),
       ),
       body: Center(
         child: Column(

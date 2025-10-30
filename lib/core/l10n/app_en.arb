@@ -91,5 +91,20 @@
   "@emailInvalidErrorMessage": {"description": "Error message when the entered email format is incorrect."},
   
   "passwordRequiredErrorMessage": "Password is required",
-  "@passwordRequiredErrorMessage": {"description": "Error message when the password field is left empty."}
+  "@passwordRequiredErrorMessage": {"description": "Error message when the password field is left empty."},
+
+  "tabAIOrder": "AI Orders",
+  "@tabAIOrder": {"description": "Orders tab using Gemini"},
+ 
+  "tabBrowse": "Browse Stores",
+  "@tabBrowse": {"description": "Browse stores"},
+
+  "partnerStore": "Partner Stores",
+  "@partnerStore": {"description": "Browse partners stores"},
+
+  "total": "Total",
+  "@total": {"description": ""},
+
+  "fastestDeliveryZone": "Fastest Delivery Zone",
+  "@fastestDeliveryZone": {"descriptionTotal": "Fastest Delivery Zone"}
 }

@@ -283,6 +283,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password is required'**
   String get passwordRequiredErrorMessage;
+
+  /// Orders tab using Gemini
+  ///
+  /// In en, this message translates to:
+  /// **'AI Orders'**
+  String get tabAIOrder;
+
+  /// Browse stores
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Stores'**
+  String get tabBrowse;
+
+  /// Browse partners stores
+  ///
+  /// In en, this message translates to:
+  /// **'Partner Stores'**
+  String get partnerStore;
+
+  ///
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get total;
+
+  /// No description provided for @fastestDeliveryZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Fastest Delivery Zone'**
+  String get fastestDeliveryZone;
 }
 
 class _AppLocalizationsDelegate

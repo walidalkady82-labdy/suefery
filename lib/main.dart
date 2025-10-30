@@ -8,14 +8,14 @@ import 'package:suefery/presentation/auth/auth_cubit.dart';
 import 'package:suefery/firebase_options.dart';
 import 'package:suefery/data/services/gemini_service.dart';
 import 'app_container.dart';
-import 'core/localizations/app_localizations.txt';
 import 'data/services/auth_service.dart';
 import 'data/services/preferences_service.dart';
-import 'presentation/history/order_history_cubit.dart';
-import 'presentation/history/customer_order_history.dart';
+// import 'presentation/history/order_history_cubit.txt';
+// import 'presentation/history/customer_order_history.txt';
 import 'data/services/firebase_service.dart';
 import 'data/services/logging_service.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'presentation/home/home_cubit.dart';
 
 final _log = LoggerReprository('main');
 Future<void> main() async {
@@ -41,10 +41,10 @@ Future<void> main() async {
     };
   }
   _log.i('loading sevices...');
-  final PrefsService prefsService = PrefsService();
+  final PrefsService prefsService = await PrefsService.init();
   final AuthService authService = AuthService(prefsService);
   final GeminiService geminiService = GeminiService();
-  //final FirebaseService firebaseService = FirebaseService();
+  final firebaseService = FirebaseService.instance;
   _log.i('initializing app...');
   runApp(
     MultiBlocProvider(
@@ -56,12 +56,16 @@ Future<void> main() async {
         ),
         BlocProvider(
           // GeminiCubit depends on GeminiService
-          create: (context) => GeminiCubit(geminiService),
+          create: (context) => HomeCubit(
+            firebaseService,
+            geminiService,
+            ""
+            ),
         ),
-        BlocProvider(
-          // GeminiCubit depends on GeminiService
-          create: (context) => OrderHistoryCubit(),
-        ),
+        // BlocProvider(
+        //   // GeminiCubit depends on GeminiService
+        //   create: (context) => OrderHistoryCubit(),
+        // ),
         // FEATURE CUBITS (Can be added here or on specific routes)
         // BlocProvider(create: (_) => BookingCubit()),
       ],

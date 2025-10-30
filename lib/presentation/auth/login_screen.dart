@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:suefery/core/localizations/app_localizations.txt';
+import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/presentation/auth/auth_cubit.dart';
 
 
@@ -8,11 +8,11 @@ class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = context.l10n;
     final authCubit = context.read<AuthCubit>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(strings!.loginButton),
+        title: Text(strings.loginButton),
         backgroundColor: const Color(0xFF00308F),
       ),
       body: Center(
@@ -51,7 +51,7 @@ class LoginScreen extends StatelessWidget {
                             'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
                             height: 20,
                           ),
-                          label: Text(strings.googleSignIn, style: const TextStyle(fontSize: 18, color: Color(0xFF00308F))),
+                          label: Text(strings.googleSignin, style: const TextStyle(fontSize: 18, color: Color(0xFF00308F))),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

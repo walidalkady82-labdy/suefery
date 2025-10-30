@@ -2,9 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/presentation/auth/auth_cubit.dart';
-
-import '../../core/localizations/app_localizations.txt';
 
 class SignUpScreen extends StatelessWidget {
 
@@ -12,7 +11,7 @@ class SignUpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = context.l10n;
     final authCubit = context.read<AuthCubit>();
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
@@ -33,7 +32,7 @@ class SignUpScreen extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(strings!.signUpButton),
+          title: Text(strings.signUpButton),
           backgroundColor: const Color(0xFFE5002D),
         ),
         body: Center(
@@ -128,7 +127,7 @@ class SignUpScreen extends StatelessWidget {
                       TextButton(
                         onPressed: authCubit.togglePage,
                         child: Text(
-                          strings.translate('toLogin') ?? 'Already have an account? Log in', 
+                          strings.loginButton ?? 'Already have an account? Log in', 
                           style: const TextStyle(color: Color(0xFFE5002D))
                         ),
                       )
