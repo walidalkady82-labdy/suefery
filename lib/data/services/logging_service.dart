@@ -95,9 +95,9 @@ import 'package:logger/logger.dart';
 
 // }
 
-class LoggerReprository{
+class LoggerRepo{
   
-  LoggerReprository(this.name,{this.logView, this.logOutputMedia, this.filter}){
+  LoggerRepo(this.name,{this.logView, this.logOutputMedia, this.filter}){
     switch (logView){
       case LogView.defaultView:
       

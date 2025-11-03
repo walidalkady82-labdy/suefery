@@ -1,31 +1,48 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:suefery/main.dart';
+import 'package:suefery/data/enums/message_sender.dart';
+import 'package:suefery/data/models/chat_message.dart';
+import 'package:suefery/data/services/chat_service.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const SUEFERYApp());
+  test('GeminiService should parse a successful response', () async {
+    // 1. ARRANGE
+    final mockRepo = MockGeminiRepo();
+    final service = ChatService(mockRepo);
+    final history = [ChatMessage(
+      text: 'i need 2 coke and 1 chips', 
+      senderType: MessageSender.user, 
+      senderId: '', 
+      timestamp: DateTime.now()
+      )];
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // 2. ACT
+    final aiResponse = await service.getAiOrderResponse(history);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // 3. ASSERT
+    expect(aiResponse.aiResponseText, contains('Mock response'));
+    expect(aiResponse.parsedOrder.orderConfirmed, true);
+    expect(aiResponse.parsedOrder.requestedItems.length, 2);
+    expect(aiResponse.parsedOrder.requestedItems[0].itemName, 'Coca-Cola');
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  test('GeminiService should handle a failure response', () async {
+    // 1. ARRANGE
+    final mockRepo = MockGeminiFailureRepo();
+    final service = ChatService(mockRepo);
+    final history = [ChatMessage(
+      text: 'hi', 
+      senderType: MessageSender.user, 
+      senderId: '', 
+      timestamp: DateTime.now()
+      )];
+
+    // 2. ACT
+    final aiResponse = await service.getAiOrderResponse(history);
+
+    // 3. ASSERT
+    expect(aiResponse.aiResponseText, contains('Sorry, I\'m having trouble'));
+    expect(aiResponse.parsedOrder.orderConfirmed, false);
+    expect(aiResponse.parsedOrder.requestedItems.isEmpty, true);
   });
 }
 

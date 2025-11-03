@@ -2,8 +2,12 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, PlatformDispatcher;
 import 'package:flutter/material.dart';
+import 'package:suefery/firebase_options.dart';
+
+import 'logging_service.dart';
 
 /// Global access point for Firebase services and environment variables.
 class FirebaseService {
@@ -12,10 +16,11 @@ class FirebaseService {
   late final FirebaseFirestore _firestore;
   String _currentUserId = '';
   String _appId = 'default-app-id';
-
+  final log = LoggerRepo('AuthenticationService');
   FirebaseService._privateConstructor();
   static final FirebaseService instance = FirebaseService._privateConstructor();
   final bool useEmulator = true;
+  bool _isInitialized = false;
 
   String get userId => _currentUserId;
   FirebaseFirestore get firestore => _firestore;
@@ -27,6 +32,8 @@ class FirebaseService {
 
   /// Manually parse the global config strings and initialize Firebase/Auth.
   Future<void> initialize() async {
+    if (_isInitialized) return;
+
     // 1. Get environment variables
     final firebaseConfigJson = const String.fromEnvironment('__firebase_config', defaultValue: '{}');
     final initialAuthToken = const String.fromEnvironment('__initial_auth_token');
@@ -37,13 +44,13 @@ class FirebaseService {
     try {
       configMap = jsonDecode(firebaseConfigJson);
     } catch (e) {
-      print('ERROR: Failed to decode Firebase Config: $e');
+      log.e('ERROR: Failed to decode Firebase Config: $e');
       configMap = {};
     }
 
     // 2. Initialize Firebase App
     if (configMap.isNotEmpty) {
-      // Use standard FirebaseOptions to initialize the app
+      //Use standard FirebaseOptions to initialize the app
       final options = FirebaseOptions(
         apiKey: configMap['apiKey'] as String,
         appId: configMap['appId'] as String,
@@ -51,11 +58,11 @@ class FirebaseService {
         projectId: configMap['projectId'] as String,
         databaseURL: configMap['databaseURL'] as String?,
         storageBucket: configMap['storageBucket'] as String?,
-      );
+       );
       _app = await Firebase.initializeApp(options: options);
     } else {
       // If config is missing, initialize a default app (will likely fail on API calls)
-      _app = await Firebase.initializeApp();
+      _app = await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     }
     _auth = FirebaseAuth.instanceFor(app: _app);
     _firestore = FirebaseFirestore.instanceFor(app: _app);
@@ -78,6 +85,7 @@ class FirebaseService {
 
     // 3. Handle Authentication
     await _handleAuth(initialAuthToken);
+    _isInitialized = true;
   }
 
   Future<void> _handleAuth(String? initialAuthToken) async {
@@ -99,5 +107,18 @@ class FirebaseService {
       // Use a random ID if sign-in completely fails (to maintain operation)
       _currentUserId = 'anonymous-${DateTime.now().millisecondsSinceEpoch}';
     }
+  }
+
+  void handleAnalytics(){
+      if (!kIsWeb) {
+        FlutterError.onError = (errorDetails) {
+            FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+        };
+        // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+        PlatformDispatcher.instance.onError = (error, stack) {
+            FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+            return true;
+        };
+      }
   }
 }

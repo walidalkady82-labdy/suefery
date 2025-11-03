@@ -2,28 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/data/models/app_user.dart';
+import 'package:suefery/locator.dart';
+import '../../data/enums/auth_status.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/logging_service.dart';
 
-final _log = LoggerReprository('LoginState');
+final _log = LoggerRepo('LoginState');
 
-abstract class AuthState {
-  const AuthState();
-}
-
-class AuthInProgress extends AuthState {}
-
-class Authenticated extends AuthState {
-  final AppUser user;
-  const Authenticated(this.user);
-}
-
-class Unauthenticated extends AuthState {
-  final AuthFormState formState;
-  const Unauthenticated({this.formState = const AuthFormState()});
-}
-
-class AuthFormState {
+class AuthState {
   final bool isLoading;
   final String errorMessage;
   final String email;
@@ -32,8 +18,10 @@ class AuthFormState {
   final AutovalidateMode autovalidateMode;
   final bool obscureText;
   final bool isLogin;
+  final AuthStatus authState;
+  final AppUser? user;
   
-  const AuthFormState({
+  const AuthState({
     this.isLoading = false,
     this.errorMessage = '',
     this.email = '',
@@ -42,8 +30,10 @@ class AuthFormState {
     this.autovalidateMode = AutovalidateMode.disabled,
     this.obscureText = true,
     this.isLogin = true,
+    this.authState = AuthStatus.unauthenticated,
+    this.user
     });
-  AuthFormState copyWith({
+  AuthState copyWith({
     bool? isLoading,
     String? errorMessage,
     String? email,
@@ -52,8 +42,10 @@ class AuthFormState {
     AutovalidateMode? autovalidateMode,
     bool? obscureText,
     bool? isLogin,
+    AuthStatus? authState,
+    AppUser? user,
   }) {
-    return AuthFormState(
+    return AuthState(
       isLoading: isLoading ?? this.isLoading,      
       errorMessage: errorMessage ?? this.errorMessage, 
       email: email ?? this.email,
@@ -62,83 +54,65 @@ class AuthFormState {
       autovalidateMode: autovalidateMode ?? this.autovalidateMode,
       obscureText: obscureText ?? this.obscureText,
       isLogin: isLogin ?? this.isLogin,
+      authState: authState ?? this.authState,
+      user: user ?? this.user,
     );
   }
 
 }
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit(AuthService authService) 
-      : _authService = authService,
-        super(AuthInProgress()) {
-          _authSubscription = _authService.authStateChanges.listen(_onAuthStateChanged);
+  AuthCubit() : super(AuthState()) {
+          authSubscription = _authService.authStateChanges.listen(_onAuthStateChanged);
         }
-  final AuthService _authService;
-   late final StreamSubscription<AppUser?> _authSubscription;
+  final AuthService _authService = sl<AuthService>();
+  late final StreamSubscription<AppUser?> authSubscription;
 
   void _onAuthStateChanged(AppUser? user) {
     if (user != null) {
-      emit(Authenticated(user));
+      emit(state.copyWith(authState: AuthStatus.authenticated, user: user));
     } else {
-      emit(const Unauthenticated());
-    }
-  }
-
-  // Helper to safely access the form state
-  AuthFormState _getFormState() {
-    final currentState = state;
-    if (currentState is Unauthenticated) {
-      return currentState.formState;
-    }
-    // This should ideally not happen if UI is built correctly,
-    // but it's a safe fallback.
-    return const AuthFormState();
-  }
-
-  // Helper to emit a new Unauthenticated state with updated form data
-  void _emitFormState(AuthFormState newFormState) {
-    if (state is Unauthenticated) {
-      emit(Unauthenticated(formState: newFormState));
+      emit(state.copyWith(authState: AuthStatus.authenticated, user: null));
     }
   }
 
   void updateLoadingState(bool loadingState){
-    _emitFormState(_getFormState().copyWith(isLoading: loadingState));
+    emit(state.copyWith(isLoading: loadingState));
   }
 
   void updateEmail(String? email) {
-    _emitFormState(_getFormState().copyWith(email: email));
+    emit(state.copyWith(email: email));
   }
 
   void updatePassword(String? password) {
-    _emitFormState(_getFormState().copyWith(password: password));
+    emit(state.copyWith(password: password));
   }
 
   void updateConfirmPassword(String? confirmPassword) {
-    _emitFormState(_getFormState().copyWith(confirmPassword: confirmPassword));
+    emit(state.copyWith(confirmPassword: confirmPassword));
   }
 
   void updateAutovalidateMode(AutovalidateMode? autovalidateMode) {
-    _emitFormState(_getFormState().copyWith(autovalidateMode: autovalidateMode));
+    emit(state.copyWith(autovalidateMode: autovalidateMode));
   }
 
   void toggleObscureText() {
-    final currentFormState = _getFormState();
-    _emitFormState(currentFormState.copyWith(obscureText: !currentFormState.obscureText));
+    final currentFormState = state;
+    emit(currentFormState.copyWith(obscureText: !currentFormState.obscureText));
   }
 
   void reset() {
-    _emitFormState(const AuthFormState());
+    emit(const AuthState());
   }
 
   void togglePage() {
-    final currentFormState = _getFormState();
-    _emitFormState(currentFormState.copyWith(isLogin: !currentFormState.isLogin));
+    final currentFormState = state;
+    emit(currentFormState.copyWith(isLogin: !currentFormState.isLogin));
   }
 
   Future<void> signIn() async {
-    final formState = _getFormState();
-    _emitFormState(formState.copyWith(isLoading: true, errorMessage: ''));
+    final formState = state;
+    emit(formState.copyWith(isLoading: true, errorMessage: ''));
 
     try {
       await _authService.signInWithEmailAndPassword(
@@ -149,51 +123,95 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e) {
       final errorMessage = 'Login Failed: ${e.toString().split(':').last.trim()}';
       _log.e(errorMessage);
-      _emitFormState(_getFormState().copyWith(errorMessage: errorMessage, isLoading: false));
+      emit(state.copyWith(errorMessage: errorMessage, isLoading: false));
       
       // Optional: Reset error after a delay
       Future.delayed(const Duration(seconds: 5), () {
-        if (state is Unauthenticated && (state as Unauthenticated).formState.errorMessage == errorMessage) {
-          _emitFormState(_getFormState().copyWith(errorMessage: ''));
+        if (state.authState== AuthStatus.unauthenticated && state.errorMessage == errorMessage) {
+          emit(state.copyWith(errorMessage: ''));
         }
       });
     } finally {
       // Ensure loading is always turned off if the state is still Unauthenticated
-      if (state is Unauthenticated) {
-        _emitFormState(_getFormState().copyWith(isLoading: false));
+      if (state.authState== AuthStatus.unauthenticated) {
+        emit(state.copyWith(isLoading: false));
       }
     }
   }
   
   Future<void> signInWithGoogle() async {
-    _emitFormState(_getFormState().copyWith(isLoading: true, errorMessage: ''));
+    emit(state.copyWith(isLoading: true, errorMessage: ''));
     try {
       await _authService.signInWithGoogle();
       // On success, the auth stream will emit Authenticated state.
     } catch (e) {
       final errorMessage = 'Google Login Failed: ${e.toString().split(':').last.trim()}';
       _log.e(errorMessage);
-      _emitFormState(_getFormState().copyWith(isLoading: false, errorMessage: errorMessage));
+      emit(state.copyWith(isLoading: false, errorMessage: errorMessage));
     } finally {
-      if (state is Unauthenticated) {
-        _emitFormState(_getFormState().copyWith(isLoading: false));
+      if (state.authState == AuthStatus.unauthenticated) {
+        emit(state.copyWith(isLoading: false));
       }
     }
   }
 
+  Future<void> signOut() async {
+    try {
+      await _authService.logOut();
+    } catch (e) {
+      final errorMessage = 'Sign Out Failed: ${e.toString().split(':').last.trim()}';
+      emit(state.copyWith(isLoading: true, errorMessage: ''));
+      _log.e(errorMessage);
+    }
+  }
+
+  Future<void> checkVerificationStatus() async {
+    final formState = state;
+    emit(formState.copyWith(isLoading: true, errorMessage: ''));
+    try {
+      await _authService.reloadUser();
+      // Listener will catch the verified state and transition to AuthAuthenticated
+    } catch (e) {
+      final errorMessage = 'Sign Out Failed: ${e.toString().split(':').last.trim()}';
+      emit(formState.copyWith(isLoading: false, errorMessage: errorMessage));
+      _log.e(errorMessage);
+    }
+  }
+
+  Future<void> sendEmailVerification() async {
+    emit(state.copyWith(isLoading: true, errorMessage: ''));
+    try {
+      await _authService.sendEmailVerification();
+      // Listener will catch the verified state and transition to AuthAuthenticated
+    } catch (e) {
+      final errorMessage = 'Verification Email Failed: ${e.toString().split(':').last.trim()}';
+      emit(state.copyWith(isLoading: false, errorMessage: errorMessage));
+      _log.e(errorMessage);
+    }
+  }
+  
+  Future<void> logOut() async {
+    try {
+      await _authService.logOut();
+    }catch (e){
+      final errorMessage = 'Verification Email Failed: ${e.toString().split(':').last.trim()}';
+      emit(state.copyWith(isLoading: false, errorMessage: errorMessage));
+      _log.e(errorMessage);
+    }
+  }
   //TODO check errors message to integrate with strings
   Future<void> signUp() async{
-    final formState = _getFormState();
+    final formState = state;
     if (formState.password != formState.confirmPassword) {
-      _emitFormState(formState.copyWith(errorMessage: 'Passwords do not match.'));
+      emit(formState.copyWith(errorMessage: 'Passwords do not match.'));
       return; 
     }
     if (formState.password.length < 6) {
-      _emitFormState(formState.copyWith(errorMessage: 'Password must be at least 6 characters.'));
+      emit(formState.copyWith(errorMessage: 'Password must be at least 6 characters.'));
       return;
     }
 
-    _emitFormState(formState.copyWith(isLoading: true, errorMessage: ''));
+    emit(formState.copyWith(isLoading: true, errorMessage: ''));
     try {
       await _authService.signUpWithEmailAndPassword(
         email: formState.email.trim(),
@@ -203,10 +221,10 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e) {
       final errorMessage = 'Sign Up Failed: ${e.toString().split(':').last.trim()}';
       _log.e(errorMessage);
-      _emitFormState(_getFormState().copyWith(errorMessage: errorMessage));
+      emit(state.copyWith(errorMessage: errorMessage));
     } finally {
-      if (state is Unauthenticated) {
-        _emitFormState(_getFormState().copyWith(isLoading: false));
+      if (state.authState== AuthStatus.unauthenticated) {
+        emit(state.copyWith(isLoading: false));
       }
     }
 }

@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/presentation/auth/auth_cubit.dart';
 
+import '../../data/enums/auth_status.dart';
+
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -12,7 +14,7 @@ class LoginScreen extends StatelessWidget {
     final authCubit = context.read<AuthCubit>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(strings.loginButton),
+        title: Text(strings.loginTextButton),
         backgroundColor: const Color(0xFF00308F),
       ),
       body: Center(
@@ -34,21 +36,19 @@ class LoginScreen extends StatelessWidget {
               BlocBuilder<AuthCubit, AuthState>(
                 builder: (context, state) {
                   // We only build the form if the user is unauthenticated.
-                  if (state is! Unauthenticated) {
+                  if (state.authState == AuthStatus.authenticated) {
                     // Show a loader or an empty container if state is not Unauthenticated
                     return const Center(child: CircularProgressIndicator());
                   }
                   // Extract the form state
-                  final formState = state.formState;
                   return Column(
                     children: [
                       // Sign in with Google (W1 Low-Friction for Customers)
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
-                          onPressed: formState.isLoading ? null : authCubit.signInWithGoogle,
-                          icon: Image.network(
-                            'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
+                          onPressed: state.isLoading ? null : authCubit.signInWithGoogle,
+                          icon: Image.asset('assets/images/google-icon-logo.svg',
                             height: 20,
                           ),
                           label: Text(strings.googleSignin, style: const TextStyle(fontSize: 18, color: Color(0xFF00308F))),
@@ -69,47 +69,47 @@ class LoginScreen extends StatelessWidget {
                           labelText: strings.emailHint,
                           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                           prefixIcon: const Icon(Icons.email),
-                          errorText: formState.email.isEmpty && formState.autovalidateMode != AutovalidateMode.disabled ? 'Email cannot be empty' : null,
+                          errorText: state.email.isEmpty && state.autovalidateMode != AutovalidateMode.disabled ? 'Email cannot be empty' : null,
                         ),
                       ),
                       const SizedBox(height: 20),
                       TextField(
                         onChanged: authCubit.updatePassword,
-                        obscureText: formState.obscureText,
+                        obscureText: state.obscureText,
                         decoration: InputDecoration(
                           labelText: strings.passwordHint,
                           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                           prefixIcon: const Icon(Icons.lock),
                           suffixIcon: IconButton(
-                            icon: Icon(formState.obscureText ? Icons.visibility_off : Icons.visibility),
+                            icon: Icon(state.obscureText ? Icons.visibility_off : Icons.visibility),
                             onPressed: authCubit.toggleObscureText,
                           ),
-                          errorText: formState.password.isEmpty && formState.autovalidateMode != AutovalidateMode.disabled ? 'Password cannot be empty' : null,
+                          errorText: state.password.isEmpty && state.autovalidateMode != AutovalidateMode.disabled ? 'Password cannot be empty' : null,
                         ),
                       ),
                       const SizedBox(height: 30),
-                      if (formState.errorMessage.isNotEmpty)
+                      if (state.errorMessage.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 15.0),
-                          child: Text(formState.errorMessage, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                          child: Text(state.errorMessage, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                         ),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: formState.isLoading ? null : authCubit.signIn,
+                          onPressed: state.isLoading ? null : authCubit.signIn,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFE5002D),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
-                          child: formState.isLoading
+                          child: state.isLoading
                               ? const SizedBox(
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
                                 )
-                              : Text(strings.loginButton, style: const TextStyle(fontSize: 18)),
+                              : Text(strings.loginTextButton, style: const TextStyle(fontSize: 18)),
                         ),
                       ),
                       const SizedBox(height: 20),

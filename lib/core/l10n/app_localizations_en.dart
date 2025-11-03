@@ -46,7 +46,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logInPrompt => 'Please Log In';
 
   @override
-  String get loginButton => 'login';
+  String get loginTextButton => '\'Already have an account? Log in';
 
   @override
   String get signUpButton => 'sign up';
@@ -116,4 +116,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fastestDeliveryZone => 'Fastest Delivery Zone';
+
+  @override
+  String get verificationNeeded => 'Email is not verified';
+
+  @override
+  String get checkStatusButton => 'Check Status';
+
+  @override
+  String get welcomeMessage => 'Welcome!';
+
+  @override
+  String get suggestionButton => 'Suggest Recipe';
+
+  @override
+  String get recipeName => 'Recipe Name';
+
+  @override
+  String get orderHistoryTitle => 'Order history';
+
+  @override
+  String get noOrders => 'No Orders';
 }

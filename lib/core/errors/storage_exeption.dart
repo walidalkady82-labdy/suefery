@@ -1,7 +1,7 @@
 
 import '../../data/services/logging_service.dart';
 
-final log = LoggerReprository('StorageExceptions');
+final log = LoggerRepo('StorageExceptions');
 
 class UploadImageFailure implements Exception{
 

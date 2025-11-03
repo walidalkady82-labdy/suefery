@@ -16,21 +16,31 @@
   "languageSwitch": "تبديل اللغة (English)",
   
   "logInPrompt": "الرجاء تسجيل الدخول",
-  "loginButton": "تسجيل الدخول",
+
+  "loginTextButton": "هل لديك حساب بالفعل؟ سجل الدخول",
+
   "signUpButton": "التسجيل",
+
   "googleSignin": "تسجيل الدخول باستخدام جوجل",
+
   "toSignup": "للتسجيل",
   
   "emailHint": "البريد الإلكتروني",
+
   "passwordHint": "كلمة المرور",
+
   "confirmPasswordHint": "تأكيد كلمة المرور",
   
   "historyTitle": "سجل الطلبات",
+
   "buttonHistory": "عرض سجل الطلبات",
   
   "orderId": "معرّف الطلب",
+
   "orderTotal": "المجموع",
+
   "orderStatus": "الحالة",
+  
   "orderSummary": "الملخص",
   
   "statusDelivered": "تم التوصيل",
@@ -45,6 +55,13 @@
   "tabBrowse": "فحص المتاجر",
 
   "partnerStore": "متجر  شركاء",
-   "total": "الإجمالى",
-   "fastestDeliveryZone": "منطقة التوصيل الأسرع"
+  "total": "الإجمالى",
+  "fastestDeliveryZone": "منطقة التوصيل الأسرع",
+  "verificationNeeded": "البريد الإلكتروني لم يتم التحقق",
+  "checkStatusButton": "تحقق من الحالة",
+  "welcomeMessage": "مرحبا!",
+  "suggestionButton": "مقترحات",
+  "recipeName": "اسم الوصف",
+  "orderHistoryTitle": "سجل الطلبات",
+  "noOrders": "لا يوجد طلبات"
 }

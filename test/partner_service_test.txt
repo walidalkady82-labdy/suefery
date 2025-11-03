@@ -19,7 +19,7 @@ class AppUser {
     required this.id,
     required this.name,
     required this.role,
-    required this.specificPersonaGoal,
+    required this.specificPersonaGoal, required String email,
   });
 
   String get roleTitle {

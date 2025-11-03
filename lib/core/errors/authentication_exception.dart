@@ -274,7 +274,7 @@ class EmailMissmatchFailure extends AuthenticationFailure {
 
 class RegisterFirebaseFailure extends AuthenticationFailure {
   RegisterFirebaseFailure(super.message,[super.code]);
-  static final LoggerReprository log = LoggerReprository('RegisterFirebaseFailure');
+  static final LoggerRepo log = LoggerRepo('RegisterFirebaseFailure');
   factory RegisterFirebaseFailure.fromCode(String code) {
       switch (code) {
         case 'no-credentials':
@@ -304,7 +304,7 @@ class RegisterFirebaseFailure extends AuthenticationFailure {
 
 class LoginGoogleFirebaseFailure extends AuthenticationFailure{
   LoginGoogleFirebaseFailure(super.message,[super.code]);
-  static final LoggerReprository log = LoggerReprository('LoginGoogleFirebaseFailure');
+  static final LoggerRepo log = LoggerRepo('LoginGoogleFirebaseFailure');
   factory LoginGoogleFirebaseFailure.fromCode(String code) {
       switch (code) {
         case 'no-credentials':
@@ -334,7 +334,7 @@ class LoginGoogleFirebaseFailure extends AuthenticationFailure{
 
 class LoginEmailPassFirebaseFailure extends AuthenticationFailure{
   LoginEmailPassFirebaseFailure(super.message,[super.code]);
-  static final LoggerReprository log = LoggerReprository('LoginEmailPassFirebaseFailure');
+  static final LoggerRepo log = LoggerRepo('LoginEmailPassFirebaseFailure');
   factory LoginEmailPassFirebaseFailure.fromCode(String code) {
       switch (code) {
         case 'no-credentials':
@@ -368,7 +368,7 @@ class LogoutFailure extends AuthenticationFailure {
 
 class ResetPassFirebaseFailure extends AuthenticationFailure{
   ResetPassFirebaseFailure(super.message,[super.code]);
-  static final LoggerReprository log = LoggerReprository('ResetPassFirebaseFailure');
+  static final LoggerRepo log = LoggerRepo('ResetPassFirebaseFailure');
   factory ResetPassFirebaseFailure.fromCode(String code) {
       switch (code) {
         case 'user-not-found':
@@ -389,7 +389,7 @@ class ResetPassFirebaseFailure extends AuthenticationFailure{
 
 class DeleteAccountFirebaseFailure extends AuthenticationFailure {
   DeleteAccountFirebaseFailure(super.message,[super.code]);
-  static final LoggerReprository log = LoggerReprository('DeleteAccountFirebaseFailure');
+  static final LoggerRepo log = LoggerRepo('DeleteAccountFirebaseFailure');
   factory DeleteAccountFirebaseFailure.fromCode(String code) {
       switch (code) {
         case 'requires-recent-login':

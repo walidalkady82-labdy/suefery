@@ -36,8 +36,8 @@
   "logInPrompt": "Please Log In",
   "@logInPrompt": {"description": "The call-to-action or prompt displayed on the login screen."},
   
-  "loginButton": "login",
-  "@loginButton": {"description": "The text for the standard login button."},
+  "loginTextButton": "'Already have an account? Log in",
+  "@loginTextButton": {"description": "The text for the login message text"},
   
   "signUpButton": "sign up",
   "@signUpButton": {"description": "The text for the standard sign-up button."},
@@ -106,5 +106,27 @@
   "@total": {"description": ""},
 
   "fastestDeliveryZone": "Fastest Delivery Zone",
-  "@fastestDeliveryZone": {"descriptionTotal": "Fastest Delivery Zone"}
+  "@fastestDeliveryZone": {"description": "Fastest Delivery Zone"},
+
+  "verificationNeeded": "Email is not verified",
+  "@verificationNeeded": {"description": "A message to the user to ask him to verif the email"},
+
+  "checkStatusButton": "Check Status",
+  "@checkStatusButton": {"description": "Check email verification status button"},
+
+  "welcomeMessage": "Welcome!",
+  "@welcomeMessage": {"description": "Application welcome message"},
+
+  "suggestionButton": "Suggest Recipe",
+  "@suggestionButton": {"description": "suggest recipe button text"},
+
+  "recipeName": "Recipe Name",
+  "@recipeName": {"description": "Name of the recipe"},
+
+  "orderHistoryTitle": "Order history",
+  "@orderHistoryTitle": {"description": "Order history title"},
+
+  "noOrders": "No Orders",
+  "@noOrders": {"description": "No orders available message"}
 }
+

@@ -1,0 +1,1 @@
+enum MessageSender { user, gemini, system }

@@ -1,89 +1,124 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:suefery/data/models/app_user.dart';
-import 'package:suefery/domain/repositories/auth_repo.dart';
 import '../enums/auth_status.dart';
+import '../models/app_user.dart';
+import '../repositories/i_auth_repo.dart';
 import 'logging_service.dart';
-import 'preferences_service.dart';
+import 'pref_service.dart';
 
+/// Manages all authentication-related business logic.
+///
+/// This service coordinates the [IAuthRepo] (for data access)
+/// and the [PrefService] (for session persistence) to perform
+/// sign-in, sign-out, and session management tasks.
+class AuthService {
+  final IAuthRepo _authRepository;
+  final PrefService _prefRepo;
+  final _log = LoggerRepo('AuthService'); // Assuming LoggerRepo exists
 
-class AuthService  {
   /// {@macro authentication_service}
-  /// 
-  AuthService(this.prefs,{this.withEmulator = false}) ;
-    
-  late final AuthRepo _firebaseAuth = withEmulator?(AuthRepo()..initEmulator()):AuthRepo();
-  final _log = LoggerReprository('AuthenticationService');
-  final bool withEmulator;
-  final PrefsService prefs;
-  
-  User? get currentAuthUser {
-    return _firebaseAuth.firebaseAuth.currentUser;
+  ///
+  /// Requires an [IAuthRepo] and [PrefService] for its
+  /// dependencies (this is called Dependency Injection).
+  AuthService(this._authRepository, this._prefRepo);
+
+  /// Gets the current [AppUser] by mapping the repository's [User].
+  /// Returns `null` if no user is signed in.
+  AppUser? get currentAppUser {
+    final firebaseUser = _authRepository.currentUser;
+    if (firebaseUser == null) return null;
+    return AppUser.fromFirebaseUser(firebaseUser);
   }
 
+  /// Gets the current authentication status.
   AuthStatus get userAuthStatus {
-    if(_firebaseAuth.firebaseAuth.currentUser !=null || _firebaseAuth.firebaseAuth.currentUser !=null){
+    if (_authRepository.currentUser != null) {
       return AuthStatus.authenticated;
-    }else{
+    } else {
       return AuthStatus.unauthenticated;
     }
   }
-  /// Exposes the real-time stream of the user's authentication state.
-  /// This is the standard method used in Flutter Firebase apps.
+
+  /// Exposes a stream of [AppUser?]
+  ///
+  /// This maps the repository's Firebase [User?] stream to your
+  /// app's internal [AppUser?] model.
   Stream<AppUser?> get authStateChanges {
-    return FirebaseAuth.instance.authStateChanges().map((firebaseUser) {
+    return _authRepository.authStateChanges.map((firebaseUser) {
       if (firebaseUser == null) return null;
-      return AppUser(
-        id: firebaseUser.uid, 
-        name: firebaseUser.displayName??"", 
-        email:firebaseUser.email??"", 
-        specificPersonaGoal: ''
-        );
+      // You could also fetch user data from Firestore here
+      return AppUser.fromFirebaseUser(firebaseUser);
     });
   }
-
-  Future<void> reloadeUser() async {
-    await _firebaseAuth.firebaseAuth.currentUser?.reload();
+    // Refactor ActionCodeSettings into a reusable getter
+  ActionCodeSettings get _defaultActionCodeSettings {
+    final userEmail = currentAppUser?.email;
+    return ActionCodeSettings(
+      url: "http://www.suefery.com/verify?email=$userEmail",
+      iOSBundleId: "com.walidKSoft.suefery",
+      androidPackageName: "com.walidKSoft.suefery",
+    );
   }
+  
+  
+  // Future<void> _handleAuth(String? initialAuthToken) async {
+  //   try {
+  //     initialAuthToken ??= "";
+  //     if (initialAuthToken.isNotEmpty) {
+  //       // Use custom token provided by the canvas environment
+  //       final userCredential = await _auth.signInWithCustomToken(initialAuthToken);
+  //       _currentUserId = userCredential.user!.uid;
+  //       _log.i('Signed in with Custom Token. UID: $_currentUserId');
+  //     } else {
+  //       // Fallback to anonymous sign-in if no token is provided
+  //       final userCredential = await _auth.signInAnonymously();
+  //       _currentUserId = userCredential.user!.uid;
+  //       _log.i('Signed in Anonymously. UID: $_currentUserId');
+  //     }
+  //   } catch (e) {
+  //     _log.e('ERROR: Firebase Auth failed: $e');
+  //     // Use a random ID if sign-in completely fails (to maintain operation)
+  //     _currentUserId = 'anonymous-${DateTime.now().millisecondsSinceEpoch}';
+  //   }
+  // }
+  /// Reloads the user's data from the provider.
+  Future<void> reloadUser() => _authRepository.reloadUser();
 
-  Future<User?> signInWithGoogle() async {
+  /// Handles the business logic for Google Sign-In.
+  Future<AppUser?> signInWithGoogle() async {
     try {
-      UserCredential? userCredential;
-      userCredential = await _firebaseAuth.logInWithGoogle();
-      if(userCredential?.user != null) {
-        if (userCredential?.user != null) {
-          final token = await userCredential!.user?.getIdToken(); // Get Firebase ID token
-          if (token !=null) {
-            await prefs.setUserAuthToken(token);  //await prefs.writeSecure(key: 'authToken', value: token);
-          }
-          await prefs.setUserLoggedInTime(DateTime.now());
-          await prefs.setUserIsLoggedin(true);
-        }
-        final bool isNewUser = userCredential?.additionalUserInfo?.isNewUser ?? false;
-        await prefs.setIsFirstLogin(isNewUser);
-        await _handleSuccessfulLogin(await userCredential?.user?.getIdToken());
-        return userCredential!.user;
-      } else {
-        return null;
+      final userCredential = await _authRepository.logInWithGoogle();
+      final user = userCredential.user;
+
+      if (user != null) {
+        final bool isNewUser =
+            userCredential.additionalUserInfo?.isNewUser ?? false;
+        await _prefRepo.setIsFirstLogin(isNewUser);
+        await _handleSuccessfulLogin(user);
+        return AppUser.fromFirebaseUser(user);
       }
+      return null;
     } catch (e) {
-      _log.e("Login Error: $e");
+      _log.e("Google Sign-In Error: $e");
       rethrow;
     }
   }
 
-  Future<User?> signUpWithEmailAndPassword({
+  /// Handles the business logic for Email/Pass Sign-Up.
+  Future<AppUser?> signUpWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
     try {
-      final userCredential = await _firebaseAuth.signUp(
+      final userCredential = await _authRepository.signUp(
         email: email,
         password: password,
       );
-      if (userCredential?.user != null) {
-        await prefs.setIsFirstLogin(true);
-        await _handleSuccessfulLogin(await userCredential?.user?.getIdToken());
-        return userCredential?.user;
+      final user = userCredential?.user;
+
+      if (user != null) {
+        await _prefRepo.setIsFirstLogin(true);
+        await _handleSuccessfulLogin(user);
+        return AppUser.fromFirebaseUser(user);
       }
       return null;
     } catch (e) {
@@ -92,145 +127,172 @@ class AuthService  {
     }
   }
 
-  Future<User?> signInWithEmailAndPassword({
+  /// Handles the business logic for Email/Pass Sign-In.
+  Future<AppUser?> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
     try {
-      final userCredential = await _firebaseAuth.logInWithEmailAndPassword(
+      final userCredential = await _authRepository.logInWithEmailAndPassword(
         email: email,
         password: password,
       );
-
-      if (userCredential.user != null) {
-        // For email/pass sign-in, they are never a "new" user in this context.
-        await prefs.setIsFirstLogin(false);
-        await _handleSuccessfulLogin(await userCredential.user?.getIdToken());
-        return userCredential.user;
-      } else {
-        return null;
+      final user = userCredential.user;
+      if (user == null) {
+        throw Exception('Could not get user credentials.');
       }
+      // For email/pass sign-in, they are never a "new" user in this context.
+      await _prefRepo.setIsFirstLogin(false);
+      await _handleSuccessfulLogin(user);
+      return AppUser.fromFirebaseUser(user);
     } catch (e) {
       _log.e("Login Error: $e");
       rethrow;
     }
   }
-  
-  Future<void> _handleSuccessfulLogin(String? token) async {
+
+  /// Centralized logic to run after any successful login.
+  /// Saves token and login state to preferences.
+  Future<void> _handleSuccessfulLogin(User user) async {
+    final token = await user.getIdToken();
     if (token != null) {
-      await prefs.setUserAuthToken(token);
+      await _prefRepo.setUserAuthToken(token);
     }
-    await prefs.setUserLoggedInTime(DateTime.now());
-    await prefs.setUserIsLoggedin(true);
+    await _prefRepo.setUserLoggedInTime(DateTime.now());
+    await _prefRepo.setUserIsLoggedin(true);
   }
 
-  Future<bool> isUserLoggedIn() async {                  // Check login status at startup
-   // Check login status at startup
-    final token = prefs.userAuthToken ;// await prefs.read('authToken');
-    final bool isUserLoggedin = await prefs.isUserLoggedin;
-    final bool hasAuthUser = currentAuthUser != null;
+  /// Checks if the user's session is still valid on app start.
+  Future<bool> isUserLoggedIn() async {
+    final bool isUserLoggedin = await _prefRepo.isUserLoggedin;
+    final bool hasAuthUser = _authRepository.currentUser != null;
+
     if (!isUserLoggedin || !hasAuthUser) {
-      // No token, no login.
       _log.i('User is not logged in');
       return false;
     }
+
     try {
-      // Attempt to re-authenticate.
-      _log.i('trying to log in...');
-      await _firebaseAuth.firebaseAuth.currentUser?.reload();
-      _log.i('User reload is successfull');
+      _log.i('Trying to refresh user session...');
+      await _authRepository.reloadUser();
+      _log.i('User reload is successful');
       return true; // Successfully re-authenticated.
     } catch (e) {
-      // Re-authentication failed.
-      _log.i('User reload failed, $e');
-      prefs.setUserIsLoggedin(false); // Reset the state of user loggedin
-      prefs.setUserAuthToken(null); //await prefs.deleteSecure('authToken');
+      // Re-authentication failed (e.g., token expired, user disabled)
+      _log.i('User reload failed, session is invalid: $e');
+      await _clearUserSession(); // Session is invalid, clear it
       return false;
     }
   }
 
-  Future<bool> logOut()async {
-    final token = prefs.userAuthToken;//await prefs.readSecure('authToken');
-    await prefs.setUserLoggedOffTime(DateTime.now());
-    await prefs.setUserIsLoggedin(false);
-    await _firebaseAuth.logOut();
-    return prefs.isUserLoggedin ; 
+  /// Signs the user out and clears their session data from preferences.
+  Future<bool> logOut() async {
+    try {
+      await _authRepository.logOut();
+    } catch (e) {
+      _log.e('Error during sign out: $e');
+      // Still proceed to clear local session
+    }
+    await _clearUserSession();
+    final bool isLoggedin = await _prefRepo.isUserLoggedin;
+    return !isLoggedin; // Return true if logged out successfully
   }
 
-  Future<void> resetPass(String email) async{
+  /// Centralized logic to clear user data from prefs.
+  Future<void> _clearUserSession() async {
+    await _prefRepo.setUserLoggedOffTime(DateTime.now());
+    await _prefRepo.setUserIsLoggedin(false);
+    await _prefRepo.setUserAuthToken(null);
+  }
+
+  /// Sends a password reset email.
+  Future<void> resetPass(String email) async {
     try {
-      if(email.isNotEmpty){
-        await _firebaseAuth.sendPasswordResetEmail(email);
+      if (email.isNotEmpty) {
+        await _authRepository.sendPasswordResetEmail(email);
       }
     } on Exception catch (e) {
-      _log.e('Error reseting pass: $e');
+      _log.e('Error resetting pass: $e');
       rethrow;
     }
   }
 
-  Future<void> updatePass({required String code,required String newPassword}) async{
+  /// Updates the user's password using a reset code.
+  Future<void> updatePass(
+      {required String code, required String newPassword}) async {
     try {
-    await _firebaseAuth.verifyResetCode(code);
-    await _firebaseAuth.confirmPasswordReset(
+      await _authRepository.confirmPasswordReset(
         code: code,
         newPassword: newPassword,
       );
+    } catch (e) {
+      _log.e('Error confirming pass reset: $e');
+      rethrow;
     }
-    catch (e) {
-            _log.e('Error creating user by admin: $e');
-            rethrow;
-    }  
   }
-  
-  //TODO check
 
-  // final FirebaseAuth _auth = FirebaseAuth.instance;
-  // final User? currentUser = FirebaseAuth.instance.currentUser;
+  /// Sends a verification email to the current user.
+  Future<void> sendEmailVerification() async {
+    try {
+      await _authRepository.sendEmailVerification();
+    } catch (e) {
+      _log.e('Error sending verification email: $e');
+      rethrow;
+    }
+  }
 
+   /// Deletes the current user's account and clears their local session.
+  Future<void> deleteUser() async {
+    try {
+      _log.i('Attempting to delete user account...');
+      await _authRepository.deleteUser();
+      _log.i('User account deleted successfully from provider.');
+      // After successful deletion, clear all local data
+      await _clearUserSession();
+    } on FirebaseAuthException catch (e) {
+      _log.e('Error deleting user: ${e.code} - ${e.message}');
+      // A common error is 'requires-recent-login', which you can
+      // handle in your UI by prompting the user to re-authenticate.
+      rethrow;
+    }
+  }
 
-  //   /// Handles Firebase initialization and initial sign-in logic.
-  // void _initializeFirebase() async {
-  //   // 1. Initialize Firebase App (using __firebase_config)
-  //   // In a real app: 
-  //   // try {
-  //   //   await Firebase.initializeApp(options: firebaseConfig);
-  //   // } catch (e) {
-  //   //   print("Firebase Init Error: $e");
-  //   // }
-    
-  //   // 2. Handle Authentication using the provided custom token (if available)
-  //   if (__initial_auth_token.isNotEmpty && __initial_auth_token != 'real-token-if-present') {
-  //     // In a real app: 
-  //     // await _auth.signInWithCustomToken(__initial_auth_token);
-  //     _log.i('AuthService: Signed in using environment custom token.');
-  //   } else {
-  //     // In a real app, you might fall back to anonymous sign-in or a login screen
-  //     // await _auth.signInAnonymously();
-  //     _log.i('AuthService: Ready. Awaiting auth state changes.');
-  //   }
-  // }
+  /// Re-authenticates the current user by prompting for their password.
+  /// Use this before performing sensitive operations.
+  Future<void> reauthenticateWithPassword(String password) async {
+    try {
+      final user = _authRepository.currentUser;
+      if (user == null || user.email == null) {
+        throw Exception('No user or user email available for re-authentication.');
+      }
 
-  // /// Exposes the real-time stream of the user's authentication state.
-  // /// This is the standard method used in Flutter Firebase apps.
-  // Stream<User?> get authStateChanges {
-  //   // In a real app: return FirebaseAuth.instance.authStateChanges().map((firebaseUser) {
-  //   //   if (firebaseUser == null) return null;
-  //   //   return User(firebaseUser.uid, firebaseUser.email);
-  //   // });
-    
-  //   // Placeholder stream to demonstrate the BLoC listening flow:
-  //   return Stream.fromFutures([
-  //     Future.value(null), // Initial unauthenticated state
-  //     Future.delayed(const Duration(seconds: 2), () => User('prod-user-123', 'user@prodapp.com')),
-  //     Future.delayed(const Duration(seconds: 5), () => null), // Simulate sign out
-  //   ]);
-  // }
+      // Create the credential object
+      final AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
 
-  // /// Dispatches a sign out command to Firebase.
-  // Future<void> signOut() async {
-  //   // In a real app: await FirebaseAuth.instance.signOut();
-  //   _log.i('AuthService: Dispatched Firebase sign-out.');
-  // }
+      // Pass the credential to the repository
+      await _authRepository.reauthenticateWithCredential(credential);
+      _log.i('User re-authenticated successfully.');
+    } catch (e) {
+      _log.e('Error during password re-authentication: $e');
+      rethrow;
+    }
+  }
+
+  /// Re-authenticates the current user using their Google account.
+  Future<void> reauthenticateWithGoogle() async {
+    try {
+      // 1. Ask the repository for a Google Auth Credential.
+      // This moves the `GoogleSignIn` logic into the repository layer.
+      final credential = await _authRepository.logInWithGoogle();
+      // 2. Pass the credential to the repository's re-authentication method.
+      await _authRepository.reauthenticateWithCredential(credential.credential!);
+      _log.i('User re-authenticated successfully with Google.'); 
+    } catch (e) {
+      _log.e('Error during Google re-authentication: $e');
+      rethrow;
+    }
+  }
 }
-
-

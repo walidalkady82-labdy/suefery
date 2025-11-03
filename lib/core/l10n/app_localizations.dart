@@ -170,11 +170,11 @@ abstract class AppLocalizations {
   /// **'Please Log In'**
   String get logInPrompt;
 
-  /// The text for the standard login button.
+  /// The text for the login message text
   ///
   /// In en, this message translates to:
-  /// **'login'**
-  String get loginButton;
+  /// **'\'Already have an account? Log in'**
+  String get loginTextButton;
 
   /// The text for the standard sign-up button.
   ///
@@ -308,11 +308,53 @@ abstract class AppLocalizations {
   /// **'Total'**
   String get total;
 
-  /// No description provided for @fastestDeliveryZone.
+  /// Fastest Delivery Zone
   ///
   /// In en, this message translates to:
   /// **'Fastest Delivery Zone'**
   String get fastestDeliveryZone;
+
+  /// A message to the user to ask him to verif the email
+  ///
+  /// In en, this message translates to:
+  /// **'Email is not verified'**
+  String get verificationNeeded;
+
+  /// Check email verification status button
+  ///
+  /// In en, this message translates to:
+  /// **'Check Status'**
+  String get checkStatusButton;
+
+  /// Application welcome message
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome!'**
+  String get welcomeMessage;
+
+  /// suggest recipe button text
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest Recipe'**
+  String get suggestionButton;
+
+  /// Name of the recipe
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe Name'**
+  String get recipeName;
+
+  /// Order history title
+  ///
+  /// In en, this message translates to:
+  /// **'Order history'**
+  String get orderHistoryTitle;
+
+  /// No orders available message
+  ///
+  /// In en, this message translates to:
+  /// **'No Orders'**
+  String get noOrders;
 }
 
 class _AppLocalizationsDelegate

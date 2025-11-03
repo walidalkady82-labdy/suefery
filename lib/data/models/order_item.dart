@@ -15,7 +15,25 @@ class OrderItem {
     required this.notes,
 
   });
+    factory OrderItem.fromMap(Map<String, dynamic> map) {
+    return OrderItem(
+      itemId: map['itemId'],
+      name: map['name'],
+      quantity: map['quantity'],
+      unitPrice: map['unitPrice'],
+      notes: map['notes'],
 
+    );
+  }
+  Map<String, dynamic> toMap() {
+    return {
+      'itemId': itemId,
+      'name': name,
+      'quantity': quantity,
+      'unitPrice': unitPrice,
+      'notes': notes,
+    };
+  }
   double get totalPrice => quantity * unitPrice;
 }
 

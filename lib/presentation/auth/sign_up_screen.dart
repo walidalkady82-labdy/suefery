@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/presentation/auth/auth_cubit.dart';
 
+import '../../data/enums/auth_status.dart';
+
 class SignUpScreen extends StatelessWidget {
 
   const SignUpScreen({super.key});
@@ -17,13 +19,14 @@ class SignUpScreen extends StatelessWidget {
       listener: (context, state) {
         // The listener handles state changes that cause side-effects,
         // like showing an error message.
-        if (state is Unauthenticated) {
-          if (state.formState.errorMessage.isNotEmpty) {
+        
+        if (state.authState== AuthStatus.unauthenticated) {
+          if (state.errorMessage.isNotEmpty) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
                 SnackBar(
-                  content: Text(state.formState.errorMessage),
+                  content: Text(state.errorMessage),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -56,11 +59,9 @@ class SignUpScreen extends StatelessWidget {
                 BlocBuilder<AuthCubit, AuthState>(
                   // This builder now only rebuilds when the form state changes.
                   buildWhen: (previous, current) =>
-                      previous is Unauthenticated && current is Unauthenticated && previous.formState != current.formState,
+                      previous.authState ==AuthStatus.unauthenticated && current.authState ==AuthStatus.unauthenticated && previous.authState != current.authState,
                   builder: (context, state) {
-                    // Because of the buildWhen, we can be confident the state is Unauthenticated.
-                    final formState = (state as Unauthenticated).formState;
-
+                    // Because of the buildWhen, we can be confident the state.authState== AuthStatus.unauthenticated.
                     return Column(
                       children: [
                       // Email/Password Form
@@ -71,33 +72,33 @@ class SignUpScreen extends StatelessWidget {
                           labelText: strings.emailHint,
                           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                           prefixIcon: const Icon(Icons.email),
-                          errorText: formState.email.isEmpty && formState.autovalidateMode != AutovalidateMode.disabled ? 'Email cannot be empty' : null,
+                          errorText: state.email.isEmpty && state.autovalidateMode != AutovalidateMode.disabled ? 'Email cannot be empty' : null,
                         ),
                       ),
                       const SizedBox(height: 20),
                       TextField(
                         onChanged: authCubit.updatePassword,
-                        obscureText: formState.obscureText,
+                        obscureText: state.obscureText,
                         decoration: InputDecoration(
                           labelText: strings.passwordHint,
                           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                           prefixIcon: const Icon(Icons.lock),
                           suffixIcon: IconButton(
-                            icon: Icon(formState.obscureText ? Icons.visibility_off : Icons.visibility),
+                            icon: Icon(state.obscureText ? Icons.visibility_off : Icons.visibility),
                             onPressed: authCubit.toggleObscureText,
                           ),
-                          errorText: formState.password.isEmpty && formState.autovalidateMode != AutovalidateMode.disabled ? 'Password cannot be empty' : null,
+                          errorText: state.password.isEmpty && state.autovalidateMode != AutovalidateMode.disabled ? 'Password cannot be empty' : null,
                         ),
                       ),
                       const SizedBox(height: 20),
                       TextField(
                         onChanged: authCubit.updateConfirmPassword,
-                        obscureText: formState.obscureText,
+                        obscureText: state.obscureText,
                         decoration: InputDecoration(
                           labelText: strings.confirmPasswordHint, 
                           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                           prefixIcon: const Icon(Icons.lock_outline),
-                          errorText: formState.confirmPassword != formState.password && formState.autovalidateMode != AutovalidateMode.disabled ? 'Passwords do not match' : null,
+                          errorText: state.confirmPassword != state.password && state.autovalidateMode != AutovalidateMode.disabled ? 'Passwords do not match' : null,
                         ),
                       ),
                       const SizedBox(height: 30),
@@ -105,14 +106,14 @@ class SignUpScreen extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: formState.isLoading ? null : authCubit.signUp,
+                          onPressed: state.isLoading ? null : authCubit.signUp,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF00308F),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
-                          child: formState.isLoading
+                          child: state.isLoading
                               ? const SizedBox(
                                   width: 24,
                                   height: 24,
@@ -127,7 +128,7 @@ class SignUpScreen extends StatelessWidget {
                       TextButton(
                         onPressed: authCubit.togglePage,
                         child: Text(
-                          strings.loginButton ?? 'Already have an account? Log in', 
+                          strings.loginTextButton, 
                           style: const TextStyle(color: Color(0xFFE5002D))
                         ),
                       )

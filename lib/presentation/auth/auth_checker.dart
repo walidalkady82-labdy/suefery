@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/presentation/auth/auth_cubit.dart';
 
+import '../../data/enums/auth_status.dart';
 import 'auth_wrapper.dart';
 import '../home/home_screen.dart';
 
@@ -14,13 +15,14 @@ class AuthChecker extends StatelessWidget {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         // 1. Initial Loading/Waiting state
-        if (state is AuthInProgress) {
+        if (state.authState == AuthStatus.inProgress) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
+            
           );
         }
         // 2. User is Logged In
-        if (state is Authenticated) {
+        if (state.authState == AuthStatus.authenticated && state.user != null) {
           return const HomeScreen();
         }
         // 3. User is Logged Out

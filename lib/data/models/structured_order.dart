@@ -62,7 +62,7 @@ class StructuredOrder{
       'estimatedTotal': estimatedTotal,
       'deliveryFee': deliveryFee,
       'deliveryAddress':deliveryAddress,
-      'status':status,
+      'status':status.name,
       'progress':progress,
       'riderId':riderId,
       'items':items,
@@ -80,7 +80,10 @@ class StructuredOrder{
       estimatedTotal : data['estimatedTotal'] ??0,
       deliveryFee : data['deliveryFee'] ??0,
       deliveryAddress: data['deliveryAddress'] ?? '',
-      status: data['status'] ?? OrderStatus.New,
+      status: OrderStatus.values.firstWhere(
+        (e) => e.name == data['status'],
+        orElse: () => OrderStatus.New, // Default fallback
+      ),
       progress: data['progress'] ?? 0,
       riderId: data['riderId'] ?? '',
       items: List<OrderItem>.from(data['items'] ?? []),

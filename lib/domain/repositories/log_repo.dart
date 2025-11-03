@@ -160,7 +160,13 @@ class LogRepo{
   void i(dynamic message,{String? overrideName}){
     overrideName ==null? log.i('$name: $message') : log.i('$overrideName: $message');
   }
-  
+
+  void w(dynamic message,{String? overrideName,DateTime? time,Object? error,StackTrace? stackTrace}){
+    overrideName ==null?
+    log.e('$name: $message',time: time,error: error,stackTrace: stackTrace):
+    log.e('$overrideName: $message',time: time,error: error,stackTrace: stackTrace);
+  }
+
   void e(dynamic message,{String? overrideName,DateTime? time,Object? error,StackTrace? stackTrace}){
     overrideName ==null?
     log.e('$name: $message',time: time,error: error,stackTrace: stackTrace):

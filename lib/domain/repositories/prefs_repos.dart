@@ -1,46 +1,82 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../data/repositories/prefs_repo.dart' as repo_base;
 
-class PrefsRepo implements repo_base.PreferenceRepositoryBase {
-  // Use a lazy singleton to ensure we only have one SharedPreferences instance
-  static SharedPreferences? _prefs;
+import '../../data/repositories/i_pref_repo.dart';
 
-  Future<SharedPreferences> _getPrefs() async {
-    _prefs ??= await SharedPreferences.getInstance();
-    return _prefs!;
+/// This is the concrete implementation of [IPrefRepo].
+/// Its only job is to talk directly to the SharedPreferences plugin.
+class PrefRepo implements IPrefRepo {
+  final SharedPreferences _prefs;
+  final FlutterSecureStorage _secureStorage;
+
+  // The SharedPreferences instance is passed in, not created here.
+  PrefRepo(this._prefs,this._secureStorage);
+
+  /// A static factory for creating an initialized instance.
+  /// Your service locator (like GetIt) should call this.
+  static Future<PrefRepo> create() async {
+    // You can configure platform-specific options here if needed
+    // AndroidOptions androidOptions = const AndroidOptions(
+    //   encryptedSharedPreferences: true,
+    // );
+    final secureStorage = FlutterSecureStorage(/*aOptions: androidOptions*/);
+    final prefs = await SharedPreferences.getInstance();
+    return PrefRepo(prefs,secureStorage) ;
   }
 
-  // Define constant keys to avoid typos
-  static const String themeKey = 'app_theme';
-  static const String firstLaunchKey = 'first_launch';
+  @override
+  Future<bool> getBool(String key, {bool defaultValue = false}) async {
+    return _prefs.getBool(key) ?? defaultValue;
+  }
+
+  @override
+  Future<void> setBool(String key, bool value) async {
+    await _prefs.setBool(key, value);
+  }
 
   @override
   Future<String?> getString(String key) async {
-    final prefs = await _getPrefs();
-    return prefs.getString(key);
+    return _prefs.getString(key);
   }
 
   @override
-  Future<void> saveString(String key, String value) async {
-    final prefs = await _getPrefs();
-    await prefs.setString(key, value);
-  }
-  
-  @override
-  Future<bool> getBool(String key, {bool defaultValue = false}) async {
-    final prefs = await _getPrefs();
-    return prefs.getBool(key) ?? defaultValue;
-  }
-  
-  @override
-  Future<void> saveBool(String key, bool value) async {
-    final prefs = await _getPrefs();
-    await prefs.setBool(key, value);
+  Future<void> setString(String key, String value) async {
+    await _prefs.setString(key, value);
   }
 
   @override
-  Future<void> clearAll() async {
-    final prefs = await _getPrefs();
-    await prefs.clear();
+  Future<void> remove(String key) async {
+    await _prefs.remove(key);
+  }
+  //Secure storage
+  @override
+  Future<bool> getBoolSecure(String key, {bool defaultValue = false}) async {
+    final value = await _secureStorage.read(key: key);
+    if (value == null) {
+      return defaultValue;
+    }
+    // Convert the stored string back to a bool
+    return value.toLowerCase() == 'true';
+  }
+
+  @override
+  Future<void> setBoolSecure(String key, bool value) async {
+    // Convert the bool to a string for storage
+    await _secureStorage.write(key: key, value: value.toString());
+  }
+
+  @override
+  Future<String?> getStringSecure(String key) async {
+    return await _secureStorage.read(key: key);
+  }
+
+  @override
+  Future<void> setStringSecure(String key, String value) async {
+    await _secureStorage.write(key: key, value: value);
+  }
+
+  @override
+  Future<void> removeSecure(String key) async {
+    await _secureStorage.delete(key: key);
   }
 }

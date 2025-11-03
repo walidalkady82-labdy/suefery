@@ -45,7 +45,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logInPrompt => 'الرجاء تسجيل الدخول';
 
   @override
-  String get loginButton => 'تسجيل الدخول';
+  String get loginTextButton => 'هل لديك حساب بالفعل؟ سجل الدخول';
 
   @override
   String get signUpButton => 'التسجيل';
@@ -115,4 +115,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get fastestDeliveryZone => 'منطقة التوصيل الأسرع';
+
+  @override
+  String get verificationNeeded => 'البريد الإلكتروني لم يتم التحقق';
+
+  @override
+  String get checkStatusButton => 'تحقق من الحالة';
+
+  @override
+  String get welcomeMessage => 'مرحبا!';
+
+  @override
+  String get suggestionButton => 'مقترحات';
+
+  @override
+  String get recipeName => 'اسم الوصف';
+
+  @override
+  String get orderHistoryTitle => 'سجل الطلبات';
+
+  @override
+  String get noOrders => 'لا يوجد طلبات';
 }
