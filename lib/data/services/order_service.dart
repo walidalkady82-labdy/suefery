@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:suefery/data/models/structured_order.dart';
 import 'package:suefery/data/enums/order_status.dart';
 
@@ -101,7 +103,11 @@ class OrderService {
       // to ensure the ID is what we passed in.
       return _firestoreRepo
           .update(_collectionPath, order.orderId, data)
-          .then((_) => order.orderId);
+          .then((_) => order.orderId)
+          .onError<Exception>((e, _) {
+              throw e.toString();
+            })
+          .timeout(const Duration(seconds: 3));
           
     } catch (e) {
       _log.e('Failed to create order: $e');

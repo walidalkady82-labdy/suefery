@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
+import 'package:suefery/data/models/ai_response.dart';
 import 'package:suefery/presentation/auth/auth_cubit.dart';
 import '../../data/enums/message_sender.dart';
 import '../../data/models/chat_message.dart';
@@ -17,101 +18,213 @@ class HomeScreen extends StatelessWidget {
     final strings = context.l10n;
     return BlocProvider(
       create: (context) => HomeCubit()..loadChat(12345),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(strings.customerTitle),
-          backgroundColor: Colors.teal.shade800,
-          actions: [
-            IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),  
-            IconButton(icon: const Icon(Icons.logout),onPressed: () => context.read<AuthCubit>().logOut()),
-          ],
-        ),
-        backgroundColor: Colors.teal.shade50,
-        body: DefaultTabController(
-          length: 3, // Added History Tab
-          child: Column(
-            children: [
-              const TabBar(
-                tabs: [
-                  Tab(icon: Icon(Icons.request_page), text: 'AI Order (S1)'),
-                  Tab(icon: Icon(Icons.restaurant_menu), text: 'AI Chef'),
-                  Tab(icon: Icon(Icons.history), text: 'History'),
-                ],
-              ),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    // --- TAB 1: Conversational Ordering (S1) ---
-                    Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        children: [
-                            // --- 1. THE CONVERSATION AREA ---
-                            // This expands to fill all available space
-                            Expanded(child: ChatMessageList(),),
-                            // --- 2. THE TEXTING & VOICE AREA ---
-                            ChatInputBar(),
-                        ],
-                      ),
-                    ),
-                    // --- TAB 2: AI Chef (Recipe Suggestion) ---
-                    Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: BlocBuilder<HomeCubit, HomeState>(
-                        builder: (context, state) {
-                          return Column(
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: () => context.read<HomeCubit>().suggestRecipe(),
-                                icon: const Icon(Icons.restaurant_menu),
-                                label: Text(strings.suggestionButton),
-                              ),
-                              const SizedBox(height: 20),
-                              if (state.geminiIsSuccessful)
-                                Card(
-                                  child: ListTile(
-                                    title: Text(state.recipeName),
-                                    subtitle: Text(state.ingredients.join(', ')),
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                    // --- TAB 3: Order History ---
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(strings.orderHistoryTitle, style: Theme.of(context).textTheme.headlineSmall),
-                          const SizedBox(height: 16),
-                          // In a real app, this list would come from a BLoC
-                          Expanded(
-                            child: ListView(
-                              children: [
-                                _buildMetricCard(strings.orderHistoryTitle, strings.noOrders),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+      child: BlocListener<HomeCubit, HomeState>(
+        // This 'listenWhen' is important. It only fires
+        // when a pendingOrder *appears* (goes from null to non-null).
+        listenWhen: (previous, current) =>
+            previous.pendingOrder == null && current.pendingOrder != null,
+        listener: (context, state) {
+          // When a pending order appears, show the modal
+          if (state.pendingOrder != null) {
+            _showOrderConfirmation(context, state.pendingOrder!);
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(strings.customerTitle),
+            backgroundColor: Colors.teal.shade800,
+            actions: [
+              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),  
+              IconButton(icon: const Icon(Icons.logout),onPressed: () => context.read<AuthCubit>().logOut()),
+            ],
+          ),
+          backgroundColor: Colors.teal.shade50,
+          body: DefaultTabController(
+            length: 3, // Added History Tab
+            child: Column(
+              children: [
+                const TabBar(
+                  tabs: [
+                    Tab(icon: Icon(Icons.request_page), text: 'AI Order (S1)'),
+                    Tab(icon: Icon(Icons.restaurant_menu), text: 'AI Chef'),
+                    Tab(icon: Icon(Icons.history), text: 'History'),
                   ],
                 ),
-              ),
-            ],
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      // --- TAB 1: Conversational Ordering (S1) ---
+                      Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          children: [
+                              // --- 1. THE CONVERSATION AREA ---
+                              // This expands to fill all available space
+                              Expanded(child: ChatMessageList(),),
+                              // --- 2. THE TEXTING & VOICE AREA ---
+                              ChatInputBar(),
+                          ],
+                        ),
+                      ),
+                      // --- TAB 2: AI Chef (Recipe Suggestion) ---
+                      Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: BlocBuilder<HomeCubit, HomeState>(
+                          builder: (context, state) {
+                            return Column(
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: () => context.read<HomeCubit>().suggestRecipe(),
+                                  icon: const Icon(Icons.restaurant_menu),
+                                  label: Text(strings.suggestionButton),
+                                ),
+                                const SizedBox(height: 20),
+                                if (state.geminiIsSuccessful)
+                                  Card(
+                                    child: ListTile(
+                                      title: Text(state.recipeName),
+                                      subtitle: Text(state.ingredients.join(', ')),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                      // --- TAB 3: Order History ---
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(strings.orderHistoryTitle, style: Theme.of(context).textTheme.headlineSmall),
+                            const SizedBox(height: 16),
+                            // In a real app, this list would come from a BLoC
+                            Expanded(
+                              child: ListView(
+                                children: [
+                                  _buildMetricCard(strings.orderHistoryTitle, strings.noOrders),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+  void _showOrderConfirmation(BuildContext context, AiParsedOrder order) {
+    // We pass the cubit's context down so the modal can call it
+    final cubit = context.read<HomeCubit>(); 
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        // We pass the cubit and the order to the modal
+        return BlocProvider.value(
+          value: cubit,
+          child: OrderConfirmationModal(order: order),
+        );
+      },
+      // This ensures the cubit can clear the state if dismissed
+    ).whenComplete(() {
+      // If the modal is just dismissed (not cancelled),
+      // we should probably treat it as a cancel.
+      if (cubit.state.pendingOrder != null) {
+        cubit.cancelPendingOrder();
+      }
+    });
+  }
+
   Widget _buildMetricCard(String title, String value) {
   return Card(
       child: ListTile(
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         trailing: Text(value, style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.green)),
+      ),
+    );
+  }
+}
+
+class OrderConfirmationModal extends StatelessWidget {
+  final AiParsedOrder order;
+  const OrderConfirmationModal({super.key, required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Confirm Your Order?',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 16),
+          // List the items from the AI
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.3,
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: order.requestedItems.length,
+              itemBuilder: (context, index) {
+                final item = order.requestedItems[index];
+                return ListTile(
+                  leading: CircleAvatar(
+                    child: Text(item.quantity.toString()),
+                  ),
+                  title: Text(item.itemName),
+                  subtitle: item.notes.isNotEmpty ? Text(item.notes) : null,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Confirmation buttons
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () {
+                    // 1. Call the cubit's cancel method
+                    context.read<HomeCubit>().cancelPendingOrder();
+                    // 2. Close the modal
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('CANCEL'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () {
+                    // 1. Call the cubit's confirm method
+                    context.read<HomeCubit>().confirmPendingOrder();
+                    // 2. Close the modal
+                    Navigator.of(context).pop();
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.teal.shade700,
+                  ),
+                  child: const Text('CONFIRM ORDER'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

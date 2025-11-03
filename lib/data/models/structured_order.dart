@@ -14,7 +14,7 @@ class StructuredOrder{
   final OrderStatus status; // New, Assigned, Delivered, Cancelled
   final double? progress; // 0.0 to 1.0 for tracking
   final String? riderId;
-  final List<OrderItem> items;
+  final List<Map<String, dynamic>> items;
   final bool isConfirmed;
   final DateTime? finishedAt;
   final String? notes;
@@ -86,14 +86,14 @@ class StructuredOrder{
       ),
       progress: data['progress'] ?? 0,
       riderId: data['riderId'] ?? '',
-      items: List<OrderItem>.from(data['items'] ?? []),
+      items: List<Map<String, dynamic>>.from(data['items'] ?? []),
       isConfirmed: data['isConfirmed'] ?? false,
       finishedAt: (data['finishedAt'] as Timestamp).toDate(),
       notes:  data['notes'] ??'',
       );
 
 
-  double get subtotal => items.fold(0.0, (sum, item) => sum + item.totalPrice);
+  double get subtotal => items.fold(0.0, (sum, item) => sum + item['totalPrice']);
   double get estimatedDeliveryFee => 5.0; // Mock fee
   double get grandTotal => subtotal + estimatedDeliveryFee;
 }

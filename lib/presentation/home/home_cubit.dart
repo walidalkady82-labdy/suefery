@@ -24,6 +24,7 @@ class HomeState {
   final int? currentOrderId;
   final  String recipeName;
   final List<String> ingredients;
+  final AiParsedOrder? pendingOrder;
 
   const HomeState({
     this.messages = const [],
@@ -33,6 +34,7 @@ class HomeState {
     this.currentOrderId,
     this.recipeName = '',
     this.ingredients = const [],
+    this.pendingOrder,
   });
 
   HomeState copyWith({
@@ -43,6 +45,8 @@ class HomeState {
     int? currentOrderId,
     String? recipeName,
     List<String>? ingredients,
+    AiParsedOrder? pendingOrder,
+    bool clearPendingOrder = false,
   }) {
     return HomeState(
       messages: messages ?? this.messages,
@@ -52,6 +56,7 @@ class HomeState {
       currentOrderId: currentOrderId ?? this.currentOrderId,
       recipeName: recipeName ?? this.recipeName,
       ingredients: ingredients ?? this.ingredients,
+      pendingOrder: clearPendingOrder ? null : pendingOrder ?? this.pendingOrder,
     );
   }
 }
@@ -204,32 +209,76 @@ class HomeCubit extends Cubit<HomeState> {
       // 5. Add AI's message to the new history
       final fullNewHistory = List<ChatMessage>.from(chatHistory)..add(aiMessage);
       
-      String? newOrderId;
-
-      // 6. CHECK IF GEMINI CONFIRMED AN ORDER
       if (aiResponse.parsedOrder.orderConfirmed) {
-        log.i('Gemini confirmed an order. Creating in Firestore...');
-        // 7. Call the helper to create the order
-        newOrderId = await _createOrderFromAi(aiResponse.parsedOrder);
+        // 1. Don't create the order. Just save it in the state.
+        // The UI will react to this 'pendingOrder'
+        emit(state.copyWith(
+          geminiIsLoading: false,
+          geminiIsSuccessful: true,
+          messages: fullNewHistory,
+          pendingOrder: aiResponse.parsedOrder, // <-- SET PENDING ORDER
+        ));
       } else {
-        log.i('Gemini sent a normal chat response.');
+        // No order, just a normal chat message
+        emit(state.copyWith(
+          geminiIsLoading: false,
+          geminiIsSuccessful: true,
+          messages: fullNewHistory,
+        ));
       }
-
-      // 8. Update state with new messages and stop loading
-      emit(state.copyWith(
-        geminiIsLoading: false,
-        geminiIsSuccessful: true,
-        messages: fullNewHistory,
-        // This will be null if no order was made, or have the ID if one was
-        currentOrderId: newOrderId != null ? int.tryParse(newOrderId) : state.currentOrderId, 
-      ));
 
     } catch (e) {
       log.e('Error calling Gemini service: $e');
       emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: false));
     }
   }
+  Future<void> confirmPendingOrder() async {
+    if (state.pendingOrder == null) return;
+    
+    log.i('User confirmed order. Creating in Firestore...');
+    emit(state.copyWith(isLoading: true)); // Show loading
+    
+    try {
+      // 1. Use the helper to create the order
+      final newOrderId = await _createOrderFromAi(state.pendingOrder!);
+      
+      // 2. Add a final confirmation message to the chat
+      final confirmMessage = ChatMessage(
+        senderId: 'gemini',
+        text: 'Your order #${newOrderId.substring(0, 6)} is confirmed! We are on it.',
+        timestamp: DateTime.now(),
+        senderType: MessageSender.gemini,
+      );
+      
+      // 3. Clear the pending order and update chat
+      emit(state.copyWith(
+        isLoading: false,
+        messages: List.from(state.messages)..add(confirmMessage),
+        clearPendingOrder: true, // <-- Clears the pending order
+        currentOrderId: int.tryParse(newOrderId) ?? state.currentOrderId,
+      ));
 
+    } catch (e) {
+       log.e('Failed to create order: $e');
+       emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  /// ---- NEW METHOD: Called by the modal's "Cancel" button ----
+  void cancelPendingOrder() {
+    log.i('User cancelled pending order.');
+    final cancelMessage = ChatMessage(
+        senderId: 'gemini',
+        text: 'Okay, I\'ve cancelled that. What else can I help you with?',
+        timestamp: DateTime.now(),
+        senderType: MessageSender.gemini,
+      );
+      
+    emit(state.copyWith(
+      messages: List.from(state.messages)..add(cancelMessage),
+      clearPendingOrder: true, // <-- Clears the pending order
+    ));
+  }
   /// Private helper to convert an AiParsedOrder into a StructuredOrder
   /// and save it to Firestore.
   Future<String> _createOrderFromAi(AiParsedOrder parsedOrder) async {
@@ -241,18 +290,19 @@ class HomeCubit extends Cubit<HomeState> {
     // 2. Convert AI items to real OrderItems
     // NOTE: The AI doesn't know item IDs or prices.
     // We set them to '0' as placeholders for a human to review.
-    final List<OrderItem> orderItems = parsedOrder.requestedItems.map((aiItem) {
+    final List<Map<String, dynamic>> orderItemsAsJson = parsedOrder.requestedItems.map((aiItem) {
       // You would have real price logic here later
       const itemPrice = 0.0; // Placeholder price
       estimatedTotal += (itemPrice * aiItem.quantity);
       
-      return OrderItem(
-        itemId: '', // Placeholder
-        name: aiItem.itemName,
-        quantity: aiItem.quantity,
-        unitPrice: itemPrice, 
-        notes: aiItem.notes,
-      );
+      // Convert the OrderItem-like structure to a Map (JSON)
+      return {
+        'itemId': '', // Placeholder
+        'name': aiItem.itemName,
+        'quantity': aiItem.quantity,
+        'unitPrice': itemPrice,
+        'notes': aiItem.notes,
+      };
     }).toList();
 
     // 3. Build the full StructuredOrder
@@ -265,7 +315,7 @@ class HomeCubit extends Cubit<HomeState> {
       deliveryFee: 0.0, // Placeholder
       deliveryAddress: 'To be confirmed', // Placeholder
       status: OrderStatus.New, // Initial status
-      items: orderItems,
+      items: orderItemsAsJson, // Use the JSON list
       createdAt: DateTime.now(),  
       progress: 0,
     );

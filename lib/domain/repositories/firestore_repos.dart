@@ -88,9 +88,20 @@ class FirestoreRepo implements IFirestoreRepo {
   Future<void> update(String path, String id, Map<String, dynamic> data) async {
     try {
       final ref = _firestore.collection(path).doc(id);
-      await ref.update(data);
+      await ref.set(data);
     } catch (e) {
       _log.e("Error updating document in $path with ID $id: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> set(String path, String id, Map<String, dynamic> data) async {
+    try {
+      final ref = _firestore.collection(path).doc(id);
+      await ref.set(data);
+    } catch (e) {
+      _log.e("Error setting document in $path with ID $id: $e");
       rethrow;
     }
   }
