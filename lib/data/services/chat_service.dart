@@ -1,17 +1,12 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:math' show Random;
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:suefery/data/enums/order_status.dart';
-import '../../domain/repositories/log_repo.dart';
-import '../enums/message_sender.dart';
-import '../models/models.dart';
+import 'package:suefery/data/enums/message_sender.dart';
 import 'package:suefery/data/models/ai_response.dart';
-
+import 'package:suefery/data/models/chat_message.dart';
+import '../../domain/repositories/log_repo.dart';
 import '../repositories/i_firestore_repository.dart';
 import '../repositories/i_gemini_repo.dart';
-import 'order_service.dart'; // The models we just defined
 
 // IMPORTANT: This API key must be blank for the Canvas environment to provide the token.
 const String apiKey = ""; 

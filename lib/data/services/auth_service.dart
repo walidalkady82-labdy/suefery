@@ -50,14 +50,14 @@ class AuthService {
     });
   }
     // Refactor ActionCodeSettings into a reusable getter
-  ActionCodeSettings get _defaultActionCodeSettings {
-    final userEmail = currentAppUser?.email;
-    return ActionCodeSettings(
-      url: "http://www.suefery.com/verify?email=$userEmail",
-      iOSBundleId: "com.walidKSoft.suefery",
-      androidPackageName: "com.walidKSoft.suefery",
-    );
-  }
+  // ActionCodeSettings get _defaultActionCodeSettings {
+  //   final userEmail = currentAppUser?.email;
+  //   return ActionCodeSettings(
+  //     url: "http://www.suefery.com/verify?email=$userEmail",
+  //     iOSBundleId: "com.walidKSoft.suefery",
+  //     androidPackageName: "com.walidKSoft.suefery",
+  //   );
+  // }
   
   
   // Future<void> _handleAuth(String? initialAuthToken) async {

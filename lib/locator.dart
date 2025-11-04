@@ -14,13 +14,11 @@ import 'package:suefery/domain/repositories/gemini_repo.dart';
 import 'data/repositories/i_pref_repo.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/chat_service.dart';
-import 'data/services/logging_service.dart';
 import 'data/services/pref_service.dart';
 import 'domain/repositories/auth_repo.dart';
 import 'domain/repositories/prefs_repos.dart';
 
 final sl = GetIt.instance; // sl = Service Locator
-final _log = LoggerRepo('Locator');
 /// Initializes all services and repositories for the app.
 /// This function must be called in main.dart before runApp().
 Future<void> initLocator(FirebaseApp firebaseApp) async {
