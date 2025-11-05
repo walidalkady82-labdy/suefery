@@ -13,12 +13,20 @@ class AiParsedItem {
     required this.notes,
   });
 
-  factory AiParsedItem.fromJson(Map<String, dynamic> json) {
+  factory AiParsedItem.fromMap(Map<String, dynamic> json) {
     return AiParsedItem(
       itemName: json['item_name'] ?? 'Unknown Item',
       quantity: json['quantity'] ?? 1,
       notes: json['notes'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'itemName': itemName,
+      'quantity': quantity,
+      'notes': notes,
+    };
   }
 }
 
@@ -33,16 +41,21 @@ class AiParsedOrder {
     required this.requestedItems,
   });
 
-  factory AiParsedOrder.fromJson(Map<String, dynamic> json) {
+  factory AiParsedOrder.fromMap(Map<String, dynamic> json) {
     final itemsList = (json['requested_items'] as List<dynamic>?) ?? [];
     return AiParsedOrder(
       orderConfirmed: json['order_confirmed'] ?? false,
       requestedItems: itemsList
-          .map((itemJson) => AiParsedItem.fromJson(itemJson))
+          .map((itemJson) => AiParsedItem.fromMap(itemJson))
           .toList(),
     );
   }
-
+  Map<String, dynamic> toMap() {
+    return {
+      'orderConfirmed': orderConfirmed,
+      'requestedItems': requestedItems.map((item) => item.toMap()).toList(),
+    };
+  }
   // Default empty state
   factory AiParsedOrder.empty() {
     return const AiParsedOrder(orderConfirmed: false, requestedItems: []);
@@ -60,11 +73,11 @@ class AiResponse {
     required this.parsedOrder,
   });
 
-  factory AiResponse.fromJson(Map<String, dynamic> json) {
+  factory AiResponse.fromMap(Map<String, dynamic> json) {
     return AiResponse(
       aiResponseText:
           json['ai_response_text'] ?? 'Sorry, I encountered an error.',
-      parsedOrder: AiParsedOrder.fromJson(json['parsed_order'] ?? {}),
+      parsedOrder: AiParsedOrder.fromMap(json['parsed_order'] ?? {}),
     );
   }
 

@@ -9,7 +9,7 @@ class ChatService {
   final _log = LogRepo('ChatService');
 
   // This logic now lives in the service
-  static const String _basePath = 'artifacts/default-app-id/public/data/chats';
+  static const String _basePath = 'chats';
 
   ChatService(this._firestoreRepo);
 

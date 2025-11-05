@@ -68,6 +68,8 @@ class AuthCubit extends Cubit<AuthState> {
   final AuthService _authService = sl<AuthService>();
   late final StreamSubscription<AppUser?> authSubscription;
 
+  AppUser? get currentUser => _authService.currentAppUser;
+
   void _onAuthStateChanged(AppUser? user) {
     if (user != null) {
       emit(state.copyWith(authState: AuthStatus.authenticated, user: user));

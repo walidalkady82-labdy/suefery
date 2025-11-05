@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:suefery/data/enums/order_status.dart';
 import 'package:suefery/data/enums/message_sender.dart';
 import 'package:suefery/data/models/ai_response.dart';
 import 'package:suefery/data/models/structured_order.dart';
@@ -10,6 +11,7 @@ import 'package:suefery/data/services/order_service.dart';
 import 'package:suefery/locator.dart';
 
 import '../../data/enums/chat_message_type.dart';
+import '../../data/models/order_item.dart';
 import '../../data/models/chat_message.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/chat_service.dart';
@@ -20,7 +22,6 @@ class HomeState {
   final bool isLoading;
   final bool geminiIsLoading;
   final bool geminiIsSuccessful;
-  final int? currentOrderId;
   final List<StructuredOrder> orders;
   final bool isTyping;
   final AiParsedOrder? pendingOrder;
@@ -31,7 +32,6 @@ class HomeState {
     this.isLoading = false,
     this.geminiIsLoading = false,
     this.geminiIsSuccessful = false,
-    this.currentOrderId,
     this.orders = const [],
     this.isTyping = false,
     this.pendingOrder,
@@ -43,7 +43,6 @@ class HomeState {
     bool? isLoading,
     bool? geminiIsLoading,
     bool? geminiIsSuccessful,
-    int? currentOrderId,
     List<StructuredOrder>? orders,
     bool? isTyping,
     AiParsedOrder? pendingOrder,
@@ -54,7 +53,6 @@ class HomeState {
       isLoading: isLoading ?? this.isLoading,
       geminiIsLoading: geminiIsLoading ?? this.geminiIsLoading,
       geminiIsSuccessful: geminiIsSuccessful ?? this.geminiIsSuccessful,
-      currentOrderId: currentOrderId ?? this.currentOrderId,
       orders: orders ?? this.orders,
       isTyping: isTyping ?? this.isTyping,
       pendingOrder: clearPendingOrder ? null : pendingOrder ?? this.pendingOrder,
@@ -68,7 +66,7 @@ class HomeCubit extends Cubit<HomeState> {
   HomeCubit() : super(HomeState());
   // Path Structure: /artifacts/{appId}/public/data/chats/{orderId}/messages/{messageId}
   
-  static const String _basePath = 'artifacts/default-app-id/public/data/chats';
+  static const String _basePath = 'chats';
   
 // --- Dependencies ---
   final AuthService _authService = sl<AuthService>();
@@ -81,18 +79,14 @@ class HomeCubit extends Cubit<HomeState> {
   StreamSubscription<List<ChatMessage>>? _chatSubscription;
   StreamSubscription? _ordersSubscription;
 
-  void loadChat(int orderId) {
+  void loadChat() {
     // Cancel previous listener if any
+    _log.i('Loading chat with ID: $currentUserId');
     _chatSubscription?.cancel();
-
-    emit(state.copyWith(isLoading: true, currentOrderId: orderId));
-
-    final chatId = orderId.toString();
-
-    // --- REFACTORED ---
-    // The Cubit subscribes to the *service*, not to Firestore.
-    _chatSubscription = _chatService.getChatStream(chatId).listen(
+    emit(state.copyWith(isLoading: true));
+    _chatSubscription = _chatService.getChatStream(currentUserId).listen(
       (messages) {
+        _log.i('Chat stream updated with ${messages.length} messages.');
         // The service already did all the mapping and reversing!
         updateChat(messages);
       },
@@ -104,120 +98,96 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
-  Future<void> sendMessage(String text) async {
-    if (text.trim().isEmpty) return;
-
-    // Get the current chat ID from the state
-    final chatId = state.currentOrderId?.toString();
-    if (chatId == null) {
-      _log.e('Cannot send message, no chat is loaded.');
-      return;
-    }
-
-    final newMessage = ChatMessage(
-      senderId: currentUserId,
-      text: text.trim(),
-      timestamp: DateTime.now(),
-      senderType: MessageSender.user,
-    );
-
-    try {
-      // --- REFACTORED ---
-      // Delegate sending the message to the service
-      await _chatService.sendMessage(chatId, newMessage);
-    } catch (e) {
-      _log.e('Error sending message: $e');
-    }
-  }
-
   void updateChat(List<ChatMessage> messages) {
+    _log.i('Updating chat with ${messages.length} messages.');
     emit(state.copyWith(messages: messages, isLoading: false));
+
   }
   /// It calls gemini, gets a response, and if confirmed,
   /// it emits a state with the `pendingOrder` property set.
   Future<void> submitOrderPrompt(String prompt) async {
     // 1. Set loading state and add user's message
-    emit(state.copyWith(geminiIsLoading: true));
-    
-    final userMessage = ChatMessage(
-      senderId: currentUserId,
-      text: prompt.trim(),
-      timestamp: DateTime.now(),
-      senderType: MessageSender.user,
-    );
-    
-    // 2. Create the full chat history to send to Gemini
-    final chatHistory = List<ChatMessage>.from(state.messages)..add(userMessage);
+    if (prompt.trim().isEmpty) return;
+    emit(state.copyWith(geminiIsLoading: true, isTyping: false));
 
+    // 2. Add user message to chat immediately for responsiveness
+    await _addUserMessageToChat(prompt);
+
+    // 3. Check if there's a pending order to confirm/cancel
+    final isConfirming = state.pendingOrder != null &&
+        ['yes', 'confirm', 'ok', 'yep', 'yeah', 'go ahead'].any((p) => prompt.toLowerCase().contains(p));
+    final isCancelling = state.pendingOrder != null &&
+        ['no', 'cancel', 'stop', 'nope'].any((p) => prompt.toLowerCase().contains(p));
+
+    // if (isConfirming) {
+    //   await confirmPendingOrder();
+    //   return;
+    // } else if (isCancelling) {
+    //   cancelPendingOrder();
+    //   return;
+    // }
+
+    // 4. If not confirming/cancelling, proceed to call Gemini
     try {
-      // 3. Call the REAL Gemini service
-      final AiResponse aiResponse = 
-          await _geminiService.getAiOrderResponse(chatHistory);
+      final AiResponse aiResponse = await _geminiService.getAiOrderResponse(state.messages);
 
-      // 4. Create the AI's response message
+      // 5. Add AI's response message to the chat
       final aiMessage = ChatMessage(
         senderId: 'gemini',
         text: aiResponse.aiResponseText,
         timestamp: DateTime.now(),
         senderType: MessageSender.gemini,
       );
+      // Don't use the helper. Add the full message object to state and service.
+      emit(state.copyWith(messages: List.from(state.messages)..add(aiMessage)));
+      await _chatService.sendMessage(currentUserId, aiMessage);
 
-      // 5. Add AI's message to the new history
-      final fullNewHistory = List<ChatMessage>.from(chatHistory)..add(aiMessage);
-      
-      if (aiResponse.parsedOrder.orderConfirmed) {
-        // 1. Don't create the order. Just save it in the state.
-        // The UI will react to this 'pendingOrder'
-        emit(state.copyWith(
-          geminiIsLoading: false,
-          geminiIsSuccessful: true,
-          messages: fullNewHistory,
-          pendingOrder: aiResponse.parsedOrder, // <-- SET PENDING ORDER
-        ));
+      // 6. Handle Gemini's response
+      if (aiResponse.parsedOrder.orderConfirmed && aiResponse.parsedOrder.requestedItems.isNotEmpty) {
+        // AI has parsed an order. Create a confirmation message in the chat.
+        final confirmationMessage = ChatMessage(
+          senderId: 'gemini',
+          text: aiResponse.aiResponseText,
+          timestamp: DateTime.now(),
+          senderType: MessageSender.gemini,
+          messageType: ChatMessageType.orderConfirmation, // <-- SET NEW TYPE
+          parsedOrder: aiResponse.parsedOrder, // <-- ATTACH ORDER DATA
+        );
+        emit(state.copyWith(messages: List.from(state.messages)..add(confirmationMessage)));
+        await _chatService.sendMessage(currentUserId, confirmationMessage);
+        emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: true));
       } else {
-        // No order, just a normal chat message
-        emit(state.copyWith(
-          geminiIsLoading: false,
-          geminiIsSuccessful: true,
-          messages: fullNewHistory,
-        ));
+        // It was just a conversational message, no order detected.
+        emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: true));
       }
-
     } catch (e) {
       _log.e('Error calling Gemini service: $e');
       emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: false));
     }
   }
+
   /// Called by the modal's "Confirm" button.
-  Future<void> confirmPendingOrder() async {
-    if (state.pendingOrder == null) return;
+  Future<void> confirmParsedOrder(AiParsedOrder parsedOrder) async {
     
     _log.i('User confirmed order. Calling OrderService...');
     emit(state.copyWith(isLoading: true)); // Show loading
     
     try {
       // 1. Tell the OrderService to create the order.
-      // We pass it the AI data and the user ID.
+      // We pass it the parsed order data from the chat message.
       final StructuredOrder newOrder = 
           await _orderService.creatStructuredOrder(
-              state.pendingOrder!, 
+              parsedOrder,
               currentUserId
           );
       
-      // 2. Add a final confirmation message to the chat
-      final confirmMessage = ChatMessage(
-        senderId: 'gemini',
-        text: 'Your order #${newOrder.orderId.substring(0, 6)} is confirmed! The delivery fee is ${newOrder.deliveryFee} EGP. We are on it.',
-        timestamp: DateTime.now(),
-        senderType: MessageSender.gemini,
-      );
+      // 2. Add a final confirmation message to the chat from the system
+      final confirmText = 'Your order #${newOrder.orderId.substring(0, 6)} is confirmed! The delivery fee is ${newOrder.deliveryFee} EGP. We are on it.';
+      await _addUserMessageToChat(confirmText, sender: MessageSender.system);
       
       // 3. Clear the pending order and update chat
       emit(state.copyWith(
         isLoading: false,
-        messages: List.from(state.messages)..add(confirmMessage),
-        clearPendingOrder: true, // Clears the pending order
-        currentOrderId: int.tryParse(newOrder.orderId) ?? state.currentOrderId,
       ));
 
     } catch (e) {
@@ -225,32 +195,59 @@ class HomeCubit extends Cubit<HomeState> {
        emit(state.copyWith(isLoading: false));
     }
   }
-  /// ---- NEW METHOD: Called by the modal's "Cancel" button ----
-  void cancelPendingOrder() {
-    _log.i('User cancelled pending order.');
-    final cancelMessage = ChatMessage(
-        senderId: 'gemini',
-        text: 'Okay, I\'ve cancelled that. What else can I help you with?',
-        timestamp: DateTime.now(),
-        senderType: MessageSender.gemini,
-      );
-      
-    emit(state.copyWith(
-      messages: List.from(state.messages)..add(cancelMessage),
-      clearPendingOrder: true, // <-- Clears the pending order
-    ));
+
+  /// Updates an existing order's items.
+  Future<void> updateOrder(String orderId, List<OrderItem> items) async {
+    _log.i('Updating order $orderId with ${items.length} items.');
+    emit(state.copyWith(isLoading: true));
+    try {
+      // Convert OrderItems back to a map.
+      final itemsAsMap = items.map((item) => item.toMap()).toList();
+      await _orderService.updateOrder(orderId, {'items': itemsAsMap});
+
+      // Add a system message to the chat
+      final updateText = 'Order #${orderId.substring(0, 6)} has been updated.';
+      await _addUserMessageToChat(updateText, sender: MessageSender.system);
+
+      emit(state.copyWith(isLoading: false));
+    } catch (e) {
+      _log.e('Failed to update order: $e');
+      emit(state.copyWith(isLoading: false));
+    }
   }
- 
+
+  /// Cancels an order by its ID.
+  Future<void> cancelOrderById(String orderId) async {
+    _log.i('Cancelling order $orderId.');
+    emit(state.copyWith(isLoading: true));
+
+    await _orderService.updateOrderStatus(orderId, OrderStatus.Cancelled);
+    // Add a system message to the chat
+    final cancelText = 'Order #${orderId.substring(0, 6)} has been cancelled.';
+    await _addUserMessageToChat(cancelText, sender: MessageSender.system);
+
+    // The stream in `loadPendingOrders` will automatically remove it from the list.
+    emit(state.copyWith(isLoading: false));
+  }
+
+  /// ---- NEW METHOD: Called by the modal's "Cancel" button ----
+  Future<void> cancelParsedOrder() async {
+    _log.i('User cancelled pending order.');
+    const cancelText = 'Okay, I\'ve cancelled that. What else can I help you with?';
+    await _addUserMessageToChat(cancelText, sender: MessageSender.system);
+  }
+
   void loadPendingOrders() {
+    _log.i('Loading pending orders...');
     emit(state.copyWith(isLoading: true));
     _ordersSubscription?.cancel();
-
     final userId = _authService.currentAppUser?.id;
     if (userId == null) {
+      _log.i('No user ID found. Cannot load pending orders..');
       emit(state.copyWith(isLoading: false, orders: [])); // No user
       return;
     }
-
+    _log.i('listening to order stream');
     _ordersSubscription = _orderService
         .getPendingOrdersStream(userId)
         .listen((orders) {
@@ -262,6 +259,27 @@ class HomeCubit extends Cubit<HomeState> {
     });
   }
 
+  /// Private helper to add a message to the chat service and update state.
+  Future<void> _addUserMessageToChat(String text, {MessageSender sender = MessageSender.user}) async {
+    final newMessage = ChatMessage(
+      senderId: sender == MessageSender.user ? currentUserId : 'gemini',
+      text: text.trim(),
+      timestamp: DateTime.now(),
+      senderType: sender,
+    );
+
+    // Optimistically update the UI
+    emit(state.copyWith(messages: List.from(state.messages)..add(newMessage)));
+
+    try {
+      // Persist the message in the background
+      await _chatService.sendMessage(currentUserId, newMessage);
+    } catch (e) {
+      _log.e('Error sending message: $e');
+      // Optionally, handle the error, e.g., show a "failed to send" indicator.
+    }
+  }
+  
   Future<void> suggestRecipe() async {
     emit(state.copyWith(geminiIsLoading: true));
     
@@ -332,10 +350,10 @@ class HomeCubit extends Cubit<HomeState> {
           if (result.finalResult) {
             // 3. Get the final text
             String recognizedText = result.recognizedWords;
-            
+
             // 4. Send the text to the _sendMessage method
             //_controller.text = recognizedText;
-            sendMessage(recognizedText);
+            submitOrderPrompt(recognizedText);
           }
         },
       );

@@ -21,6 +21,8 @@ class GeminiService {
   static const String _deliveryAppSystemPrompt = """
     You are the **Suefery** AI Shopping Assistant for a delivery service operating in Beni Suef, Egypt. 
     Your role is to process user messages, extract a confirmed order list, and present it back to the user for confirmation.
+    If the user's last message seems to be a confirmation (e.g., 'yes', 'confirm', 'go ahead') for a pending order you just presented, set "order_confirmed": true.
+    If the user's last message is a cancellation (e.g., 'no', 'cancel', 'stop'), respond with a cancellation message and set "order_confirmed": false.
     
     1. CONVERSATION: If the user is just chatting or asking general questions, respond naturally (set confirmed=false).
     2. ORDER PARSING: If the user expresses a clear intent to order items, parse the request into a list of items with quantities and notes.
@@ -120,7 +122,7 @@ class GeminiService {
     try {
       final Map<String, dynamic> rawJsonResponse =
           await _repository.generateContent(payload);
-      return AiResponse.fromJson(rawJsonResponse);
+      return AiResponse.fromMap(rawJsonResponse);
     } catch (e) {
       _log.e('GeminiService Error: $e');
       return AiResponse.error(
@@ -222,7 +224,7 @@ class GeminiService {
     // --- 4. PICK A RANDOM ONE ---
     final selectedMock = mockResponses[_random.nextInt(mockResponses.length)]; //
     
-    return AiResponse.fromJson(selectedMock);
+    return AiResponse.fromMap(selectedMock);
   }
 
 

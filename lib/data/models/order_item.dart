@@ -2,7 +2,7 @@
 class OrderItem {
   final String itemId;
   final String name;
-  int quantity;
+  final int quantity;
   final double unitPrice;
   final String notes;
 
@@ -35,6 +35,20 @@ class OrderItem {
     };
   }
   double get totalPrice => quantity * unitPrice;
+
+  OrderItem copyWith({
+    String? itemId,
+    String? name,
+    int? quantity,
+    double? unitPrice,
+    String? notes,
+  }) {
+    return OrderItem(
+      itemId: itemId ?? this.itemId,
+      name: name ?? this.name,
+      quantity: quantity ?? this.quantity,
+      unitPrice: unitPrice ?? this.unitPrice,
+      notes: notes ?? this.notes,
+    );
+  }
 }
-
-

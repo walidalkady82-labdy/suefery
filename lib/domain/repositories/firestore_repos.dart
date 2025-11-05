@@ -54,9 +54,15 @@ class FirestoreRepo implements IFirestoreRepo {
   }
 
   @override
-  Future<String> add(String path, Map<String, dynamic> data) async {
+  Future<String> add(String path, Map<String, dynamic> data,{String? id}) async {
     try {
-      final ref = _firestore.collection(path).doc();
+      DocumentReference<Map<String, dynamic>> ref;
+      if (id != null) {
+        ref = _firestore.collection(path).doc(id);
+      } else {
+        ref =_firestore.collection(path).doc();
+        }
+
       data['id'] = ref.id; // Add the ID to the data
       await ref.set(data); // Use set() for creating documents with generated IDs
       return ref.id;
@@ -88,7 +94,7 @@ class FirestoreRepo implements IFirestoreRepo {
   Future<void> update(String path, String id, Map<String, dynamic> data) async {
     try {
       final ref = _firestore.collection(path).doc(id);
-      await ref.set(data);
+      await ref.update(data);
     } catch (e) {
       _log.e("Error updating document in $path with ID $id: $e");
       rethrow;
@@ -195,5 +201,13 @@ class FirestoreRepo implements IFirestoreRepo {
         .collection(collectionPath)
         .where(queryFilter)
         .get();
+  }
+  
+  @override
+  Stream<QuerySnapshot<Map<String, dynamic>>> queryCollectionWithFilterStream(
+      String collectionPath, Filter queryFilter) {
+    return _firestore
+        .collection(collectionPath)
+        .where(queryFilter).snapshots();
   }
 }

@@ -1,1 +1,1 @@
-enum ChatMessageType { text, recipe }
+enum ChatMessageType { text, recipe, orderConfirmation }

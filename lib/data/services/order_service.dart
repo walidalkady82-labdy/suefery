@@ -47,12 +47,8 @@ class OrderService {
     );
 
     return _firestoreRepo
-        .queryWithFilter(
-          _collectionPath,
-          filter,
-        )
-        .asStream() // Convert Future to Stream
-        .map((snapshot) {
+        .queryCollectionWithFilterStream(_collectionPath, filter)
+        .map((snapshot) { // This now correctly receives a stream of snapshots
       return snapshot.docs
           .map((doc) => StructuredOrder.fromMap(doc.data()))
           // Sort by date so newest is first
@@ -148,8 +144,7 @@ class OrderService {
 
     // 5. Use the repo to save the new order
     try {
-      await _firestoreRepo.update(
-          _collectionPath, newOrderId, newOrder.toMap());
+      await _firestoreRepo.add( _collectionPath, newOrder.toMap() ,id: newOrderId);
       _log.i('Successfully created order: $newOrderId');
       return newOrder; // Return the full order object
     } catch (e) {
@@ -158,6 +153,18 @@ class OrderService {
     }
   }
 
+  /// Updates an existing order with new data.
+  Future<void> updateOrder(String orderId, Map<String, dynamic> data) async {
+    _log.i('Updating order: $orderId');
+    try {
+      // We use 'update' here to merge fields, not overwrite the document.
+      await _firestoreRepo.update(_collectionPath, orderId, data);
+      _log.i('Successfully updated order: $orderId');
+    } catch (e) {
+      _log.e('Failed to update order: $e');
+      rethrow;
+    }
+  }
   /// Deletes an order from the database.
   Future<void> deleteOrder(String orderId) {
     _log.w('Deleting order: $orderId');

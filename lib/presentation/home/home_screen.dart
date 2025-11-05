@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/data/models/ai_response.dart';
+import 'package:suefery/data/models/order_item.dart';
+import 'package:suefery/data/models/structured_order.dart';
 import 'package:suefery/presentation/auth/auth_cubit.dart';
 import '../../data/enums/chat_message_type.dart';
+import '../../data/enums/order_status.dart';
 import '../../data/enums/message_sender.dart';
 import '../../data/models/chat_message.dart';
 // import '../history/customer_order_history.txt';
@@ -17,115 +20,95 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = context.l10n;
-    return BlocProvider(
-      create: (context) => HomeCubit()..loadChat(12345)..loadPendingOrders(),
-      child: BlocListener<HomeCubit, HomeState>(
-        // This 'listenWhen' is important. It only fires
-        // when a pendingOrder *appears* (goes from null to non-null).
-        listenWhen: (previous, current) =>
-            previous.pendingOrder == null && current.pendingOrder != null,
-        listener: (context, state) {
-          // When a pending order appears, show the modal
-          if (state.pendingOrder != null) {
-            _showOrderConfirmation(context, state.pendingOrder!);
-          }
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(strings.customerTitle),
-            backgroundColor: Colors.teal.shade800,
-            actions: [
-              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),  
-              IconButton(icon: const Icon(Icons.logout),onPressed: () => context.read<AuthCubit>().logOut()),
-            ],
-          ),
-          backgroundColor: Colors.teal.shade50,
-          body: DefaultTabController(
-            length: 3, // Added History Tab
-            child: Column(
-              children: [
-                const TabBar(
-                  tabs: [
-                    Tab(icon: Icon(Icons.request_page), text: 'AI Order (S1)'),
-                    Tab(icon: Icon(Icons.pending), text: 'Pending Orders'),
-                    Tab(icon: Icon(Icons.history), text: 'History'),
+
+    // Wrap with a BlocBuilder to ensure we have the user before building the UI
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, authState) {
+        // Get the user from the AuthState
+        final user = authState.user;
+
+        // If there's no user yet, show a loading indicator.
+        // This prevents trying to load a chat with a null ID.
+        if (user == null) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // Once we have the user, provide the HomeCubit and build the main UI
+        return BlocProvider(
+          create: (context) => HomeCubit()..loadChat()..loadPendingOrders(),
+          child: Scaffold(
+              appBar: AppBar(
+                title: Text(strings.customerTitle),
+                backgroundColor: Colors.teal.shade800,
+                actions: [
+                  IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+                  IconButton(icon: const Icon(Icons.logout), onPressed: () => context.read<AuthCubit>().logOut()),
+                ],
+              ),
+              backgroundColor: Colors.teal.shade50,
+              body: DefaultTabController(
+                length: 3,
+                child: Column(
+                  children: [
+                    const TabBar(
+                      tabs: [
+                        Tab(icon: Icon(Icons.request_page), text: 'AI Order (S1)'),
+                        Tab(icon: Icon(Icons.pending), text: 'Pending Orders'),
+                        Tab(icon: Icon(Icons.history), text: 'History'),
+                      ],
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          // --- TAB 1: Conversational Ordering (S1) ---
+                          Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              children: [
+                                Expanded(child: ChatMessageList()),
+                                ChatInputBar(),
+                              ],
+                            ),
+                          ),
+                          // --- TAB 2: Pending orders ---
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Column(
+                              children: [
+                                Expanded(child: PendingOrdersTab()),
+                              ],
+                            ),
+                          ),
+                          // --- TAB 3: Order History ---
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(strings.orderHistoryTitle, style: Theme.of(context).textTheme.headlineSmall),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: ListView(
+                                    children: [
+                                      _buildMetricCard(strings.orderHistoryTitle, strings.noOrders),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-                Expanded(
-                  child: TabBarView(
-                    children: [
-                      // --- TAB 1: Conversational Ordering (S1) ---
-                      Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                              // --- 1. THE CONVERSATION AREA ---
-                              // This expands to fill all available space
-                              Expanded(child: ChatMessageList(),),
-                              // --- 2. THE TEXTING & VOICE AREA ---
-                              ChatInputBar(),
-                          ],
-                        ),
-                      ),
-                      // --- TAB 2: Pending orders ---
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Column(
-                          children: [
-                            Expanded(child: PendingOrdersTab(),),
-                          ],
-                        ),
-                      ),
-                      // --- TAB 3: Order History ---
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(strings.orderHistoryTitle, style: Theme.of(context).textTheme.headlineSmall),
-                            const SizedBox(height: 16),
-                            // In a real app, this list would come from a BLoC
-                            Expanded(
-                              child: ListView(
-                                children: [
-                                  _buildMetricCard(strings.orderHistoryTitle, strings.noOrders),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-  void _showOrderConfirmation(BuildContext context, AiParsedOrder order) {
-    // We pass the cubit's context down so the modal can call it
-    final cubit = context.read<HomeCubit>(); 
-    
-    showModalBottomSheet(
-      context: context,
-      builder: (_) {
-        // We pass the cubit and the order to the modal
-        return BlocProvider.value(
-          value: cubit,
-          child: OrderConfirmationModal(order: order),
         );
       },
-      // This ensures the cubit can clear the state if dismissed
-    ).whenComplete(() {
-      // If the modal is just dismissed (not cancelled),
-      // we should probably treat it as a cancel.
-      if (cubit.state.pendingOrder != null) {
-        cubit.cancelPendingOrder();
-      }
-    });
+    );
   }
 
   Widget _buildMetricCard(String title, String value) {
@@ -133,6 +116,138 @@ class HomeScreen extends StatelessWidget {
       child: ListTile(
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         trailing: Text(value, style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.green)),
+      ),
+    );
+  }
+
+}
+
+/// Shows the modal bottom sheet for viewing and editing a pending order.
+void _showPendingOrderDetails(BuildContext context, StructuredOrder order) {
+  final cubit = context.read<HomeCubit>();
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true, // Important for taller content
+    builder: (_) {
+      return BlocProvider.value(
+        value: cubit,
+        child: PendingOrderDetailsModal(order: order),
+      );
+    },
+  );
+}
+
+class PendingOrderDetailsModal extends StatefulWidget {
+  final StructuredOrder order;
+  const PendingOrderDetailsModal({super.key, required this.order});
+
+  @override
+  State<PendingOrderDetailsModal> createState() => _PendingOrderDetailsModalState();
+}
+
+class _PendingOrderDetailsModalState extends State<PendingOrderDetailsModal> {
+  late List<OrderItem> _items;
+  bool get _isModifiable => widget.order.status == OrderStatus.New;
+
+  @override
+  void initState() {
+    super.initState();
+    // Create a deep copy of the items to modify them locally
+    _items = widget.order.items.map((item) => OrderItem.fromMap(item.toMap())).toList();
+  }
+
+  void _updateQuantity(int index, int change) {
+    if (!_isModifiable) return;
+    setState(() {
+      final newQuantity = _items[index].quantity + change;
+      if (newQuantity > 0) {
+        _items[index] = _items[index].copyWith(quantity: newQuantity);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<HomeCubit>();
+
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Order #${widget.order.orderId.substring(0, 6)}',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text('Status: ${widget.order.status.name}', style: Theme.of(context).textTheme.titleMedium),
+          const Divider(height: 24),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _items.length,
+              itemBuilder: (context, index) {
+                final item = _items[index];
+                return ListTile(
+                  title: Text(item.name),
+                  subtitle: Text('Price: EGP ${item.unitPrice.toStringAsFixed(2)}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_isModifiable)
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: () => _updateQuantity(index, -1),
+                        ),
+                      Text(item.quantity.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      if (_isModifiable)
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline),
+                          onPressed: () => _updateQuantity(index, 1),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              // Cancel Button
+              Expanded(
+                child: TextButton(
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  onPressed: () {
+                    cubit.cancelOrderById(widget.order.orderId);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('CANCEL ORDER'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Update Button (only enabled if modifiable)
+              Expanded(
+                child: FilledButton(
+                  onPressed: _isModifiable
+                      ? () {
+                          cubit.updateOrder(widget.order.orderId, _items);
+                          Navigator.of(context).pop();
+                        }
+                      : null, // Disable button if not modifiable
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.teal.shade700,
+                    disabledBackgroundColor: Colors.grey,
+                  ),
+                  child: const Text('UPDATE ORDER'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }
@@ -201,12 +316,7 @@ class OrderConfirmationModal extends StatelessWidget {
             children: [
               Expanded(
                 child: TextButton(
-                  onPressed: () {
-                    // 1. Call the cubit's cancel method
-                    context.read<HomeCubit>().cancelPendingOrder();
-                    // 2. Close the modal
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: () {},
                   child: const Text('CANCEL'),
                 ),
               ),
@@ -214,11 +324,7 @@ class OrderConfirmationModal extends StatelessWidget {
               Expanded(
                 child: FilledButton(
                   onPressed: () {
-                    // 1. Call the cubit's confirm method
-                    context.read<HomeCubit>().confirmPendingOrder();
-                    // 2. Close the modal
-                    Navigator.of(context).pop();
-                  },
+                    },
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.teal.shade700,
                   ),
@@ -241,26 +347,33 @@ class ChatMessageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeState>(
-      builder: (context, state) {
-        if (state.isLoading && state.messages.isEmpty) {
+    // Use BlocSelector for performance: only rebuild if the messages list changes.
+    return BlocSelector<HomeCubit, HomeState, List<ChatMessage>>(
+      selector: (state) => state.messages,
+      builder: (context, messages) {
+        // Check loading state separately to show initial spinner
+        final isLoading = context.select((HomeCubit cubit) => cubit.state.isLoading);
+        if (isLoading && messages.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
         return ListView.builder(
           padding: const EdgeInsets.all(8.0),
-          itemCount: state.messages.length,
+          itemCount: messages.length,
           itemBuilder: (context, index) {
-            final message = state.messages[index];
-            
-            // --- NEW LOGIC ---
-            // Check the message type
+            final message = messages[index];
+
+            // Check the message type to display the correct bubble
             if (message.messageType == ChatMessageType.recipe) {
               return RecipeBubble(message: message);
             }
 
-            // --- OLD LOGIC (for text) ---
-            final bool isFromUser = message.senderType == 'user';
+            // --- NEW: Handle the order confirmation bubble ---
+            if (message.messageType == ChatMessageType.orderConfirmation && message.parsedOrder != null) {
+              return OrderConfirmationBubble(message: message);
+            }
+
+            final isFromUser = message.senderType == MessageSender.user;
             return Align(
               alignment: isFromUser ? Alignment.centerRight : Alignment.centerLeft,
               child: TextBubble(message: message, isFromUser: isFromUser),
@@ -363,6 +476,84 @@ class RecipeBubble extends StatelessWidget {
                     ),
                   ),
                 ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// --- WIDGET 5: NEW ORDER CONFIRMATION BUBBLE ---
+class OrderConfirmationBubble extends StatelessWidget {
+  final ChatMessage message;
+  const OrderConfirmationBubble({super.key, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<HomeCubit>();
+    final order = message.parsedOrder!;
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Card(
+        color: Colors.amber.shade50,
+        elevation: 1,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        child: Container(
+          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                message.text, // The AI's confirmation text
+                style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+              ),
+              const Divider(height: 16),
+              // List the items
+              ...order.requestedItems.map((item) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 4.0),
+                  child: Row(
+                    children: [
+                      Text('${item.quantity}x', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(item.itemName)),
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 12),
+              // Confirmation Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      style: TextButton.styleFrom(foregroundColor: Colors.red.shade700),
+                      onPressed: () {
+                        // Call the cubit's cancel method
+                        cubit.cancelParsedOrder();
+                      },
+                      child: const Text('CANCEL'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        // Call the cubit's confirm method, passing the order data
+                        cubit.confirmParsedOrder(order);
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.teal.shade700,
+                      ),
+                      child: const Text('CONFIRM'),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -538,9 +729,7 @@ class PendingOrdersTab extends StatelessWidget {
                     '${order.estimatedTotal + order.deliveryFee} EGP',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  onTap: () {
-                    // TODO: Navigate to order details screen
-                  },
+                  onTap: () => _showPendingOrderDetails(context, order),
                 ),
               );
             },

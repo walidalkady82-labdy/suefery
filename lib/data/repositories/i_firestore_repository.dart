@@ -10,7 +10,7 @@ abstract class IFirestoreRepo {
 
   /// Adds a new document (as a map) to the specified collection path.
   /// Returns the ID of the newly created document.
-  Future<String> add(String path, Map<String, dynamic> data);
+  Future<String> add(String path, Map<String, dynamic> data,{String? id});
 
   /// Adds multiple documents in a single atomic batch operation.
   Future<void> addMultiple(String path, List<Map<String, dynamic>> data);
@@ -59,6 +59,10 @@ abstract class IFirestoreRepo {
 
   /// Queries a collection using a modern Firestore [Filter] object.
   Future<QuerySnapshot<Map<String, dynamic>>> queryWithFilter(
+      String collectionPath, Filter queryFilter);
+
+  /// Queries a collection using a modern Firestore [Filter] object and returns a Stream.
+  Stream<QuerySnapshot<Map<String, dynamic>>> queryCollectionWithFilterStream(
       String collectionPath, Filter queryFilter);
 
   
