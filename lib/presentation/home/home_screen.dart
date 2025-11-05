@@ -4,6 +4,7 @@ import 'package:suefery/core/l10n/app_localizations.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/data/models/ai_response.dart';
 import 'package:suefery/presentation/auth/auth_cubit.dart';
+import '../../data/enums/chat_message_type.dart';
 import '../../data/enums/message_sender.dart';
 import '../../data/models/chat_message.dart';
 // import '../history/customer_order_history.txt';
@@ -17,7 +18,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = context.l10n;
     return BlocProvider(
-      create: (context) => HomeCubit()..loadChat(12345),
+      create: (context) => HomeCubit()..loadChat(12345)..loadPendingOrders(),
       child: BlocListener<HomeCubit, HomeState>(
         // This 'listenWhen' is important. It only fires
         // when a pendingOrder *appears* (goes from null to non-null).
@@ -46,7 +47,7 @@ class HomeScreen extends StatelessWidget {
                 const TabBar(
                   tabs: [
                     Tab(icon: Icon(Icons.request_page), text: 'AI Order (S1)'),
-                    Tab(icon: Icon(Icons.restaurant_menu), text: 'AI Chef'),
+                    Tab(icon: Icon(Icons.pending), text: 'Pending Orders'),
                     Tab(icon: Icon(Icons.history), text: 'History'),
                   ],
                 ),
@@ -66,29 +67,13 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // --- TAB 2: AI Chef (Recipe Suggestion) ---
+                      // --- TAB 2: Pending orders ---
                       Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: BlocBuilder<HomeCubit, HomeState>(
-                          builder: (context, state) {
-                            return Column(
-                              children: [
-                                ElevatedButton.icon(
-                                  onPressed: () => context.read<HomeCubit>().suggestRecipe(),
-                                  icon: const Icon(Icons.restaurant_menu),
-                                  label: Text(strings.suggestionButton),
-                                ),
-                                const SizedBox(height: 20),
-                                if (state.geminiIsSuccessful)
-                                  Card(
-                                    child: ListTile(
-                                      title: Text(state.recipeName),
-                                      subtitle: Text(state.ingredients.join(', ')),
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
+                        padding: const EdgeInsets.all(10.0),
+                        child: Column(
+                          children: [
+                            Expanded(child: PendingOrdersTab(),),
+                          ],
                         ),
                       ),
                       // --- TAB 3: Order History ---
@@ -159,6 +144,12 @@ class OrderConfirmationModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Placeholder logic to calculate total price.
+    // In a real app, this data would come from your state/model.
+    final double totalPrice = order.requestedItems.fold(0.0, (sum, item) {
+      const placeholderPrice = 10.0; // Using a placeholder price
+      return sum + (item.quantity * placeholderPrice);
+    });
     return Container(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -172,6 +163,15 @@ class OrderConfirmationModal extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 16),
+          // Display Total Price
+          ListTile(
+            title: const Text('Estimated Total', style: TextStyle(fontWeight: FontWeight.bold)),
+            trailing: Text(
+              'EGP ${totalPrice.toStringAsFixed(2)}',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).primaryColor),
+            ),
+          ),
+          const Divider(),
           // List the items from the AI
           ConstrainedBox(
             constraints: BoxConstraints(
@@ -182,12 +182,15 @@ class OrderConfirmationModal extends StatelessWidget {
               itemCount: order.requestedItems.length,
               itemBuilder: (context, index) {
                 final item = order.requestedItems[index];
+                const placeholderPrice = 10.0; // Placeholder price
+                final itemTotal = item.quantity * placeholderPrice;
                 return ListTile(
                   leading: CircleAvatar(
                     child: Text(item.quantity.toString()),
                   ),
                   title: Text(item.itemName),
-                  subtitle: item.notes.isNotEmpty ? Text(item.notes) : null,
+                  subtitle: Text('${item.quantity} x EGP ${placeholderPrice.toStringAsFixed(2)}'),
+                  trailing: Text('EGP ${itemTotal.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w500)),
                 );
               },
             ),
@@ -238,7 +241,6 @@ class ChatMessageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Connect to the cubit's state
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         if (state.isLoading && state.messages.isEmpty) {
@@ -250,13 +252,18 @@ class ChatMessageList extends StatelessWidget {
           itemCount: state.messages.length,
           itemBuilder: (context, index) {
             final message = state.messages[index];
-            final bool isFromUser = message.senderType == MessageSender.user;
-  
+            
+            // --- NEW LOGIC ---
+            // Check the message type
+            if (message.messageType == ChatMessageType.recipe) {
+              return RecipeBubble(message: message);
+            }
 
-            // Align chat bubbles
+            // --- OLD LOGIC (for text) ---
+            final bool isFromUser = message.senderType == 'user';
             return Align(
               alignment: isFromUser ? Alignment.centerRight : Alignment.centerLeft,
-              child: ChatBubble(message: message, isFromUser: isFromUser),
+              child: TextBubble(message: message, isFromUser: isFromUser),
             );
           },
         );
@@ -265,9 +272,9 @@ class ChatMessageList extends StatelessWidget {
   }
 }
 
-  // --- WIDGET 2: THE CHAT BUBBLE ---
-class ChatBubble extends StatelessWidget {
-  const ChatBubble({
+// --- WIDGET 2: RENAMED from ChatBubble to TextBubble ---
+class TextBubble extends StatelessWidget {
+  const TextBubble({
     super.key,
     required this.message,
     required this.isFromUser,
@@ -299,74 +306,152 @@ class ChatBubble extends StatelessWidget {
   }
 }
 
-  // --- WIDGET 3: THE CHAT INPUT BAR ---
-class ChatInputBar extends StatefulWidget {
-  const ChatInputBar({super.key});
+// --- WIDGET 3: NEW RECIPE BUBBLE WIDGET ---
+class RecipeBubble extends StatelessWidget {
+  final ChatMessage message;
+  const RecipeBubble({super.key, required this.message});
 
   @override
-  State<ChatInputBar> createState() => _ChatInputBarState();
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Card(
+        color: Colors.blue.shade50, // Special color
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.75,
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                message.recipeName ?? "Recipe Suggestion",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+              const Divider(height: 16),
+              const Text(
+                "Ingredients you'll need:",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              // Loop through the ingredients
+              if (message.recipeIngredients != null)
+                ...message.recipeIngredients!.map(
+                  (ingredient) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("• ", style: TextStyle(color: Colors.grey.shade700)),
+                        Expanded(
+                          child: Text(
+                            ingredient,
+                            style: TextStyle(color: Colors.grey.shade800),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _ChatInputBarState extends State<ChatInputBar> {
+// --- WIDGET 4: CHAT INPUT BAR (STATELESS) ---
+class ChatInputBar extends StatelessWidget {
+  ChatInputBar({super.key});
+
   final TextEditingController _controller = TextEditingController();
-  bool _isTyping = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(() {
-      setState(() {
-        _isTyping = _controller.text.isNotEmpty;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _sendMessage() {
-    if (_controller.text.trim().isNotEmpty) {
-      // Get the HomeCubit
-      final cubit = context.read<HomeCubit>();
-      
-      // Call the Cubit's new "sendMessage" method
-      // cubit.sendMessage(_controller.text.trim());
-      
-      // Or, call the Gemini prompt method
-      cubit.submitOrderPrompt(_controller.text.trim());
-      
+  void _sendMessage(BuildContext context) {
+    final text = _controller.text.trim();
+    if (text.isNotEmpty) {
+      context.read<HomeCubit>().submitOrderPrompt(text);
       _controller.clear();
+      // After sending, notify cubit that typing has stopped
+      context.read<HomeCubit>().onTyping('');
     }
   }
 
-  void _sendVoiceOrder() {
-    // TODO: Implement voice recording logic
-    print("Voice recording started...");
+  void _sendVoiceOrder(BuildContext context) {
+    // TODO: Implement voice order
+    print("Voice order initiated");
+  }
+
+  void _showActionMenu(BuildContext context) {
+    final cubit = context.read<HomeCubit>();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.restaurant_menu),
+                title: const Text('Suggest a Lunch Recipe'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  cubit.suggestRecipe();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.receipt_long),
+                title: const Text('My Past Orders'),
+                onTap: () {
+                  // TODO: Implement past orders logic
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.help_outline),
+                title: const Text('Help'),
+                onTap: () {
+                  // TODO: Implement help logic
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    // We get the cubit once
+    final cubit = context.read<HomeCubit>();
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
       color: Colors.white,
       child: Row(
         children: [
-          // "Attach" icon
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            onPressed: () {
-              // TODO: Show recipe suggestion, etc.
-              context.read<HomeCubit>().suggestRecipe();
-            },
+            onPressed: () => _showActionMenu(context),
           ),
-          
-          // Text field
           Expanded(
             child: TextField(
               controller: _controller,
+              // Call the cubit's method on every change
+              onChanged: cubit.onTyping,
               decoration: InputDecoration(
                 hintText: 'Type your order...',
                 filled: true,
@@ -375,21 +460,32 @@ class _ChatInputBarState extends State<ChatInputBar> {
                   borderRadius: BorderRadius.circular(30.0),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
               minLines: 1,
               maxLines: 5,
             ),
           ),
-          
           const SizedBox(width: 4),
-
-          // Send or Voice button
-          FloatingActionButton(
-            mini: true,
-            backgroundColor: Colors.teal.shade700,
-            onPressed: _isTyping ? _sendMessage : _sendVoiceOrder,
-            child: Icon(_isTyping ? Icons.send : Icons.mic),
+          // Use BlocBuilder to reactively build the button
+          BlocBuilder<HomeCubit, HomeState>(
+            // Only rebuild when isTyping changes
+            buildWhen: (previous, current) => previous.isTyping != current.isTyping,
+            builder: (context, state) {
+              return FloatingActionButton(
+                mini: true,
+                backgroundColor: Colors.teal.shade700,
+                onPressed: () {
+                  if (state.isTyping) {
+                    _sendMessage(context);
+                  } else {
+                    _sendVoiceOrder(context);
+                  }
+                },
+                child: Icon(state.isTyping ? Icons.send : Icons.mic),
+              );
+            },
           ),
         ],
       ),
@@ -397,7 +493,67 @@ class _ChatInputBarState extends State<ChatInputBar> {
   }
 }
 
-// --- TAB 2: Store Browse/Selection ---
+// --- TAB 2: Pending orders ---
+
+class PendingOrdersTab extends StatelessWidget {
+  const PendingOrdersTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Create and provide the new cubit for this tab
+    return BlocBuilder<HomeCubit, HomeState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.orders.isEmpty) {
+            return const Center(
+              child: Text(
+                'You have no pending orders.',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: state.orders.length,
+            itemBuilder: (context, index) {
+              final order = state.orders[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.teal.shade100,
+                    child: const Icon(Icons.receipt, color: Colors.teal),
+                  ),
+                  title: Text(
+                    'Order #${order.orderId.substring(0, 6)}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    'Status: ${order.status.name}', // e.g., "Pending"
+                  ),
+                  trailing: Text(
+                    '${order.estimatedTotal + order.deliveryFee} EGP',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  onTap: () {
+                    // TODO: Navigate to order details screen
+                  },
+                ),
+              );
+            },
+          );
+        },
+      );
+  }
+}
+
+// --- TAB 3: Order history ---
+
+
+
 
 class StoreBrowseTab extends StatelessWidget {
   const StoreBrowseTab({super.key});

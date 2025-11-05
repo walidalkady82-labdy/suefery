@@ -18,6 +18,9 @@ abstract class IFirestoreRepo {
   /// Updates an existing document at the specified path and ID.
   Future<void> update(String path, String id, Map<String, dynamic> data);
 
+  /// Updates an existing document at the specified path and ID.
+  Future<void> set(String path, String id, Map<String, dynamic> data);
+
   /// Removes a document from the specified path and ID.
   Future<void> remove(String path, String id);
 

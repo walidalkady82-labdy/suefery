@@ -1,16 +1,15 @@
 
 import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:suefery/data/enums/message_sender.dart';
-import 'package:suefery/data/enums/order_status.dart';
 import 'package:suefery/data/models/ai_response.dart';
-import 'package:suefery/data/models/order_item.dart';
 import 'package:suefery/data/models/structured_order.dart';
+import 'package:suefery/data/services/gemini_service.dart';
 import 'package:suefery/data/services/order_service.dart';
 import 'package:suefery/locator.dart';
 
+import '../../data/enums/chat_message_type.dart';
 import '../../data/models/chat_message.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/chat_service.dart';
@@ -22,9 +21,10 @@ class HomeState {
   final bool geminiIsLoading;
   final bool geminiIsSuccessful;
   final int? currentOrderId;
-  final  String recipeName;
-  final List<String> ingredients;
+  final List<StructuredOrder> orders;
+  final bool isTyping;
   final AiParsedOrder? pendingOrder;
+
 
   const HomeState({
     this.messages = const [],
@@ -32,9 +32,10 @@ class HomeState {
     this.geminiIsLoading = false,
     this.geminiIsSuccessful = false,
     this.currentOrderId,
-    this.recipeName = '',
-    this.ingredients = const [],
+    this.orders = const [],
+    this.isTyping = false,
     this.pendingOrder,
+
   });
 
   HomeState copyWith({
@@ -43,8 +44,8 @@ class HomeState {
     bool? geminiIsLoading,
     bool? geminiIsSuccessful,
     int? currentOrderId,
-    String? recipeName,
-    List<String>? ingredients,
+    List<StructuredOrder>? orders,
+    bool? isTyping,
     AiParsedOrder? pendingOrder,
     bool clearPendingOrder = false,
   }) {
@@ -54,15 +55,15 @@ class HomeState {
       geminiIsLoading: geminiIsLoading ?? this.geminiIsLoading,
       geminiIsSuccessful: geminiIsSuccessful ?? this.geminiIsSuccessful,
       currentOrderId: currentOrderId ?? this.currentOrderId,
-      recipeName: recipeName ?? this.recipeName,
-      ingredients: ingredients ?? this.ingredients,
+      orders: orders ?? this.orders,
+      isTyping: isTyping ?? this.isTyping,
       pendingOrder: clearPendingOrder ? null : pendingOrder ?? this.pendingOrder,
     );
   }
 }
 
 class HomeCubit extends Cubit<HomeState> {
-  final log = LoggerRepo('HomeCubit');
+  final _log = LoggerRepo('HomeCubit');
   
   HomeCubit() : super(HomeState());
   // Path Structure: /artifacts/{appId}/public/data/chats/{orderId}/messages/{messageId}
@@ -73,50 +74,12 @@ class HomeCubit extends Cubit<HomeState> {
   final AuthService _authService = sl<AuthService>();
   final ChatService _chatService = sl<ChatService>();
   final OrderService _orderService = sl<OrderService>();
+  final GeminiService _geminiService = sl<GeminiService>();
 
   String get currentUserId => _authService.currentAppUser?.id ?? '';
 // The subscription is now for the service's stream
   StreamSubscription<List<ChatMessage>>? _chatSubscription;
-
-  Future<void> submitOrder(String prompt) async {
-    emit(state.copyWith(
-      isLoading: true,
-    ));
-    await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-
-    // S1 Logic: Mock successful conversion
-    final Map<String, dynamic> mockOrder = {
-      'partner': 'University Mini-Mart',
-      'items': [
-        {'name': 'Water', 'qty': 2, 'price': 10},
-        {'name': 'Chips', 'qty': 1, 'price': 15},
-      ],
-      'total': 35.0,
-      'notes': prompt,
-    };
-  }
-
-  @visibleForTesting
-  Future<void> submitOrderMock(String prompt) async {
-    emit(state.copyWith(
-      isLoading: true,
-    ));
-    await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-    
-    // S1 Logic: Mock successful conversion
-    final Map<String, dynamic> mockOrder = {
-      'partner': 'University Mini-Mart',
-      'items': [
-        {'name': 'Water', 'qty': 2, 'price': 10},
-        {'name': 'Chips', 'qty': 1, 'price': 15},
-      ],
-      'total': 35.0,
-      'notes': prompt,
-    };
-    emit(state.copyWith(
-      isLoading: true,
-    ));
-  }
+  StreamSubscription? _ordersSubscription;
 
   void loadChat(int orderId) {
     // Cancel previous listener if any
@@ -134,7 +97,7 @@ class HomeCubit extends Cubit<HomeState> {
         updateChat(messages);
       },
       onError: (error) {
-        log.e('Error loading chat: $error');
+        _log.e('Error loading chat: $error');
         emit(state.copyWith(isLoading: false));
         // You could add an error state here
       },
@@ -147,7 +110,7 @@ class HomeCubit extends Cubit<HomeState> {
     // Get the current chat ID from the state
     final chatId = state.currentOrderId?.toString();
     if (chatId == null) {
-      log.e('Cannot send message, no chat is loaded.');
+      _log.e('Cannot send message, no chat is loaded.');
       return;
     }
 
@@ -163,22 +126,15 @@ class HomeCubit extends Cubit<HomeState> {
       // Delegate sending the message to the service
       await _chatService.sendMessage(chatId, newMessage);
     } catch (e) {
-      log.e('Error sending message: $e');
+      _log.e('Error sending message: $e');
     }
   }
 
   void updateChat(List<ChatMessage> messages) {
     emit(state.copyWith(messages: messages, isLoading: false));
   }
-  
-  // Future<void> submitOrderPrompt(String prompt, String userId) async {
-  //   emit(state.copyWith(geminiIsLoading: true));
-  //   final messages = await _chatService.generateOrderFromPromptMock(prompt, userId);
-  //   emit(state.copyWith(geminiIsSuccessful: true,
-  //     geminiIsLoading: false,
-  //     messages: messages,
-  //     ));
-  // }
+  /// It calls gemini, gets a response, and if confirmed,
+  /// it emits a state with the `pendingOrder` property set.
   Future<void> submitOrderPrompt(String prompt) async {
     // 1. Set loading state and add user's message
     emit(state.copyWith(geminiIsLoading: true));
@@ -196,7 +152,7 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       // 3. Call the REAL Gemini service
       final AiResponse aiResponse = 
-          await _chatService.getAiOrderResponse(chatHistory);
+          await _geminiService.getAiOrderResponse(chatHistory);
 
       // 4. Create the AI's response message
       final aiMessage = ChatMessage(
@@ -228,24 +184,30 @@ class HomeCubit extends Cubit<HomeState> {
       }
 
     } catch (e) {
-      log.e('Error calling Gemini service: $e');
+      _log.e('Error calling Gemini service: $e');
       emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: false));
     }
   }
+  /// Called by the modal's "Confirm" button.
   Future<void> confirmPendingOrder() async {
     if (state.pendingOrder == null) return;
     
-    log.i('User confirmed order. Creating in Firestore...');
+    _log.i('User confirmed order. Calling OrderService...');
     emit(state.copyWith(isLoading: true)); // Show loading
     
     try {
-      // 1. Use the helper to create the order
-      final newOrderId = await _createOrderFromAi(state.pendingOrder!);
+      // 1. Tell the OrderService to create the order.
+      // We pass it the AI data and the user ID.
+      final StructuredOrder newOrder = 
+          await _orderService.creatStructuredOrder(
+              state.pendingOrder!, 
+              currentUserId
+          );
       
       // 2. Add a final confirmation message to the chat
       final confirmMessage = ChatMessage(
         senderId: 'gemini',
-        text: 'Your order #${newOrderId.substring(0, 6)} is confirmed! We are on it.',
+        text: 'Your order #${newOrder.orderId.substring(0, 6)} is confirmed! The delivery fee is ${newOrder.deliveryFee} EGP. We are on it.',
         timestamp: DateTime.now(),
         senderType: MessageSender.gemini,
       );
@@ -254,19 +216,18 @@ class HomeCubit extends Cubit<HomeState> {
       emit(state.copyWith(
         isLoading: false,
         messages: List.from(state.messages)..add(confirmMessage),
-        clearPendingOrder: true, // <-- Clears the pending order
-        currentOrderId: int.tryParse(newOrderId) ?? state.currentOrderId,
+        clearPendingOrder: true, // Clears the pending order
+        currentOrderId: int.tryParse(newOrder.orderId) ?? state.currentOrderId,
       ));
 
     } catch (e) {
-       log.e('Failed to create order: $e');
+       _log.e('Failed to create order: $e');
        emit(state.copyWith(isLoading: false));
     }
   }
-
   /// ---- NEW METHOD: Called by the modal's "Cancel" button ----
   void cancelPendingOrder() {
-    log.i('User cancelled pending order.');
+    _log.i('User cancelled pending order.');
     final cancelMessage = ChatMessage(
         senderId: 'gemini',
         text: 'Okay, I\'ve cancelled that. What else can I help you with?',
@@ -279,74 +240,119 @@ class HomeCubit extends Cubit<HomeState> {
       clearPendingOrder: true, // <-- Clears the pending order
     ));
   }
-  /// Private helper to convert an AiParsedOrder into a StructuredOrder
-  /// and save it to Firestore.
-  Future<String> _createOrderFromAi(AiParsedOrder parsedOrder) async {
-    // 1. Generate a new, unique ID for the order
-    final newOrderId = await _orderService.generateOrderId();
-    
-    double estimatedTotal = 0.0;
+ 
+  void loadPendingOrders() {
+    emit(state.copyWith(isLoading: true));
+    _ordersSubscription?.cancel();
 
-    // 2. Convert AI items to real OrderItems
-    // NOTE: The AI doesn't know item IDs or prices.
-    // We set them to '0' as placeholders for a human to review.
-    final List<Map<String, dynamic>> orderItemsAsJson = parsedOrder.requestedItems.map((aiItem) {
-      // You would have real price logic here later
-      const itemPrice = 0.0; // Placeholder price
-      estimatedTotal += (itemPrice * aiItem.quantity);
-      
-      // Convert the OrderItem-like structure to a Map (JSON)
-      return {
-        'itemId': '', // Placeholder
-        'name': aiItem.itemName,
-        'quantity': aiItem.quantity,
-        'unitPrice': itemPrice,
-        'notes': aiItem.notes,
-      };
-    }).toList();
-
-    // 3. Build the full StructuredOrder
-    final newOrder = StructuredOrder(
-      orderId: newOrderId,
-      customerId: currentUserId,
-      partnerId: '',
-      riderId: null,
-      estimatedTotal: estimatedTotal,
-      deliveryFee: 0.0, // Placeholder
-      deliveryAddress: 'To be confirmed', // Placeholder
-      status: OrderStatus.New, // Initial status
-      items: orderItemsAsJson, // Use the JSON list
-      createdAt: DateTime.now(),  
-      progress: 0,
-    );
-
-    // 4. Use the OrderService to create the document
-    try {
-      await _orderService.createOrder(newOrder);
-      log.i('Successfully created order: $newOrderId');
-      return newOrderId;
-    } catch (e) {
-      log.e('Failed to save new order: $e');
-      rethrow; // Re-throw to be caught by the main method
+    final userId = _authService.currentAppUser?.id;
+    if (userId == null) {
+      emit(state.copyWith(isLoading: false, orders: [])); // No user
+      return;
     }
+
+    _ordersSubscription = _orderService
+        .getPendingOrdersStream(userId)
+        .listen((orders) {
+      _log.i('Pending orders stream updated with ${orders.length} orders.');
+      emit(state.copyWith(isLoading: false, orders: orders));
+    }, onError: (error) {
+      _log.e('Error in pending orders stream: $error');
+      emit(state.copyWith(isLoading: false, orders: []));
+    });
   }
 
   Future<void> suggestRecipe() async {
     emit(state.copyWith(geminiIsLoading: true));
-    final result = await _chatService.generateRecipeSuggestion();
-    emit(
-      state.copyWith(
-        geminiIsSuccessful: true,
+    
+    // 1. Call the service (no change here)
+    final result = await _geminiService.generateRecipeSuggestion();
+    
+    // 2. Get the *first* suggestion from the list
+    // (Your Gemini prompt returns a 'suggestions' list)
+    final suggestion = (result['suggestions'] as List).firstOrNull;
+    
+    if (suggestion != null) {
+      // 3. Create a new ChatMessage with the recipe data
+      final recipeMessage = ChatMessage(
+        senderId: 'gemini',
+        text: 'Here is a lunch idea for you:', // Fallback/title text
+        timestamp: DateTime.now(),
+        senderType: MessageSender.gemini,
+        messageType: ChatMessageType.recipe, // SET THE TYPE
+        recipeName: suggestion['name'],
+        recipeIngredients: (suggestion['ingredients'] as List<dynamic>)
+            .map((e) => "${e['name']} (${e['quantity']})") // Format ingredients
+            .toList(),
+      );
+
+      // 4. Add the new message to the chat list
+      emit(state.copyWith(
         geminiIsLoading: false,
-        recipeName: result['name'],
-        ingredients: result['ingredients']  as List<String>,
+        geminiIsSuccessful: true,
+        messages: List.from(state.messages)..add(recipeMessage),
       ));
+    } else {
+      // Handle error if no suggestion was returned
+      emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: false));
+    }
+  }
+
+  // void sendMessage() {
+  //   // 1. Get the text from the controller and trim whitespace
+  //   final text = _controller.text.trim();
+
+  //   // 2. Check if the text is not empty
+  //   if (text.isNotEmpty) {
+  //     // 3. Get the instance of your HomeCubit
+  //     final cubit = context.read<HomeCubit>();
+      
+  //     // 4. Call 'submitOrderPrompt', which sends the text to Gemini
+  //     cubit.submitOrderPrompt(text);
+      
+  //     // 5. Clear the text field so the user can type again
+  //     _controller.clear();
+  //   }
+  // }
+
+  Future<void> sendVoiceOrder() async {
+    // 1. Show a visual cue (e.g., a "listening..." modal)
+    _log.i("Voice recording started...");
+    // TODO: Initialize the speech_to_text package
+    final speech = SpeechToText();
+    bool available = await speech.initialize();
+
+    // 2. Start listening
+    if (available) {
+      // TODO: Start listening. You need to handle the locale
+      // for Arabic (e.g., 'ar_EG')
+      speech.listen(
+        localeId: 'ar_EG', 
+        onResult: (result) {
+          if (result.finalResult) {
+            // 3. Get the final text
+            String recognizedText = result.recognizedWords;
+            
+            // 4. Send the text to the _sendMessage method
+            //_controller.text = recognizedText;
+            sendMessage(recognizedText);
+          }
+        },
+      );
+    } else {
+      _log.i("The user did not grant microphone permission.");
+    }
   }
 
   @override
   Future<void> close() {
     _chatSubscription?.cancel();
     return super.close();
+  }
+
+  /// ---- NEW METHOD: Called by the text field's onChanged ----
+  void onTyping(String text) {
+    emit(state.copyWith(isTyping: text.isNotEmpty));
   }
 
 }

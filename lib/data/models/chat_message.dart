@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../enums/chat_message_type.dart';
 import '../enums/message_sender.dart';
 
 class ChatMessage {
@@ -8,11 +9,18 @@ class ChatMessage {
   final String text;
   final DateTime timestamp;
 
+  final ChatMessageType messageType;
+  final String? recipeName;
+  final List<String>? recipeIngredients;
+  
   ChatMessage({
     required this.senderType,
     required this.senderId,
     required this.text,
     required this.timestamp,
+    this.messageType = ChatMessageType.text, 
+    this.recipeName,
+    this.recipeIngredients,
   });
 
   factory ChatMessage.fromMap(Map<String, dynamic> data) {
@@ -39,6 +47,14 @@ class ChatMessage {
         orElse: () => MessageSender.system, // Default fallback
       ),
       timestamp: parseTimestamp(data['timestamp']),
+      messageType: ChatMessageType.values.firstWhere(
+        (e) => e.name == data['messageType'],
+        orElse: () => ChatMessageType.text, // Default to text if not found
+      ),
+      recipeName: data['recipeName'],
+      recipeIngredients: data['recipeIngredients'] != null
+          ? List<String>.from(data['recipeIngredients'])
+          : null,
     );
   }
 
@@ -50,6 +66,9 @@ class ChatMessage {
       // Use Firestore's serverTimestamp for consistency if possible, 
       // but passing DateTime is fine for the mock
       'timestamp': Timestamp.fromDate(timestamp), 
+      'messageType': messageType.name, // Save enum as a string
+      'recipeName': recipeName,
+      'recipeIngredients': recipeIngredients,
     };
   }
 }

@@ -12,7 +12,6 @@ import 'firebase_options.dart';
 import 'presentation/auth/auth_checker.dart';
 import 'data/services/firebase_service.txt';
 import 'data/services/logging_service.dart';
-import 'presentation/home/home_cubit.dart';
 
 final _log = LoggerRepo('main');
 Future<void> main() async {
@@ -24,7 +23,7 @@ Future<void> main() async {
   _log.i('initializing Firebase...');
   final app = await _initializeFirebase();
   _log.i('handling analytics...');
-  handleAnalytics();
+  initAnalytics();
   _log.i('loading sevices...');
   await initLocator(app);
   _log.i('Loading app...');
@@ -103,7 +102,7 @@ Future<void> _initEnvironmentVars() async {
     return app;
   }
 
-void handleAnalytics(){
+void initAnalytics(){
       if (!kIsWeb) {
         FlutterError.onError = (errorDetails) {
             FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
@@ -115,6 +114,10 @@ void handleAnalytics(){
         };
       }
   }
+
+void initRemoteConfigurations(){
+
+}
 /// A wrapper widget that handles the asynchronous initialization of Firebase
 /// and authentication before rendering the main application.
 class AppContainer extends StatefulWidget {
