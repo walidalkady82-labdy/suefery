@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/data/models/ai_response.dart';
@@ -10,6 +11,8 @@ import '../../data/enums/chat_message_type.dart';
 import '../../data/enums/order_status.dart';
 import '../../data/enums/message_sender.dart';
 import '../../data/models/chat_message.dart';
+import '../../data/services/order_service.dart';
+import '../../locator.dart';
 // import '../history/customer_order_history.txt';
 import 'home_cubit.dart';
 
@@ -147,7 +150,6 @@ class PendingOrderDetailsModal extends StatefulWidget {
 
 class _PendingOrderDetailsModalState extends State<PendingOrderDetailsModal> {
   late List<OrderItem> _items;
-  bool get _isModifiable => widget.order.status == OrderStatus.New;
 
   @override
   void initState() {
@@ -157,7 +159,7 @@ class _PendingOrderDetailsModalState extends State<PendingOrderDetailsModal> {
   }
 
   void _updateQuantity(int index, int change) {
-    if (!_isModifiable) return;
+    // The button's onPressed will be null if not modifiable, but this is an extra safeguard.
     setState(() {
       final newQuantity = _items[index].quantity + change;
       if (newQuantity > 0) {
@@ -169,86 +171,98 @@ class _PendingOrderDetailsModalState extends State<PendingOrderDetailsModal> {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<HomeCubit>();
+    final OrderService orderService = sl<OrderService>();
 
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Order #${widget.order.orderId.substring(0, 6)}',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text('Status: ${widget.order.status.name}', style: Theme.of(context).textTheme.titleMedium),
-          const Divider(height: 24),
-          ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: _items.length,
-              itemBuilder: (context, index) {
-                final item = _items[index];
-                return ListTile(
-                  title: Text(item.name),
-                  subtitle: Text('Price: EGP ${item.unitPrice.toStringAsFixed(2)}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_isModifiable)
-                        IconButton(
-                          icon: const Icon(Icons.remove_circle_outline),
-                          onPressed: () => _updateQuantity(index, -1),
-                        ),
-                      Text(item.quantity.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      if (_isModifiable)
-                        IconButton(
-                          icon: const Icon(Icons.add_circle_outline),
-                          onPressed: () => _updateQuantity(index, 1),
-                        ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
+    return StreamBuilder<StructuredOrder?>(
+      stream: orderService.getOrderStream(widget.order.orderId),
+      builder: (context, snapshot) {
+        // Use the initial order data while the stream is loading
+        final currentOrder = snapshot.data ?? widget.order;
+        final isModifiable = currentOrder.status == OrderStatus.New;
+
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return const Center(heightFactor: 4, child: CircularProgressIndicator());
+        }
+
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Cancel Button
-              Expanded(
-                child: TextButton(
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  onPressed: () {
-                    cubit.cancelOrderById(widget.order.orderId);
-                    Navigator.of(context).pop();
+              Text(
+                'Order #${currentOrder.orderId.substring(0, 6)}',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text('Status: ${currentOrder.status.name}', style: Theme.of(context).textTheme.titleMedium),
+              const Divider(height: 24),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _items.length,
+                  itemBuilder: (context, index) {
+                    final item = _items[index];
+                    return ListTile(
+                      title: Text(item.name),
+                      subtitle: Text('Price: EGP ${item.unitPrice.toStringAsFixed(2)}'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle_outline),
+                            onPressed: isModifiable ? () => _updateQuantity(index, -1) : null,
+                          ),
+                          Text(item.quantity.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          IconButton(
+                            icon: const Icon(Icons.add_circle_outline),
+                            onPressed: isModifiable ? () => _updateQuantity(index, 1) : null,
+                          ),
+                        ],
+                      ),
+                    );
                   },
-                  child: const Text('CANCEL ORDER'),
                 ),
               ),
-              const SizedBox(width: 12),
-              // Update Button (only enabled if modifiable)
-              Expanded(
-                child: FilledButton(
-                  onPressed: _isModifiable
-                      ? () {
-                          cubit.updateOrder(widget.order.orderId, _items);
-                          Navigator.of(context).pop();
-                        }
-                      : null, // Disable button if not modifiable
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.teal.shade700,
-                    disabledBackgroundColor: Colors.grey,
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  // Cancel Button
+                  Expanded(
+                    child: TextButton(
+                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                      onPressed: () {
+                        cubit.cancelOrderById(currentOrder.orderId);
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('CANCEL ORDER'),
+                    ),
                   ),
-                  child: const Text('UPDATE ORDER'),
-                ),
+                  const SizedBox(width: 12),
+                  // Update Button (only enabled if modifiable)
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: isModifiable
+                          ? () {
+                              cubit.updateOrder(currentOrder.orderId, _items);
+                              Navigator.of(context).pop();
+                            }
+                          : null, // Disable button if not modifiable
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.teal.shade700,
+                        disabledBackgroundColor: Colors.grey,
+                      ),
+                      child: const Text('UPDATE ORDER'),
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 16),
             ],
           ),
-          const SizedBox(height: 16),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -347,21 +361,26 @@ class ChatMessageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use BlocSelector for performance: only rebuild if the messages list changes.
-    return BlocSelector<HomeCubit, HomeState, List<ChatMessage>>(
-      selector: (state) => state.messages,
-      builder: (context, messages) {
-        // Check loading state separately to show initial spinner
-        final isLoading = context.select((HomeCubit cubit) => cubit.state.isLoading);
-        if (isLoading && messages.isEmpty) {
+    // Use BlocBuilder to react to both message list and loading state changes.
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        if (state.isLoading && state.messages.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
+        // Add 1 to the item count if Gemini is loading to show the shimmer bubble.
+        final itemCount = state.messages.length + (state.geminiIsLoading ? 1 : 0);
+
         return ListView.builder(
           padding: const EdgeInsets.all(8.0),
-          itemCount: messages.length,
+          itemCount: itemCount,
           itemBuilder: (context, index) {
-            final message = messages[index];
+            // If it's the last item and Gemini is loading, show the shimmer bubble.
+            if (state.geminiIsLoading && index == state.messages.length) {
+              return const ShimmerBubble();
+            }
+
+            final message = state.messages[index];
 
             // Check the message type to display the correct bubble
             if (message.messageType == ChatMessageType.recipe) {
@@ -484,6 +503,42 @@ class RecipeBubble extends StatelessWidget {
   }
 }
 
+// --- WIDGET 6: NEW SHIMMER LOADING BUBBLE ---
+class ShimmerBubble extends StatelessWidget {
+  const ShimmerBubble({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey.shade300,
+        highlightColor: Colors.grey.shade100,
+        child: Card(
+          color: Colors.white,
+          elevation: 1,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          child: Container(
+            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(width: double.infinity, height: 10.0, color: Colors.white),
+                const SizedBox(height: 6),
+                Container(width: double.infinity, height: 10.0, color: Colors.white),
+                const SizedBox(height: 6),
+                Container(width: 40.0, height: 10.0, color: Colors.white),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // --- WIDGET 5: NEW ORDER CONFIRMATION BUBBLE ---
 class OrderConfirmationBubble extends StatelessWidget {
   final ChatMessage message;
@@ -492,7 +547,22 @@ class OrderConfirmationBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<HomeCubit>();
-    final order = message.parsedOrder!;
+
+    // Wrap the bubble's content in a BlocBuilder to react to item quantity changes.
+    return BlocBuilder<HomeCubit, HomeState>(
+      // Only rebuild this specific bubble if its item list has changed.
+      buildWhen: (previous, current) =>
+          previous.pendingOrderItems[message.id] != current.pendingOrderItems[message.id],
+      builder: (context, state) {
+        final items = state.pendingOrderItems[message.id] ?? message.parsedOrder!.requestedItems;
+        final order = message.parsedOrder!;
+
+        final double subtotal = items.fold(0.0, (sum, item) {
+          return sum + (item.quantity * item.unitPrice);
+        });
+
+    const double deliveryFee = 10.0; // Placeholder delivery fee
+    final double grandTotal = subtotal + deliveryFee;
 
     return Align(
       alignment: Alignment.centerLeft,
@@ -508,44 +578,110 @@ class OrderConfirmationBubble extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                message.text, // The AI's confirmation text
-                style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                "Here is your order summary:", // The AI's friendly confirmation text
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Order Ref: #${message.id.substring(0, 6).toUpperCase()}',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
               ),
               const Divider(height: 16),
-              // List the items
-              ...order.requestedItems.map((item) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 4.0),
-                  child: Row(
-                    children: [
-                      Text('${item.quantity}x', style: const TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(item.itemName)),
-                    ],
+              // --- NEW: Use a Card to give the list a "modal" look ---
+              Card(
+                elevation: 0,
+                color: Colors.white.withOpacity(0.5),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    // Set a max height to prevent layout errors with long lists
+                    maxHeight: MediaQuery.of(context).size.height * 0.2,
                   ),
-                );
-              }),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final itemTotal = item.quantity * item.unitPrice;
+                      return ListTile(
+                        dense: true,
+                        title: Text(item.itemName, style: const TextStyle(fontWeight: FontWeight.w500)),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline, size: 20),
+                              onPressed: message.isActioned ? null : () => cubit.updatePendingOrderItemQuantity(message.id, index, -1),
+                            ),
+                            Text(item.quantity.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            IconButton(
+                              icon: const Icon(Icons.add_circle_outline, size: 20),
+                              onPressed: message.isActioned ? null : () => cubit.updatePendingOrderItemQuantity(message.id, index, 1),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const Divider(height: 16),
+              // Subtotal
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Subtotal', style: TextStyle(color: Colors.black54)),
+                  Text('EGP ${subtotal.toStringAsFixed(2)}', style: const TextStyle(color: Colors.black54)),
+                ],
+              ),
+              const SizedBox(height: 4),
+              // Delivery Fee
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Delivery Fee', style: TextStyle(color: Colors.black54)),
+                  Text(
+                    'EGP ${deliveryFee.toStringAsFixed(2)}',
+                    style: const TextStyle(color: Colors.black54),
+                  ),
+                ],
+              ),
+              const Divider(),
+              // Grand Total
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    'EGP ${grandTotal.toStringAsFixed(2)}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ],
+              ),
               const SizedBox(height: 12),
               // Confirmation Buttons
               Row(
                 children: [
                   Expanded(
-                    child: TextButton(
+                    child: OutlinedButton(
                       style: TextButton.styleFrom(foregroundColor: Colors.red.shade700),
-                      onPressed: () {
-                        // Call the cubit's cancel method
-                        cubit.cancelParsedOrder();
-                      },
+                      // Disable button if actioned
+                      onPressed: message.isActioned
+                          
+                          ? null
+                          : () => cubit.cancelParsedOrder(message),
                       child: const Text('CANCEL'),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: FilledButton(
-                      onPressed: () {
-                        // Call the cubit's confirm method, passing the order data
-                        cubit.confirmParsedOrder(order);
-                      },
+                      // Disable button if actioned
+                      onPressed: message.isActioned
+                          ? null
+                          
+                          : () {
+                              cubit.confirmParsedOrder(order, message);
+                            },
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.teal.shade700,
                       ),
@@ -554,11 +690,43 @@ class OrderConfirmationBubble extends StatelessWidget {
                   ),
                 ],
               ),
+              // --- NEW: Show status after action ---
+              if (message.isActioned)
+                // If the message has an orderId, listen to the live order status.
+                message.orderId != null
+                    ? StreamBuilder<StructuredOrder?>(
+                        stream: sl<OrderService>().getOrderStream(message.orderId!),
+                        builder: (context, snapshot) {
+                          final status = snapshot.data?.status.name ?? message.actionStatus ?? 'Pending';
+                          return _buildStatusChip(status);
+                        },
+                      )
+                    // Otherwise, just show the local action status (e.g., "Cancelled").
+                    : _buildStatusChip(message.actionStatus ?? 'Cancelled'),
             ],
           ),
         ),
       ),
     );
+      },
+    );
+  }
+
+  Widget _buildStatusChip(String status) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12.0),
+      child: Center(
+        child: Text(
+          'Order $status',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: status == 'Confirmed' || status == 'Assigned' || status == 'Delivered'
+                ? Colors.green.shade700
+                : Colors.red.shade700,
+                      ),
+                    ),
+                  ),
+                );
   }
 }
 
@@ -628,6 +796,7 @@ class ChatInputBar extends StatelessWidget {
   Widget build(BuildContext context) {
     // We get the cubit once
     final cubit = context.read<HomeCubit>();
+    
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
@@ -668,6 +837,7 @@ class ChatInputBar extends StatelessWidget {
                 mini: true,
                 backgroundColor: Colors.teal.shade700,
                 onPressed: () {
+                  
                   if (state.isTyping) {
                     _sendMessage(context);
                   } else {
@@ -711,26 +881,33 @@ class PendingOrdersTab extends StatelessWidget {
             itemCount: state.orders.length,
             itemBuilder: (context, index) {
               final order = state.orders[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.teal.shade100,
-                    child: const Icon(Icons.receipt, color: Colors.teal),
-                  ),
-                  title: Text(
-                    'Order #${order.orderId.substring(0, 6)}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    'Status: ${order.status.name}', // e.g., "Pending"
-                  ),
-                  trailing: Text(
-                    '${order.estimatedTotal + order.deliveryFee} EGP',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  onTap: () => _showPendingOrderDetails(context, order),
-                ),
+              // --- NEW: Wrap ListTile with a StreamBuilder for real-time status updates ---
+              return StreamBuilder<StructuredOrder?>(
+                stream: sl<OrderService>().getOrderStream(order.orderId),
+                builder: (context, snapshot) {
+                  final currentOrder = snapshot.data ?? order; // Use latest data or initial data
+                  return Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.teal.shade100,
+                        child: const Icon(Icons.receipt, color: Colors.teal),
+                      ),
+                      title: Text(
+                        'Order #${currentOrder.orderId.substring(0, 6)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        'Status: ${currentOrder.status.name}', // This will now update in real-time
+                      ),
+                      trailing: Text(
+                        '${currentOrder.estimatedTotal + currentOrder.deliveryFee} EGP',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      onTap: () => _showPendingOrderDetails(context, currentOrder),
+                    ),
+                  );
+                },
               );
             },
           );
@@ -740,9 +917,6 @@ class PendingOrdersTab extends StatelessWidget {
 }
 
 // --- TAB 3: Order history ---
-
-
-
 
 class StoreBrowseTab extends StatelessWidget {
   const StoreBrowseTab({super.key});

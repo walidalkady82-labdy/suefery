@@ -5,6 +5,7 @@ import '../enums/chat_message_type.dart';
 import '../enums/message_sender.dart';
 
 class ChatMessage {
+  final String id;
   final MessageSender senderType;
   final String senderId;
   final String text;
@@ -14,8 +15,12 @@ class ChatMessage {
   final String? recipeName;
   final List<String>? recipeIngredients;
   final AiParsedOrder? parsedOrder;
+  final bool isActioned;
+  final String? actionStatus;
+  final String? orderId;
   
   ChatMessage({
+    required this.id,
     required this.senderType,
     required this.senderId,
     required this.text,
@@ -24,6 +29,9 @@ class ChatMessage {
     this.recipeName,
     this.recipeIngredients,
     this.parsedOrder,
+    this.isActioned = false,
+    this.actionStatus,
+    this.orderId,
   });
 
   factory ChatMessage.fromMap(Map<String, dynamic> data) {
@@ -44,6 +52,7 @@ class ChatMessage {
     }
 
     return ChatMessage(
+      id: data['id'] ?? '',
       senderId: data['senderId'] != null ? data['senderId'] as String : 'unknown_sender',
       text: data['text']  != null ? data['text'] as String : '',
       senderType: MessageSender.values.firstWhere(
@@ -62,11 +71,15 @@ class ChatMessage {
       parsedOrder: data['parsedOrder'] != null
           ? AiParsedOrder.fromMap(data['parsedOrder'])
           : null,
+      isActioned: data['isActioned'] ?? false,
+      actionStatus: data['actionStatus'],
+      orderId: data['orderId'],
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'senderType': senderType.name,
       'senderId': senderId,
       'text': text,
@@ -77,6 +90,39 @@ class ChatMessage {
       'recipeName': recipeName,
       'recipeIngredients': recipeIngredients,
       'parsedOrder': parsedOrder?.toMap(),
+      'isActioned': isActioned,
+      'actionStatus': actionStatus,
+      'orderId': orderId,
     };
+  }
+
+  ChatMessage copyWith({
+    String? id,
+    MessageSender? senderType,
+    String? senderId,
+    String? text,
+    DateTime? timestamp,
+    ChatMessageType? messageType,
+    String? recipeName,
+    List<String>? recipeIngredients,
+    AiParsedOrder? parsedOrder,
+    bool? isActioned,
+    String? actionStatus,
+    String? orderId,
+  }) {
+    return ChatMessage(
+      id: id ?? this.id,
+      senderType: senderType ?? this.senderType,
+      senderId: senderId ?? this.senderId,
+      text: text ?? this.text,
+      timestamp: timestamp ?? this.timestamp,
+      messageType: messageType ?? this.messageType,
+      recipeName: recipeName ?? this.recipeName,
+      recipeIngredients: recipeIngredients ?? this.recipeIngredients,
+      parsedOrder: parsedOrder ?? this.parsedOrder,
+      isActioned: isActioned ?? this.isActioned,
+      actionStatus: actionStatus ?? this.actionStatus,
+      orderId: orderId ?? this.orderId,
+    );
   }
 }

@@ -46,7 +46,8 @@ class GeminiService {
                 'properties': {
                   'item_name': {'type': 'STRING'},
                   'quantity': {'type': 'INTEGER'},
-                  'notes': {'type': 'STRING'}
+                  'notes': {'type': 'STRING'},
+                  'unit_price': {'type': 'NUMBER'}
                 }
               }
             }
@@ -185,8 +186,8 @@ class GeminiService {
         "parsed_order": {
           "order_confirmed": true,
           "requested_items": [
-            {"item_name": "Water Bottle", "quantity": 2,'unitPrice': 10, "notes": "Large"},
-            {"item_name": "Chips", "quantity": 1,'unitPrice': 15, "notes": "Spicy"}
+            {"item_name": "Water Bottle", "quantity": 2, "notes": "Large", "unit_price": 5.0},
+            {"item_name": "Chips", "quantity": 1, "notes": "Spicy", "unit_price": 8.0}
           ]
         }
       },
@@ -206,7 +207,7 @@ class GeminiService {
         "parsed_order": {
           "order_confirmed": true,
           "requested_items": [
-            {"item_name": "Molto", "quantity": 5,'unitPrice': 15, "notes": "Cheese flavor"}
+            {"item_name": "Molto", "quantity": 5, "notes": "Cheese flavor", "unit_price": 3.0}
           ]
         }
       },

@@ -57,4 +57,16 @@ class ChatService {
       rethrow;
     }
   }
+
+  /// Updates an existing message in a specific chat.
+  Future<void> updateMessage(String chatId, ChatMessage message) async {
+    if (message.id.isEmpty) {
+      _log.e('Error: Attempted to update a message with an empty ID.');
+      return;
+    }
+
+    final path = _getCollectionPath(chatId);
+    // Use the repo's update method, targeting the specific message document
+    await _firestoreRepo.update(path, message.id, message.toMap());
+  }
 }

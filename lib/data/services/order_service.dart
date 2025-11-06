@@ -19,6 +19,9 @@ class OrderService {
 
   OrderService(this._firestoreRepo, this._configService);
 
+  /// Exposes the repository's ID generation method.
+  String generateId() => _firestoreRepo.generateId(_collectionPath);
+
   /// Gets a stream of a single order, converting it to a [StructuredOrder].
   Stream<StructuredOrder?> getOrderStream(String orderId) {
     _log.i('Subscribing to order: $orderId');
@@ -42,7 +45,8 @@ class OrderService {
       Filter('customerId', isEqualTo: userId),
       Filter('status', whereIn: [
         OrderStatus.New.name, 
-        OrderStatus.Assigned.name
+        OrderStatus.Confirmed.name, // <-- ADD THIS
+        OrderStatus.Assigned.name,
       ]),
     );
 
@@ -113,14 +117,13 @@ class OrderService {
     // 3. Convert AI items to real OrderItems
     // In a real app, you would look up prices here
     final List<OrderItem> orderItems = aiOrder.requestedItems.map((aiItem) {
-      const itemPrice = 0.0; // Placeholder price
-      estimatedTotal += (itemPrice * aiItem.quantity);
+      estimatedTotal += (aiItem.unitPrice * aiItem.quantity);
 
       return OrderItem(
         itemId: '', // Placeholder
         name: aiItem.itemName,
         quantity: aiItem.quantity,
-        unitPrice: itemPrice,
+        unitPrice: aiItem.unitPrice,
         notes: aiItem.notes,
       );
     }).toList();
@@ -133,7 +136,7 @@ class OrderService {
       estimatedTotal: estimatedTotal,
       deliveryFee: deliveryFee, // <-- USE THE CONFIG VALUE
       deliveryAddress: 'To be confirmed',
-      status: OrderStatus.New,
+      status: OrderStatus.Confirmed,
       items: orderItems,
       createdAt: DateTime.now(), 
       partnerId: '', 

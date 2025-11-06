@@ -25,6 +25,7 @@ class HomeState {
   final List<StructuredOrder> orders;
   final bool isTyping;
   final AiParsedOrder? pendingOrder;
+  final Map<String, List<AiParsedItem>> pendingOrderItems;
 
 
   const HomeState({
@@ -35,6 +36,7 @@ class HomeState {
     this.orders = const [],
     this.isTyping = false,
     this.pendingOrder,
+    this.pendingOrderItems = const {},
 
   });
 
@@ -46,6 +48,7 @@ class HomeState {
     List<StructuredOrder>? orders,
     bool? isTyping,
     AiParsedOrder? pendingOrder,
+    Map<String, List<AiParsedItem>>? pendingOrderItems,
     bool clearPendingOrder = false,
   }) {
     return HomeState(
@@ -56,6 +59,7 @@ class HomeState {
       orders: orders ?? this.orders,
       isTyping: isTyping ?? this.isTyping,
       pendingOrder: clearPendingOrder ? null : pendingOrder ?? this.pendingOrder,
+      pendingOrderItems: pendingOrderItems ?? this.pendingOrderItems,
     );
   }
 }
@@ -84,7 +88,7 @@ class HomeCubit extends Cubit<HomeState> {
     _log.i('Loading chat with ID: $currentUserId');
     _chatSubscription?.cancel();
     emit(state.copyWith(isLoading: true));
-    _chatSubscription = _chatService.getChatStream(currentUserId).listen(
+    _chatSubscription = _chatService.getChatStream( currentUserId).listen(
       (messages) {
         _log.i('Chat stream updated with ${messages.length} messages.');
         // The service already did all the mapping and reversing!
@@ -131,21 +135,11 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       final AiResponse aiResponse = await _geminiService.getAiOrderResponse(state.messages);
 
-      // 5. Add AI's response message to the chat
-      final aiMessage = ChatMessage(
-        senderId: 'gemini',
-        text: aiResponse.aiResponseText,
-        timestamp: DateTime.now(),
-        senderType: MessageSender.gemini,
-      );
-      // Don't use the helper. Add the full message object to state and service.
-      emit(state.copyWith(messages: List.from(state.messages)..add(aiMessage)));
-      await _chatService.sendMessage(currentUserId, aiMessage);
-
       // 6. Handle Gemini's response
       if (aiResponse.parsedOrder.orderConfirmed && aiResponse.parsedOrder.requestedItems.isNotEmpty) {
         // AI has parsed an order. Create a confirmation message in the chat.
         final confirmationMessage = ChatMessage(
+          id: _orderService.generateId(),
           senderId: 'gemini',
           text: aiResponse.aiResponseText,
           timestamp: DateTime.now(),
@@ -153,11 +147,24 @@ class HomeCubit extends Cubit<HomeState> {
           messageType: ChatMessageType.orderConfirmation, // <-- SET NEW TYPE
           parsedOrder: aiResponse.parsedOrder, // <-- ATTACH ORDER DATA
         );
-        emit(state.copyWith(messages: List.from(state.messages)..add(confirmationMessage)));
+        // Initialize the items for this confirmation message in the state
+        final newPendingItems = Map<String, List<AiParsedItem>>.from(state.pendingOrderItems);
+        newPendingItems[confirmationMessage.id] = aiResponse.parsedOrder.requestedItems;
+
+        emit(state.copyWith(messages: List.from(state.messages)..add(confirmationMessage), pendingOrderItems: newPendingItems));
         await _chatService.sendMessage(currentUserId, confirmationMessage);
         emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: true));
       } else {
-        // It was just a conversational message, no order detected.
+        // It was just a conversational message, no order detected. Add the plain text response.
+        final aiMessage = ChatMessage(
+          id: _orderService.generateId(),
+          senderId: 'gemini',
+          text: aiResponse.aiResponseText,
+          timestamp: DateTime.now(),
+          senderType: MessageSender.gemini,
+        );
+        emit(state.copyWith(messages: List.from(state.messages)..add(aiMessage)));
+        await _chatService.sendMessage(currentUserId, aiMessage);
         emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: true));
       }
     } catch (e) {
@@ -167,7 +174,13 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   /// Called by the modal's "Confirm" button.
-  Future<void> confirmParsedOrder(AiParsedOrder parsedOrder) async {
+  Future<void> confirmParsedOrder(AiParsedOrder parsedOrder, ChatMessage message) async {
+    // Get the potentially modified items from the state
+    final itemsToConfirm = state.pendingOrderItems[message.id] ?? parsedOrder.requestedItems;
+    final finalParsedOrder = parsedOrder.copyWith(requestedItems: itemsToConfirm);
+
+    // Disable the buttons on the message that was actioned
+    _markMessageAsActioned(message, status: 'Confirmed');
     
     _log.i('User confirmed order. Calling OrderService...');
     emit(state.copyWith(isLoading: true)); // Show loading
@@ -177,9 +190,12 @@ class HomeCubit extends Cubit<HomeState> {
       // We pass it the parsed order data from the chat message.
       final StructuredOrder newOrder = 
           await _orderService.creatStructuredOrder(
-              parsedOrder,
+              finalParsedOrder,
               currentUserId
           );
+
+      // Now that we have the real orderId, update the message again to include it.
+      _markMessageAsActioned(message, status: 'Confirmed', orderId: newOrder.orderId);
       
       // 2. Add a final confirmation message to the chat from the system
       final confirmText = 'Your order #${newOrder.orderId.substring(0, 6)} is confirmed! The delivery fee is ${newOrder.deliveryFee} EGP. We are on it.';
@@ -231,10 +247,52 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   /// ---- NEW METHOD: Called by the modal's "Cancel" button ----
-  Future<void> cancelParsedOrder() async {
+  Future<void> cancelParsedOrder(ChatMessage message) async {
+    // Disable the buttons on the message that was actioned
+    _markMessageAsActioned(message, status: 'Cancelled', clearPendingItems: true);
+
     _log.i('User cancelled pending order.');
     const cancelText = 'Okay, I\'ve cancelled that. What else can I help you with?';
     await _addUserMessageToChat(cancelText, sender: MessageSender.system);
+  } 
+
+  /// Updates the quantity of an item in a pending order confirmation bubble.
+  void updatePendingOrderItemQuantity(String messageId, int itemIndex, int change) {
+    final currentItems = state.pendingOrderItems[messageId];
+    if (currentItems == null) return;
+
+    final newQuantity = currentItems[itemIndex].quantity + change;
+    if (newQuantity > 0) {
+      final updatedItem = currentItems[itemIndex].copyWith(quantity: newQuantity);
+      final newItemsList = List<AiParsedItem>.from(currentItems);
+      newItemsList[itemIndex] = updatedItem;
+
+      final newPendingItemsMap = Map<String, List<AiParsedItem>>.from(state.pendingOrderItems);
+      newPendingItemsMap[messageId] = newItemsList;
+
+      emit(state.copyWith(pendingOrderItems: newPendingItemsMap));
+    }
+  }
+
+  /// Finds a message in the state, marks it as actioned, and updates the UI.
+  void _markMessageAsActioned(ChatMessage message, {required String status, String? orderId, bool clearPendingItems = false}) {
+    final index = state.messages.indexWhere((m) => m.timestamp == message.timestamp && m.senderId == message.senderId);
+    if (index != -1) {
+      final updatedMessages = List<ChatMessage>.from(state.messages);
+      updatedMessages[index] = message.copyWith(isActioned: true, actionStatus: status, orderId: orderId);
+
+      Map<String, List<AiParsedItem>>? newPendingItems;
+      if (clearPendingItems) {
+        newPendingItems = Map.from(state.pendingOrderItems);
+        newPendingItems.remove(message.id);
+      }
+
+      emit(state.copyWith(
+          messages: updatedMessages, pendingOrderItems: newPendingItems));
+
+      // Persist this change in the background
+      _chatService.updateMessage(currentUserId, updatedMessages[index]);
+    }
   }
 
   void loadPendingOrders() {
@@ -262,6 +320,7 @@ class HomeCubit extends Cubit<HomeState> {
   /// Private helper to add a message to the chat service and update state.
   Future<void> _addUserMessageToChat(String text, {MessageSender sender = MessageSender.user}) async {
     final newMessage = ChatMessage(
+      id: _orderService.generateId(),
       senderId: sender == MessageSender.user ? currentUserId : 'gemini',
       text: text.trim(),
       timestamp: DateTime.now(),
@@ -293,6 +352,7 @@ class HomeCubit extends Cubit<HomeState> {
     if (suggestion != null) {
       // 3. Create a new ChatMessage with the recipe data
       final recipeMessage = ChatMessage(
+        id: _orderService.generateId(),
         senderId: 'gemini',
         text: 'Here is a lunch idea for you:', // Fallback/title text
         timestamp: DateTime.now(),

@@ -6,11 +6,13 @@ class AiParsedItem {
   final String itemName;
   final int quantity;
   final String notes;
+  final double unitPrice;
 
   const AiParsedItem({
     required this.itemName,
     required this.quantity,
     required this.notes,
+    this.unitPrice = 0.0,
   });
 
   factory AiParsedItem.fromMap(Map<String, dynamic> json) {
@@ -18,15 +20,31 @@ class AiParsedItem {
       itemName: json['item_name'] ?? 'Unknown Item',
       quantity: json['quantity'] ?? 1,
       notes: json['notes'] ?? '',
+      unitPrice: (json['unit_price'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'itemName': itemName,
+      'item_name': itemName,
       'quantity': quantity,
       'notes': notes,
+      'unit_price': unitPrice,
     };
+  }
+
+  AiParsedItem copyWith({
+    String? itemName,
+    int? quantity,
+    String? notes,
+    double? unitPrice,
+  }) {
+    return AiParsedItem(
+      itemName: itemName ?? this.itemName,
+      quantity: quantity ?? this.quantity,
+      notes: notes ?? this.notes,
+      unitPrice: unitPrice ?? this.unitPrice,
+    );
   }
 }
 
@@ -52,13 +70,23 @@ class AiParsedOrder {
   }
   Map<String, dynamic> toMap() {
     return {
-      'orderConfirmed': orderConfirmed,
-      'requestedItems': requestedItems.map((item) => item.toMap()).toList(),
+      'order_confirmed': orderConfirmed,
+      'requested_items': requestedItems.map((item) => item.toMap()).toList(),
     };
   }
   // Default empty state
   factory AiParsedOrder.empty() {
     return const AiParsedOrder(orderConfirmed: false, requestedItems: []);
+  }
+
+  AiParsedOrder copyWith({
+    bool? orderConfirmed,
+    List<AiParsedItem>? requestedItems,
+  }) {
+    return AiParsedOrder(
+      orderConfirmed: orderConfirmed ?? this.orderConfirmed,
+      requestedItems: requestedItems ?? this.requestedItems,
+    );
   }
 }
 
@@ -75,8 +103,7 @@ class AiResponse {
 
   factory AiResponse.fromMap(Map<String, dynamic> json) {
     return AiResponse(
-      aiResponseText:
-          json['ai_response_text'] ?? 'Sorry, I encountered an error.',
+      aiResponseText: json['ai_response_text'] ?? 'Sorry, I encountered an error.',
       parsedOrder: AiParsedOrder.fromMap(json['parsed_order'] ?? {}),
     );
   }
