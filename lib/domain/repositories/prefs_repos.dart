@@ -25,7 +25,7 @@ class PrefRepo implements IPrefRepo {
   }
 
   @override
-  Future<bool> getBool(String key, {bool defaultValue = false}) async {
+  bool getBool(String key, {bool defaultValue = false}) {
     return _prefs.getBool(key) ?? defaultValue;
   }
 
@@ -35,7 +35,7 @@ class PrefRepo implements IPrefRepo {
   }
 
   @override
-  Future<String?> getString(String key) async {
+  String? getString(String key) {
     return _prefs.getString(key);
   }
 

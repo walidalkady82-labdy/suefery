@@ -5,8 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_paymob/flutter_paymob.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
 import 'package:suefery/locator.dart';
+import 'package:suefery/data/services/pref_service.dart';
+import 'package:suefery/presentation/settings/settings_cubit.dart';
 import 'package:suefery/presentation/auth/auth_cubit.dart';
 import 'firebase_options.dart';
 import 'presentation/auth/auth_checker.dart';
@@ -26,14 +29,19 @@ Future<void> main() async {
   initAnalytics();
   _log.i('loading sevices...');
   await initLocator(app);
+  _log.i('initializing payment...');
+  await initPayment();
   _log.i('Loading app...');
   runApp(
     MultiBlocProvider(
       providers: [
         // GLOBAL CUBITS (Available to ALL screens/features)
         BlocProvider(
-          // AuthCubit depends on AuthService
           create: (context) => AuthCubit(),
+        ),
+        BlocProvider(
+          // SettingsCubit loads its own initial state from PrefService
+          create: (context) => SettingsCubit()..loadSettings(),
         ),
         // BlocProvider(
         //   // GeminiCubit depends on GeminiService
@@ -120,6 +128,29 @@ void initRemoteConfigurations(){
 }
 /// A wrapper widget that handles the asynchronous initialization of Firebase
 /// and authentication before rendering the main application.
+Future<void> initPayment() async {
+  // Securely load keys from environment variables
+  final apiKey = dotenv.env['PAYMOB_API_KEY'];
+  final integrationId = int.tryParse(dotenv.env['PAYMOB_INTEGRATION_ID'] ?? '');
+  final walletIntegrationId = int.tryParse(dotenv.env['PAYMOB_WALLET_INTEGRATION_ID'] ?? '');
+  final iFrameId = int.tryParse(dotenv.env['PAYMOB_IFRAME_ID'] ?? '');
+
+  if (apiKey == null || integrationId == null || walletIntegrationId == null || iFrameId == null) {
+    _log.e("FATAL: Paymob environment variables are not set in .env file.");
+    // In a real app, you might want to prevent the app from running
+    // or disable payment features if the keys are missing.
+    return;
+  }
+
+  // Initialize Paymob
+  await FlutterPaymob.instance.initialize(
+    apiKey: apiKey,
+    integrationID: integrationId,
+    walletIntegrationId: walletIntegrationId,
+    iFrameID: iFrameId,
+  );
+}
+
 class AppContainer extends StatefulWidget {
   final Widget child;
   
@@ -223,37 +254,30 @@ class SUEFERYApp extends StatelessWidget {
   const SUEFERYApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Using a Builder here to get a context that is a descendant of MaterialApp.
-    // This ensures that AppLocalizations is available.
-    return Builder(
-      builder: (context) {
+  Widget build(BuildContext context) {    
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settingsState) {
         return MaterialApp(
-          // Now this will work because the context is from the Builder.
-          // However, it's better to use a widget that needs the title,
-          // like the home screen's AppBar, to set the title.
-          // For simplicity, we can set it here if needed.
-          onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appTitle,
-          theme: ThemeData(
-            primaryColor: const Color(0xFF00796B), // Teal 700 (SUEFERY Primary)
+          onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appTitle,          
+          theme: settingsState.appTheme.themeData,
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            primaryColor: const Color(0xFF00796B),
             colorScheme: ColorScheme.fromSwatch(
               primarySwatch: Colors.teal,
+              brightness: Brightness.dark,
             ).copyWith(
-              secondary: const Color(0xFFFFA000), // Amber 700 (Accent)
+              secondary: const Color(0xFFFFA000),
             ),
             useMaterial3: true,
-            appBarTheme: const AppBarTheme(
-              backgroundColor : Color(0xFF00796B),
-              iconTheme: IconThemeData(color: Colors.white),
-              titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-            ),
           ),
+          themeMode: settingsState.themeMode, // Use the themeMode from the SettingsCubit
+          locale: settingsState.locale, // Use the locale from the SettingsCubit
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: const AuthChecker(),
-          
         );
-      }
+      },
     );
   }
 }

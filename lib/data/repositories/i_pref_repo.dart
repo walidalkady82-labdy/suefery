@@ -3,14 +3,14 @@
 abstract class IPrefRepo {
   /// Fetches a boolean value for a given [key].
   /// Returns [defaultValue] if the key is not found.
-  Future<bool> getBool(String key, {bool defaultValue = false});
+  bool getBool(String key, {bool defaultValue = false});
 
   /// Saves a boolean [value] for a given [key].
   Future<void> setBool(String key, bool value);
 
   /// Fetches a string value for a given [key].
   /// Returns `null` if the key is not found.
-  Future<String?> getString(String key);
+  String? getString(String key);
 
   /// Saves a string [value] for a given [key].
   Future<void> setString(String key, String value);

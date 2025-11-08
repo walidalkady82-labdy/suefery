@@ -355,6 +355,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No Orders'**
   String get noOrders;
+
+  /// settings Title
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// Chnage language button string
+  ///
+  /// In en, this message translates to:
+  /// **'change Language'**
+  String get changeLanguage;
+
+  /// Select language
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguage;
+
+  /// Current Selected language
+  ///
+  /// In en, this message translates to:
+  /// **'Current Language is: {currentLanguage}'**
+  String currentLanguage(String currentLanguage);
+
+  /// Set dark mode
+  ///
+  /// In en, this message translates to:
+  /// **'Set dark mode'**
+  String get darkMode;
+
+  /// profile screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileTitle;
 }
 
 class _AppLocalizationsDelegate

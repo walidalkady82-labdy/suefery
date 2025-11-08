@@ -63,5 +63,11 @@
   "suggestionButton": "مقترحات",
   "recipeName": "اسم الوصف",
   "orderHistoryTitle": "سجل الطلبات",
-  "noOrders": "لا يوجد طلبات"
+  "noOrders": "لا يوجد طلبات",
+  "settingsTitle": "الإعدادات",
+  "changeLanguage": "تغيير اللغة",
+  "selectLanguage": "اختر اللغة",
+  "currentLanguage": "اللغة الحالية هي: {currentLanguage}",
+  "darkMode": "تفعيل وضع الليلي",
+  "profileTitle": "الملف الشخصي"
 }

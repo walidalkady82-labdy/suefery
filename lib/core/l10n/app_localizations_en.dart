@@ -137,4 +137,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noOrders => 'No Orders';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get changeLanguage => 'change Language';
+
+  @override
+  String get selectLanguage => 'Select Language';
+
+  @override
+  String currentLanguage(String currentLanguage) {
+    return 'Current Language is: $currentLanguage';
+  }
+
+  @override
+  String get darkMode => 'Set dark mode';
+
+  @override
+  String get profileTitle => 'Profile';
 }

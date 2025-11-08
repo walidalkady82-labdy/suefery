@@ -127,6 +127,31 @@
   "@orderHistoryTitle": {"description": "Order history title"},
 
   "noOrders": "No Orders",
-  "@noOrders": {"description": "No orders available message"}
+  "@noOrders": {"description": "No orders available message"},
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": {"description": "settings Title"},
+
+  "changeLanguage": "change Language",
+  "@changeLanguage": {"description": "Chnage language button string"},
+
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {"description": "Select language "},
+
+  "currentLanguage": "Current Language is: {currentLanguage}",
+  "@currentLanguage": {
+    "description": "Current Selected language" , 
+    "placeholders": {
+    "currentLanguage": {
+      "type": "String",
+      "example": "en"
+    }
+  }},
+
+  "darkMode": "Set dark mode",
+  "@darkMode": {"description": "Set dark mode"},
+
+  "profileTitle": "Profile",
+  "@profileTitle": {"description": "profile screen title"}
 }
 

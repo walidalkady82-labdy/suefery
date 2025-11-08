@@ -7,5 +7,6 @@ enum PreferencesKey {
   userLoginTime,
   userLoggedOffTime,
   themeMode,
+  themeName,
   language,
 }

@@ -234,11 +234,19 @@ class GeminiService {
     final mockRecipes = [
       {
         'name': 'Mock Koshari',
-        'ingredients': ['Mock Rice', 'Mock Lentils', 'Mock Tomato Sauce']
+        'ingredients': [
+          {'name':'Mock Rice', 'quantity':'1'}, 
+          {'name':'Mock Lentils', 'quantity':'2'},  
+          {'name':'Mock Tomato Sauce', 'quantity':'3'}, 
+          ]
       },
       {
         'name': 'Mock Molokhia',
-        'ingredients': ['Mock Molokhia leaves', 'Mock Chicken Broth', 'Mock Garlic']
+        'ingredients': [
+          {'name':'Molokhia leaves', 'quantity':'1'}, 
+          {'name':'Chicken Broth', 'quantity':'1'}, 
+          {'name':'Garlic', 'quantity':'1'}, 
+          ]
       }
     ];
     return mockRecipes[_random.nextInt(mockRecipes.length)];

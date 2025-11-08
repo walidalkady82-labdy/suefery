@@ -1,10 +1,12 @@
 
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:suefery/data/enums/order_status.dart';
 import 'package:suefery/data/enums/message_sender.dart';
 import 'package:suefery/data/models/ai_response.dart';
+import 'package:suefery/data/models/billing_details.dart';
 import 'package:suefery/data/models/structured_order.dart';
 import 'package:suefery/data/services/gemini_service.dart';
 import 'package:suefery/data/services/order_service.dart';
@@ -15,6 +17,7 @@ import '../../data/models/order_item.dart';
 import '../../data/models/chat_message.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/chat_service.dart';
+import '../../data/services/payment_service.dart';
 import '../../data/services/logging_service.dart';
 
 class HomeState {
@@ -24,8 +27,7 @@ class HomeState {
   final bool geminiIsSuccessful;
   final List<StructuredOrder> orders;
   final bool isTyping;
-  final AiParsedOrder? pendingOrder;
-  final Map<String, List<AiParsedItem>> pendingOrderItems;
+  final int selectedViewIndex;
 
 
   const HomeState({
@@ -35,9 +37,7 @@ class HomeState {
     this.geminiIsSuccessful = false,
     this.orders = const [],
     this.isTyping = false,
-    this.pendingOrder,
-    this.pendingOrderItems = const {},
-
+    this.selectedViewIndex = 0,
   });
 
   HomeState copyWith({
@@ -47,19 +47,16 @@ class HomeState {
     bool? geminiIsSuccessful,
     List<StructuredOrder>? orders,
     bool? isTyping,
-    AiParsedOrder? pendingOrder,
-    Map<String, List<AiParsedItem>>? pendingOrderItems,
-    bool clearPendingOrder = false,
+    int? selectedViewIndex,
   }) {
     return HomeState(
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
       geminiIsLoading: geminiIsLoading ?? this.geminiIsLoading,
       geminiIsSuccessful: geminiIsSuccessful ?? this.geminiIsSuccessful,
-      orders: orders ?? this.orders,
+      orders: orders ?? this.orders, // This is now for the 'History' tab
       isTyping: isTyping ?? this.isTyping,
-      pendingOrder: clearPendingOrder ? null : pendingOrder ?? this.pendingOrder,
-      pendingOrderItems: pendingOrderItems ?? this.pendingOrderItems,
+      selectedViewIndex: selectedViewIndex ?? this.selectedViewIndex,
     );
   }
 }
@@ -77,11 +74,11 @@ class HomeCubit extends Cubit<HomeState> {
   final ChatService _chatService = sl<ChatService>();
   final OrderService _orderService = sl<OrderService>();
   final GeminiService _geminiService = sl<GeminiService>();
+  //final PaymentService _paymentService = sl<PaymentService>();
 
   String get currentUserId => _authService.currentAppUser?.id ?? '';
 // The subscription is now for the service's stream
-  StreamSubscription<List<ChatMessage>>? _chatSubscription;
-  StreamSubscription? _ordersSubscription;
+  StreamSubscription? _chatSubscription;
 
   void loadChat() {
     // Cancel previous listener if any
@@ -112,24 +109,10 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> submitOrderPrompt(String prompt) async {
     // 1. Set loading state and add user's message
     if (prompt.trim().isEmpty) return;
-    emit(state.copyWith(geminiIsLoading: true, isTyping: false));
+    emit(state.copyWith(geminiIsLoading: true));
 
     // 2. Add user message to chat immediately for responsiveness
     await _addUserMessageToChat(prompt);
-
-    // 3. Check if there's a pending order to confirm/cancel
-    final isConfirming = state.pendingOrder != null &&
-        ['yes', 'confirm', 'ok', 'yep', 'yeah', 'go ahead'].any((p) => prompt.toLowerCase().contains(p));
-    final isCancelling = state.pendingOrder != null &&
-        ['no', 'cancel', 'stop', 'nope'].any((p) => prompt.toLowerCase().contains(p));
-
-    // if (isConfirming) {
-    //   await confirmPendingOrder();
-    //   return;
-    // } else if (isCancelling) {
-    //   cancelPendingOrder();
-    //   return;
-    // }
 
     // 4. If not confirming/cancelling, proceed to call Gemini
     try {
@@ -148,11 +131,10 @@ class HomeCubit extends Cubit<HomeState> {
           parsedOrder: aiResponse.parsedOrder, // <-- ATTACH ORDER DATA
         );
         // Initialize the items for this confirmation message in the state
-        final newPendingItems = Map<String, List<AiParsedItem>>.from(state.pendingOrderItems);
-        newPendingItems[confirmationMessage.id] = aiResponse.parsedOrder.requestedItems;
 
-        emit(state.copyWith(messages: List.from(state.messages)..add(confirmationMessage), pendingOrderItems: newPendingItems));
+        // Persist the message; the stream will update the UI state.
         await _chatService.sendMessage(currentUserId, confirmationMessage);
+        // --- FIX: Reset loading state after sending confirmation message ---
         emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: true));
       } else {
         // It was just a conversational message, no order detected. Add the plain text response.
@@ -163,8 +145,8 @@ class HomeCubit extends Cubit<HomeState> {
           timestamp: DateTime.now(),
           senderType: MessageSender.gemini,
         );
-        emit(state.copyWith(messages: List.from(state.messages)..add(aiMessage)));
-        await _chatService.sendMessage(currentUserId, aiMessage);
+        // Persist the message; the stream will update the UI state.
+        await _chatService.sendMessage(currentUserId, aiMessage); 
         emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: true));
       }
     } catch (e) {
@@ -174,42 +156,70 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   /// Called by the modal's "Confirm" button.
-  Future<void> confirmParsedOrder(AiParsedOrder parsedOrder, ChatMessage message) async {
-    // Get the potentially modified items from the state
-    final itemsToConfirm = state.pendingOrderItems[message.id] ?? parsedOrder.requestedItems;
-    final finalParsedOrder = parsedOrder.copyWith(requestedItems: itemsToConfirm);
+  Future<bool?> confirmAndPayForOrder(BuildContext context, AiParsedOrder parsedOrder, ChatMessage message) async {
+    emit(state.copyWith(isLoading: true));
 
-    // Disable the buttons on the message that was actioned
-    _markMessageAsActioned(message, status: 'Confirmed');
-    
-    _log.i('User confirmed order. Calling OrderService...');
-    emit(state.copyWith(isLoading: true)); // Show loading
-    
-    try {
-      // 1. Tell the OrderService to create the order.
-      // We pass it the parsed order data from the chat message.
-      final StructuredOrder newOrder = 
-          await _orderService.creatStructuredOrder(
-              finalParsedOrder,
-              currentUserId
-          );
+    // --- 1. Calculate Total ---
+    final double subtotal = parsedOrder.requestedItems.fold(0.0, (sum, item) => sum + (item.quantity * item.unitPrice));
+    const double deliveryFee = 10.0; // Placeholder
+    final double grandTotal = subtotal + deliveryFee;
 
-      // Now that we have the real orderId, update the message again to include it.
-      _markMessageAsActioned(message, status: 'Confirmed', orderId: newOrder.orderId);
-      
-      // 2. Add a final confirmation message to the chat from the system
-      final confirmText = 'Your order #${newOrder.orderId.substring(0, 6)} is confirmed! The delivery fee is ${newOrder.deliveryFee} EGP. We are on it.';
-      await _addUserMessageToChat(confirmText, sender: MessageSender.system);
-      
-      // 3. Clear the pending order and update chat
-      emit(state.copyWith(
-        isLoading: false,
-      ));
+    // --- NEW: Create BillingDetails object ---
+    // You should fetch this from the user's profile in a real app
+    final billingDetails = BillingDetails(
+      firstName: _authService.currentAppUser?.name.split(' ').first ?? 'Valued',
+      lastName: _authService.currentAppUser?.name.split(' ').last ?? 'Customer',
+      email: _authService.currentAppUser?.email ?? 'test@test.com',
+      phone: _authService.currentAppUser?.phone ?? '+20123456789',
+      city: 'Cairo', // Placeholder
+      state: 'Cairo', // Placeholder
+    );
 
-    } catch (e) {
-       _log.e('Failed to create order: $e');
-       emit(state.copyWith(isLoading: false));
-    }
+    // --- 2. Process Payment ---
+    _log.i('Attempting payment for order...');
+    // final paymentResponse = await _paymentService.processPayment(
+    //   context: context,
+    //   amount: grandTotal,
+    //   billingDetails: billingDetails,
+    // );
+
+    // --- 3. Handle Payment Result ---
+    // if (paymentResponse != null && paymentResponse.success == true) {
+    //   _log.i('Payment successful. Creating order...');
+    //   try {
+    //     // Mark message as actioned immediately after payment
+    //     _markMessageAsActioned(message, status: 'Paid', clearPendingItems: true);
+
+    //     // Create the order in the backend, now including the transaction ID
+    //     final StructuredOrder newOrder = await _orderService.creatStructuredOrder(
+    //         parsedOrder,
+    //         customerId: currentUserId,
+    //         customerName: _authService.currentAppUser?.name ?? 'Customer',
+    //         // Pass the transaction ID to be saved with the order
+    //         paymentTransactionId: paymentResponse.transactionID,
+    //     );
+
+    //     // Update the message with the final orderId
+    //     _markMessageAsActioned(message, status: 'Confirmed', orderId: newOrder.orderId);
+
+    //     // Add a final confirmation message to the chat
+    //     final confirmText = 'Your order #${newOrder.orderId.substring(0, 6)} is confirmed! We are on it.';
+    //     await _addUserMessageToChat(confirmText, sender: MessageSender.system);
+
+    //     emit(state.copyWith(isLoading: false));
+    //     return true; // Signal success to the UI
+    //   } catch (e) {
+    //     _log.e('Failed to create order after payment: $e');
+    //     await _addUserMessageToChat('There was an issue confirming your order after payment. Please contact support.', sender: MessageSender.system);
+    //     emit(state.copyWith(isLoading: false));
+    //     return false; // Signal failure
+    //   }
+    // } else {
+    //   _log.i('Payment failed or was cancelled by user.');
+    //   await _addUserMessageToChat('Payment failed. Please try again.', sender: MessageSender.system);
+    //   emit(state.copyWith(isLoading: false));
+    //   return false; // Signal failure
+    // }
   }
 
   /// Updates an existing order's items.
@@ -257,48 +267,52 @@ class HomeCubit extends Cubit<HomeState> {
   } 
 
   /// Updates the quantity of an item in a pending order confirmation bubble.
-  void updatePendingOrderItemQuantity(String messageId, int itemIndex, int change) {
-    final currentItems = state.pendingOrderItems[messageId];
-    if (currentItems == null) return;
+  void updatePendingOrderItemQuantity(String messageId, int itemIndex, int change) {    
+    // First, find the message
+    final messageIndex = state.messages.indexWhere((m) => m.id == messageId);
+    if (messageIndex == -1) return;
+    final message = state.messages[messageIndex];
+    if (message.parsedOrder == null) return;
+
+    final currentItems = message.parsedOrder!.requestedItems;
+    if (itemIndex >= currentItems.length) return;
 
     final newQuantity = currentItems[itemIndex].quantity + change;
-    if (newQuantity > 0) {
-      final updatedItem = currentItems[itemIndex].copyWith(quantity: newQuantity);
-      final newItemsList = List<AiParsedItem>.from(currentItems);
-      newItemsList[itemIndex] = updatedItem;
 
-      final newPendingItemsMap = Map<String, List<AiParsedItem>>.from(state.pendingOrderItems);
-      newPendingItemsMap[messageId] = newItemsList;
+    // Ensure the new quantity is valid (greater than zero)
+    if (newQuantity >= 1) {
+      // Copy the existing list of items
+      final updatedItems = List<AiParsedItem>.from(currentItems);
+      updatedItems[itemIndex] = updatedItems[itemIndex].copyWith(quantity: newQuantity);
+      
 
-      emit(state.copyWith(pendingOrderItems: newPendingItemsMap));
+      final updatedParsedOrder = message.parsedOrder!.copyWith(requestedItems: updatedItems);
+      final updatedMessage = message.copyWith(parsedOrder: updatedParsedOrder);
+
+      final updatedMessages = List<ChatMessage>.from(state.messages);
+      updatedMessages[messageIndex] = updatedMessage;
+
+      emit(state.copyWith(messages: updatedMessages));
     }
   }
 
   /// Finds a message in the state, marks it as actioned, and updates the UI.
   void _markMessageAsActioned(ChatMessage message, {required String status, String? orderId, bool clearPendingItems = false}) {
-    final index = state.messages.indexWhere((m) => m.timestamp == message.timestamp && m.senderId == message.senderId);
+    final index = state.messages.indexWhere((m) => m.id == message.id);
+
     if (index != -1) {
       final updatedMessages = List<ChatMessage>.from(state.messages);
       updatedMessages[index] = message.copyWith(isActioned: true, actionStatus: status, orderId: orderId);
 
-      Map<String, List<AiParsedItem>>? newPendingItems;
-      if (clearPendingItems) {
-        newPendingItems = Map.from(state.pendingOrderItems);
-        newPendingItems.remove(message.id);
-      }
-
-      emit(state.copyWith(
-          messages: updatedMessages, pendingOrderItems: newPendingItems));
+      emit(state.copyWith(messages: updatedMessages)); 
 
       // Persist this change in the background
       _chatService.updateMessage(currentUserId, updatedMessages[index]);
     }
   }
 
-  void loadPendingOrders() {
-    _log.i('Loading pending orders...');
-    emit(state.copyWith(isLoading: true));
-    _ordersSubscription?.cancel();
+  void loadPendingOrders() { // Now this will load for the 'History' tab
+    _log.i('Loading order history...');
     final userId = _authService.currentAppUser?.id;
     if (userId == null) {
       _log.i('No user ID found. Cannot load pending orders..');
@@ -306,13 +320,13 @@ class HomeCubit extends Cubit<HomeState> {
       return;
     }
     _log.i('listening to order stream');
-    _ordersSubscription = _orderService
-        .getPendingOrdersStream(userId)
+    _chatSubscription = _orderService
+        .getOrdersForUser(userId) // Using getOrdersForUser now
         .listen((orders) {
-      _log.i('Pending orders stream updated with ${orders.length} orders.');
+      _log.i('Order history stream updated with ${orders.length} orders.');
       emit(state.copyWith(isLoading: false, orders: orders));
     }, onError: (error) {
-      _log.e('Error in pending orders stream: $error');
+      _log.e('Error in order history stream: $error');
       emit(state.copyWith(isLoading: false, orders: []));
     });
   }
@@ -347,7 +361,7 @@ class HomeCubit extends Cubit<HomeState> {
     
     // 2. Get the *first* suggestion from the list
     // (Your Gemini prompt returns a 'suggestions' list)
-    final suggestion = (result['suggestions'] as List).firstOrNull;
+    final suggestion =  result['ingredients'];//(result['ingredients'] as List).firstOrNull;
     
     if (suggestion != null) {
       // 3. Create a new ChatMessage with the recipe data
@@ -358,8 +372,8 @@ class HomeCubit extends Cubit<HomeState> {
         timestamp: DateTime.now(),
         senderType: MessageSender.gemini,
         messageType: ChatMessageType.recipe, // SET THE TYPE
-        recipeName: suggestion['name'],
-        recipeIngredients: (suggestion['ingredients'] as List<dynamic>)
+        recipeName: result['name'],
+        recipeIngredients: (result['ingredients'] as List<dynamic>)
             .map((e) => "${e['name']} (${e['quantity']})") // Format ingredients
             .toList(),
       );
@@ -431,6 +445,11 @@ class HomeCubit extends Cubit<HomeState> {
   /// ---- NEW METHOD: Called by the text field's onChanged ----
   void onTyping(String text) {
     emit(state.copyWith(isTyping: text.isNotEmpty));
+  }
+
+  /// ---- NEW METHOD: Called from the menu to change the view ----
+  void changeView(int index) {
+    emit(state.copyWith(selectedViewIndex: index));
   }
 
 }

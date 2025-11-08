@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../../domain/repositories/log_repo.dart';
 import '../enums/pref_key.dart';
 import '../repositories/i_pref_repo.dart';
@@ -23,15 +25,14 @@ class PrefService {
   }
 
   // --- User data ---
-  Future<String> get currentUserId async =>
-      await _prefsRepo.getString(PreferencesKey.currentUserId.name) ?? '';
+  String get currentUserId =>
+       _prefsRepo.getString(PreferencesKey.currentUserId.name) ?? '';
 
   Future<void> setCurrentUserId(String value) async {
     await _prefsRepo.setString(PreferencesKey.currentUserId.name, value);
   }
 
-  Future<String> get userAuthToken async =>
-      await _prefsRepo.getString(PreferencesKey.authToken.name) ?? '';
+  String get userAuthToken => _prefsRepo.getString(PreferencesKey.authToken.name) ?? '';
 
   Future<void> setUserAuthToken(String? value) async {
     // Business Logic: Handle setting a null token by removing the key
@@ -43,25 +44,25 @@ class PrefService {
   }
 
   // --- User session ---
-  Future<bool> get isFirstLogin async =>
-      await _prefsRepo.getBool(PreferencesKey.isFirstLogin.name,
+  bool get isFirstLogin =>
+       _prefsRepo.getBool(PreferencesKey.isFirstLogin.name,
           defaultValue: true); // Business Logic: Default value is true
 
   Future<void> setIsFirstLogin(bool value) async {
     await _prefsRepo.setBool(PreferencesKey.isFirstLogin.name, value);
   }
 
-  Future<bool> get isUserLoggedin async =>
-      await _prefsRepo.getBool(PreferencesKey.userIsLoggedin.name);
+  bool get isUserLoggedin  =>
+      _prefsRepo.getBool(PreferencesKey.userIsLoggedin.name);
 
   Future<void> setUserIsLoggedin(bool value) async {
     await _prefsRepo.setBool(PreferencesKey.userIsLoggedin.name, value);
   }
 
-  Future<DateTime?> get userLoggedInTime async {
+  DateTime? get userLoggedInTime {
     // Business Logic: Convert String to DateTime
     final timeString =
-        await _prefsRepo.getString(PreferencesKey.userLoginTime.name);
+        _prefsRepo.getString(PreferencesKey.userLoginTime.name);
     return timeString != null ? DateTime.tryParse(timeString) : null;
   }
 
@@ -73,7 +74,7 @@ class PrefService {
 
   Future<DateTime?> get userLoggedOffTime async {
     final timeString =
-        await _prefsRepo.getString(PreferencesKey.userLoggedOffTime.name);
+        _prefsRepo.getString(PreferencesKey.userLoggedOffTime.name);
     return timeString != null ? DateTime.tryParse(timeString) : null;
   }
 
@@ -88,21 +89,27 @@ class PrefService {
   }
 
   // --- Interface ---
-  Future<void> setTheme(bool isDark) async {
+  Future<void> setThemeDark(bool isDark) async {
     await _prefsRepo.setBool(PreferencesKey.themeMode.name, isDark);
   }
 
-  Future<bool> get isDarkTheme async =>
-      await _prefsRepo.getBool(PreferencesKey.themeMode.name);
+  bool get isDarkTheme => _prefsRepo.getBool(PreferencesKey.themeMode.name);
+
+  Future<void> setTheme(String theme) async {
+    await _prefsRepo.setString(PreferencesKey.themeName.name, theme);
+  }
+
+  String get theme => _prefsRepo.getString(PreferencesKey.themeName.name) ?? "oceanBlueTheme";
+
 
   // --- Language ---
   Future<void> setlanguage(String language) async {
     await _prefsRepo.setString(PreferencesKey.language.name, language);
   }
 
-  Future<String> get language async =>
+  String get language =>
       // Business Logic: Provide a default language code
-      await _prefsRepo.getString(PreferencesKey.language.name) ??
+      _prefsRepo.getString(PreferencesKey.language.name) ??
       LanguageCodes.enUS;
 }
 

@@ -386,7 +386,7 @@ class MockPrefsService extends _i1.Mock implements _i8.PrefService {
           as _i6.Future<void>);
 
   @override
-  _i6.Future<void> setTheme(bool? isDark) =>
+  _i6.Future<void> setThemeDark(bool? isDark) =>
       (super.noSuchMethod(
             Invocation.method(#setTheme, [isDark]),
             returnValue: _i6.Future<void>.value(),

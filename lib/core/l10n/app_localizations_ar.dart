@@ -136,4 +136,24 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noOrders => 'لا يوجد طلبات';
+
+  @override
+  String get settingsTitle => 'الإعدادات';
+
+  @override
+  String get changeLanguage => 'تغيير اللغة';
+
+  @override
+  String get selectLanguage => 'اختر اللغة';
+
+  @override
+  String currentLanguage(String currentLanguage) {
+    return 'اللغة الحالية هي: $currentLanguage';
+  }
+
+  @override
+  String get darkMode => 'تفعيل وضع الليلي';
+
+  @override
+  String get profileTitle => 'الملف الشخصي';
 }

@@ -36,29 +36,7 @@ class OrderService {
       return StructuredOrder.fromMap(snapshot.data()!);
     });
   }
-  ///Gets a stream of all PENDING orders for a specific customer.
-  Stream<List<StructuredOrder>> getPendingOrdersStream(String userId) {
-    _log.i('Getting PENDING orders for user: $userId');
-    
-    // We create a filter for 'Pending' and 'Assigned' orders
-    final filter = Filter.and(
-      Filter('customerId', isEqualTo: userId),
-      Filter('status', whereIn: [
-        OrderStatus.New.name, 
-        OrderStatus.Confirmed.name, // <-- ADD THIS
-        OrderStatus.Assigned.name,
-      ]),
-    );
 
-    return _firestoreRepo
-        .queryCollectionWithFilterStream(_collectionPath, filter)
-        .map((snapshot) { // This now correctly receives a stream of snapshots
-      return snapshot.docs
-          .map((doc) => StructuredOrder.fromMap(doc.data()))
-          // Sort by date so newest is first
-          .toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    });
-  }
   /// Gets a stream of all orders for a specific customer.
   Stream<List<StructuredOrder>> getOrdersForUser(String userId) {
     _log.i('Getting orders for user: $userId');
@@ -103,12 +81,28 @@ class OrderService {
 
   /// Creates a new [StructuredOrder] from an [AiParsedOrder].
   /// This method applies business rules (like delivery fee).
-  Future<StructuredOrder> creatStructuredOrder(
-      AiParsedOrder aiOrder, String customerId) async {
+  Future<StructuredOrder> creatStructuredOrder(AiParsedOrder aiOrder,
+      {required String customerId, required String customerName}) async {
     _log.i('Converting AI order for customer: $customerId');
 
-    // 1. Generate a new, unique ID for the order
-    final newOrderId = _firestoreRepo.generateId(_collectionPath);
+    // 1. Generate the new custom order ID
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
+    // Query to get the count of today's orders for this user
+    final todayOrdersSnapshot = await _firestoreRepo.queryWithFilter(
+        _collectionPath,
+        Filter.and(
+          Filter('customerId', isEqualTo: customerId),
+          Filter('createdAt', isGreaterThanOrEqualTo: startOfDay),
+          Filter('createdAt', isLessThanOrEqualTo: endOfDay),
+        ));
+
+    final orderCountForToday = todayOrdersSnapshot.docs.length + 1;
+
+    final newOrderId =
+        '${customerName.split(' ').first}-${now.month}-${now.day}-$orderCountForToday';
 
     // 2. Get business rules from Remote Config
     final deliveryFee = _configService.deliveryFee;
@@ -134,11 +128,12 @@ class OrderService {
       customerId: customerId,
       riderId: null,
       estimatedTotal: estimatedTotal,
+
       deliveryFee: deliveryFee, // <-- USE THE CONFIG VALUE
       deliveryAddress: 'To be confirmed',
       status: OrderStatus.Confirmed,
       items: orderItems,
-      createdAt: DateTime.now(), 
+      createdAt: DateTime.now(), // Set the creation timestamp
       partnerId: '', 
       progress: 0, 
       finishedAt: DateTime(1900),

@@ -72,26 +72,27 @@ class StructuredOrder{
     };
 
   @override
-  factory StructuredOrder.fromMap(Map<dynamic, dynamic> data) => StructuredOrder(
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      orderId:data['orderId'],
-      customerId: data['customerId'] ?? '',
-      partnerId: data['partnerStoreName'] ?? '',
-      estimatedTotal : data['estimatedTotal'] ??0,
-      deliveryFee : data['deliveryFee'] ??0,
-      deliveryAddress: data['deliveryAddress'] ?? '',
+  factory StructuredOrder.fromMap(Map<String, dynamic> data) => StructuredOrder(
+      // Safely access Timestamp fields, providing a default DateTime if null
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime(1900),
+      orderId: data['orderId'] as String? ?? '', // Provide default empty string
+      customerId: data['customerId'] as String? ?? '',
+      partnerId: data['partnerStoreName'] as String? ?? '',
+      estimatedTotal: (data['estimatedTotal'] as num?)?.toDouble() ?? 0.0, // Safely convert num to double
+      deliveryFee: (data['deliveryFee'] as num?)?.toDouble() ?? 0.0,
+      deliveryAddress: data['deliveryAddress'] as String? ?? '',
       status: OrderStatus.values.firstWhere(
-        (e) => e.name == data['status'],
+        (e) => e.name == (data['status'] as String?),
         orElse: () => OrderStatus.New, // Default fallback
       ),
-      progress: data['progress'] ?? 0,
-      riderId: data['riderId'] ?? '',
+      progress: (data['progress'] as num?)?.toDouble() ?? 0.0,
+      riderId: data['riderId'] as String? ?? '',
       items: (data['items'] as List<dynamic>?)
               ?.map((item) => OrderItem.fromMap(item as Map<String, dynamic>))
               .toList() ?? [],
-      isConfirmed: data['isConfirmed'] ?? false,
-      finishedAt: (data['finishedAt'] as Timestamp).toDate(),
-      notes:  data['notes'] ??'',
+      isConfirmed: data['isConfirmed'] as bool? ?? false,
+      finishedAt: (data['finishedAt'] as Timestamp?)?.toDate() ?? DateTime(1900),
+      notes: data['notes'] as String? ?? '',
       );
 
 

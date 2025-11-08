@@ -4,6 +4,7 @@ class AppUser {
   final String id;
   final String name;
   final String email;
+  final String phone;
   final String specificPersonaGoal; // Directly links model to the Persona's motivation
   final bool isVerified;
   final String creationTimestamp;
@@ -12,6 +13,7 @@ class AppUser {
     required this.id,
     required this.name,
     required this.email,
+    required this.phone,
     required this.specificPersonaGoal,
     this.isVerified =  false, 
     creationTimestamp,
@@ -22,6 +24,7 @@ class AppUser {
       id: firebaseUser.uid,
       name: firebaseUser.displayName ?? "",
       email: firebaseUser.email ?? "",
+      phone: firebaseUser.phoneNumber ?? "", // You would load this from Firestore/DB
       specificPersonaGoal: "", // You would load this from Firestore/DB
     );
   }
@@ -30,6 +33,7 @@ class AppUser {
       id: map['id'],
       name: map['name'],
       email: map['email'],
+      phone: map['phone'],
       specificPersonaGoal: map['specificPersonaGoal'],
       isVerified: map['isVerified'],
       creationTimestamp: map['creationTimestamp'],
@@ -40,6 +44,7 @@ class AppUser {
       'id': id,
       'name': name,
       'email': email,
+      'phone': phone,
       'specificPersonaGoal': specificPersonaGoal,
       'isVerified': isVerified,
       'creationTimestamp': creationTimestamp,
@@ -52,6 +57,7 @@ class AppUser {
       id: id, 
       name: name, 
       email: email, 
+      phone: phone, 
       specificPersonaGoal: specificPersonaGoal,
       isVerified: isVerified ?? this.isVerified, 
     );
