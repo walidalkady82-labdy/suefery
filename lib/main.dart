@@ -8,29 +8,16 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_paymob/flutter_paymob.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
 import 'package:suefery/locator.dart';
-import 'package:suefery/data/services/pref_service.dart';
 import 'package:suefery/presentation/settings/settings_cubit.dart';
 import 'package:suefery/presentation/auth/auth_cubit.dart';
 import 'firebase_options.dart';
 import 'presentation/auth/auth_checker.dart';
-import 'data/services/firebase_service.txt';
 import 'data/services/logging_service.dart';
 
 final _log = LoggerRepo('main');
 Future<void> main() async {
   // Ensure Flutter engine is initialized before running the app
-  _log.i('initializing app...');
-  WidgetsFlutterBinding.ensureInitialized();
-  _log.i('loading environment variables...');
-  await _initEnvironmentVars();
-  _log.i('initializing Firebase...');
-  final app = await _initializeFirebase();
-  _log.i('handling analytics...');
-  initAnalytics();
-  _log.i('loading sevices...');
-  await initLocator(app);
-  _log.i('initializing payment...');
-  await initPayment();
+  
   _log.i('Loading app...');
   runApp(
     MultiBlocProvider(
@@ -167,9 +154,22 @@ class _AppContainerState extends State<AppContainer> {
   void initState() {
     super.initState();
     // Start the initialization process when the widget is created
-    _initialization = FirebaseService.instance.initialize();
+    _initialization = init();
   }
-
+  Future<void> init() async {
+       _log.i('initializing app...');
+        WidgetsFlutterBinding.ensureInitialized();
+        _log.i('loading environment variables...');
+        await _initEnvironmentVars();
+        _log.i('initializing Firebase...');
+        final app = await _initializeFirebase();
+        _log.i('handling analytics...');
+        initAnalytics();
+        _log.i('loading sevices...');
+        await initLocator(app);
+        _log.i('initializing payment...');
+        await initPayment();
+  }
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
