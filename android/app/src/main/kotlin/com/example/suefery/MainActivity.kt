@@ -1,4 +1,4 @@
-package com.example.suefery
+package com.walidksoft.suefery
 
 import io.flutter.embedding.android.FlutterActivity
 

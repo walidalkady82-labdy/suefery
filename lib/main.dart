@@ -65,7 +65,7 @@ Future<void> _initEnvironmentVars() async {
   // If you want to load multiple dotenv files or name your dotenv object differently, you can do the following and import the singleton into the relavant files:
   // DotEnv another_dotenv = DotEnv()
   try {
-    await dotenv.load(fileName: ".env");
+    await dotenv.load(fileName: "assets/.env");
   } catch (e) {
     _log.i('Error loading .env file: $e');
   }
