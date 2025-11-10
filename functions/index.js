@@ -11,6 +11,8 @@ const {setGlobalOptions} = require("firebase-functions");
 const {onCall, HttpsError} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const axios = require("axios");
+const dotenv = require('dotenv')
+dotenv.config()
 
 // Set global options for the functions.
 setGlobalOptions({ maxInstances: 10 });
