@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDJ_s8ptPgU8hPx9xdkuPkLpsXodDHT1gQ',
-    appId: '1:1050107042949:android:9c94b50d69116afa3c5dec',
+    appId: '1:1050107042949:android:903b4a22897dfb193c5dec',
     messagingSenderId: '1050107042949',
     projectId: 'suefery-d2bf2',
     storageBucket: 'suefery-d2bf2.firebasestorage.app',
@@ -87,4 +87,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'suefery-d2bf2.firebasestorage.app',
     measurementId: 'G-VLRHMSKLZJ',
   );
+
 }
