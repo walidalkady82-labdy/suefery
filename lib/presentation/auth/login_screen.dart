@@ -48,7 +48,7 @@ class LoginScreen extends StatelessWidget {
                         width: double.infinity,
                         child: OutlinedButton.icon(
                           onPressed: state.isLoading ? null : authCubit.signInWithGoogle,
-                          icon: Image.asset('assets/images/google-icon-logo.svg',
+                          icon: Image.asset('assets/images/google-icon-logo.png',
                             height: 20,
                           ),
                           label: Text(strings.googleSignin, style: const TextStyle(fontSize: 18, color: Color(0xFF00308F))),

@@ -38,21 +38,21 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  firebase_auth: ^6.1.1
-  firebase_core: ^4.2.0
-  cloud_firestore: ^6.0.3
-  firebase_remote_config: ^6.1.1
+  firebase_auth: ^5.1.2 # Recommended update
+  firebase_core: ^3.3.0 # Recommended update
+  cloud_firestore: ^5.1.0 # Recommended update
+  firebase_remote_config: ^5.0.0 # Recommended update
   logger: ^2.6.2
   google_generative_ai: ^0.4.7
   google_mobile_ads: ^6.0.0
   google_sign_in: ^7.2.0
   flutter_dotenv: ^6.0.0
-  firebase_analytics: ^12.0.3
+  firebase_analytics: ^11.2.0 # Recommended update
   intl: ^0.20.2
   flutter_localizations:
     sdk: flutter
   dotenv: ^4.2.0
-  firebase_crashlytics: ^5.0.3
+  firebase_crashlytics: ^4.0.0 # Recommended update
   shared_preferences: ^2.5.3
   meta: ^1.16.0
   mockito: ^5.5.1
@@ -62,8 +62,8 @@ dependencies:
   speech_to_text: ^7.3.0
   shimmer: ^3.0.0
   flutter_stripe: ^12.1.0
-  flutter_paymob: ^1.0.8
-  cloud_functions: ^6.0.4
+  flutter_paymob: ^2.0.0 # Check for breaking changes
+  cloud_functions: ^5.0.0 # Recommended update
   
 dev_dependencies:
   flutter_test:
