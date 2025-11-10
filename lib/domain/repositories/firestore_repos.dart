@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:suefery/data/enums/query_operator.dart';
 import 'package:suefery/core/extensions/future_extension.dart';
 
@@ -13,7 +14,7 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform, kDebugMode,
 class FirestoreRepo implements IFirestoreRepo {
   final _log = LogRepo('FirestoreRepository');
   final FirebaseFirestore _firestore;
-
+  
   /// The [FirebaseFirestore] instance is injected.
   /// This allows for easy testing and emulator configuration.
   FirestoreRepo._({required FirebaseFirestore firestore})  : _firestore = firestore;
@@ -32,7 +33,7 @@ class FirestoreRepo implements IFirestoreRepo {
     if (kDebugMode && useEmulator) {
       try {
         log.i('Connecting to Firebase FirebaseFirestore Emulator...');
-        final emulatorHost =(!kIsWeb && defaultTargetPlatform == TargetPlatform.android)? '10.0.2.2': 'localhost';
+        final emulatorHost =(!kIsWeb && defaultTargetPlatform == TargetPlatform.android)?  dotenv.get('local_device_ip'): 'localhost';
         instance.useFirestoreEmulator(emulatorHost, 8080);
         log.i('Connected to FirebaseFirestore Emulator on localhost:8080');
       } catch (e) {

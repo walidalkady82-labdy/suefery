@@ -43,8 +43,7 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
 
   // AuthRepo (Async setup for emulator)
   sl.registerSingletonAsync<IAuthRepo>(() async {
-    final repo = await AuthRepo.create(useEmulator: useEmulatorEnv);
-    return repo;
+    return await AuthRepo.create(useEmulator: useEmulatorEnv);
   });
 
   // FirestoreRepo (Async setup for emulator)

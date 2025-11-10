@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -59,7 +60,9 @@ Future<void> _initEnvironmentVars() async {
 }
 
  Future<FirebaseApp> _initializeFirebase() async {
+    final useEmulatorEnv = dotenv.getBool('USE_FIREBASE_EMULATOR', fallback: false);
     // 1. Get environment variables
+    final  emulatorHost = dotenv.get('local_device_ip');
     final firebaseConfigJson = const String.fromEnvironment('__firebase_config', defaultValue: '{}');
     //final appId = const String.fromEnvironment('__app_id', defaultValue: 'default-app-id');
     late final FirebaseApp app;
@@ -95,6 +98,10 @@ Future<void> _initEnvironmentVars() async {
       // port: 9199,
       // port: 9199,
       // );
+      
+      if (kDebugMode && useEmulatorEnv) {
+        FirebaseFunctions.instance.useFunctionsEmulator(emulatorHost, 5001);
+      }
     return app;
   }
 

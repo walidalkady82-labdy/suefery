@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 
 import '../../domain/repositories/log_repo.dart';
 import '../repositories/i_gemini_repo.dart';
-import 'remote_config_service.dart';
 
 class GeminiService {
   final _log = LogRepo('GeminiService');

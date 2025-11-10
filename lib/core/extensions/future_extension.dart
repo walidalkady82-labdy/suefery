@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../../data/services/app_config.dart';
+import '../utils/app_config.dart';
 
 extension FutureTimeout<T> on Future<T> {
   /// Applies a default timeout to a [Future].

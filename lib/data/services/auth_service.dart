@@ -126,17 +126,19 @@ class AuthService {
     required String password,
   }) async {
     try {
-      _log.i("Login user: $email");
+      _log.i("signInWithEmailAndPassword called for user: $email");
       // Await the UserCredential first, then get the user. This is cleaner and safer.
       final userCredential = await _authRepository.logInWithEmailAndPassword(
         email: email,
         password: password,
       ); 
       
+      _log.i("UserCredential received successfully.");
       final user = userCredential.user;
       
       if (user == null) return null; // Guard against a null user.
 
+      _log.i("Handling successful login for user: ${user.email}");
       await _handleSuccessfulLogin(user);
       return AppUser.fromFirebaseUser(user);
     } on TimeoutException {
@@ -155,6 +157,7 @@ class AuthService {
   /// Centralized logic to run after any successful login.
   /// Saves token and login state to preferences.
   Future<void> _handleSuccessfulLogin(User user) async {
+    _log.i("Entering _handleSuccessfulLogin for user: ${user.email}");
     final token = await user.getIdToken();
     if (token != null) {
       await _prefRepo.setUserAuthToken(token);
@@ -163,6 +166,7 @@ class AuthService {
     await _prefRepo.setIsFirstLogin(false);
     await _prefRepo.setUserLoggedInTime(DateTime.now());
     await _prefRepo.setUserIsLoggedin(true);
+    _log.i("Exiting _handleSuccessfulLogin for user: ${user.email}");
   }
 
   /// Checks if the user's session is still valid on app start.

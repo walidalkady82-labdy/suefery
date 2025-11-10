@@ -42,7 +42,7 @@ class AuthRepo implements IAuthRepo{
     if (kDebugMode && useEmulator) {
       try {
         log.i('AuthRepo: Connecting to Firebase Auth Emulator...');
-        final emulatorHost =(!kIsWeb && defaultTargetPlatform == TargetPlatform.android)? '10.0.2.2': 'localhost';
+        final emulatorHost =(!kIsWeb && defaultTargetPlatform == TargetPlatform.android)? dotenv.get('local_device_ip') : 'localhost';
         await instance.useAuthEmulator(emulatorHost, 9099);
         log.i('AuthRepo: Connected to Auth Emulator on localhost:9099');
       } catch (e) {
@@ -126,6 +126,7 @@ class AuthRepo implements IAuthRepo{
 
   @override
   Future<UserCredential> logInWithEmailAndPassword({
+
     required String email,
     required String password,
   }) {
@@ -133,6 +134,7 @@ class AuthRepo implements IAuthRepo{
       email: email,
       password: password,
     ).withDefaultTimeout();
+
   }
 
   @override
