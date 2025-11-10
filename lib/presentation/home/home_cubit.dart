@@ -17,7 +17,6 @@ import '../../data/models/order_item.dart';
 import '../../data/models/chat_message.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/chat_service.dart';
-import '../../data/services/payment_service.dart';
 import '../../data/services/logging_service.dart';
 
 class HomeState {

@@ -131,7 +131,7 @@ class AuthService {
       final userCredential = await _authRepository.logInWithEmailAndPassword(
         email: email,
         password: password,
-      );//.timeout(const Duration(seconds: 15)); 
+      ); 
       
       final user = userCredential.user;
       

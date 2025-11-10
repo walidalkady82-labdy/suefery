@@ -52,7 +52,12 @@ class ChatService {
       // The repo 'add' method automatically creates an ID
       // and adds it to the map for us.
       await _firestoreRepo.add(path, message.toMap());
-    } catch (e) {
+    } 
+    on TimeoutException catch (e) {
+      _log.e('Error sending message: $e');
+      rethrow;
+    }
+    catch (e) {
       _log.e('Error sending message: $e');
       rethrow;
     }

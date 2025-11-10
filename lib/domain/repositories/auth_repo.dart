@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:suefery/core/extensions/future_extension.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/repositories/i_auth_repo.dart';
@@ -74,7 +75,7 @@ class AuthRepo implements IAuthRepo{
   Future<void> reloadUser() async {
     // reload() can throw if the user's token is invalid
     try {
-      await _firebaseAuth.currentUser?.reload();
+      await _firebaseAuth.currentUser?.reload().withDefaultTimeout();
     } on FirebaseAuthException catch (e) {
       _log.e('Failed to reload user: ${e.message}');
       // Re-throw the exception so the service can catch it
@@ -93,7 +94,7 @@ class AuthRepo implements IAuthRepo{
         final clientId = dotenv.env['googleSignInwebClientId'];
         await signIn.initialize(clientId: clientId);
         final googleProvider = GoogleAuthProvider();
-        final userCredential = await _firebaseAuth.signInWithPopup(
+        final userCredential = await _firebaseAuth.signInWithPopup( 
           googleProvider,
         );
         credential = userCredential.credential!;
@@ -105,7 +106,7 @@ class AuthRepo implements IAuthRepo{
         );
       }
       _log.i('Sign in with Google successful.');
-      return await _firebaseAuth.signInWithCredential(credential);
+      return await _firebaseAuth.signInWithCredential(credential).withDefaultTimeout();
     } catch (e) {
       _log.e('Google Sign-In Error: $e');
       rethrow;
@@ -120,7 +121,7 @@ class AuthRepo implements IAuthRepo{
     return _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
-    );
+    ).withDefaultTimeout();
   }
 
   @override
@@ -131,19 +132,19 @@ class AuthRepo implements IAuthRepo{
     return _firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
-    );
+    ).withDefaultTimeout();
   }
 
   @override
   Future<void> logOut() async {
     // Must sign out of both providers to ensure a clean slate
-    await _googleSignIn.signOut();
-    await _firebaseAuth.signOut();
+    await _googleSignIn.signOut().withDefaultTimeout();
+    await _firebaseAuth.signOut().withDefaultTimeout();
   }
 
   @override
   Future<void> sendPasswordResetEmail(String email) {
-    return _firebaseAuth.sendPasswordResetEmail(email: email);
+    return _firebaseAuth.sendPasswordResetEmail(email: email).withDefaultTimeout();
   }
 
   @override
@@ -154,7 +155,7 @@ class AuthRepo implements IAuthRepo{
     return _firebaseAuth.confirmPasswordReset(
       code: code,
       newPassword: newPassword,
-    );
+    ).withDefaultTimeout();
   }
  
   @override
@@ -172,13 +173,13 @@ class AuthRepo implements IAuthRepo{
       // depending on your business logic
       return Future.value();
     }
-    return user.sendEmailVerification();
+    return user.sendEmailVerification().withDefaultTimeout();
   }
   
   @override
   Future<String> verifyResetCode(String code) {
     // This method returns the user's email if the code is valid
-    return _firebaseAuth.verifyPasswordResetCode(code);
+    return _firebaseAuth.verifyPasswordResetCode(code).withDefaultTimeout();
   }
   
   @override
@@ -189,7 +190,7 @@ class AuthRepo implements IAuthRepo{
     }
 
     try {
-      await user.delete();
+      await user.delete().withDefaultTimeout();
     } on FirebaseAuthException catch (e) {
       // Re-throw the specific Firebase exception to be handled by the service/UI
       // Common codes: 'requires-recent-login'
@@ -205,7 +206,7 @@ class AuthRepo implements IAuthRepo{
       throw Exception('No user is currently signed in to re-authenticate.');
     }
     try {
-      await user.reauthenticateWithCredential(credential);
+      await user.reauthenticateWithCredential(credential).withDefaultTimeout();
     } on FirebaseAuthException catch (e) {
       // Re-throw for the service/UI to handle
       // Common codes: 'user-mismatch', 'invalid-credential', 'wrong-password'

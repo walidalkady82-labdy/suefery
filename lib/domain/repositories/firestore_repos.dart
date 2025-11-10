@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:suefery/data/enums/query_operator.dart';
+import 'package:suefery/core/extensions/future_extension.dart';
 
 
 import '../../data/repositories/i_firestore_repository.dart';
@@ -66,7 +67,7 @@ class FirestoreRepo implements IFirestoreRepo {
         }
 
       data['id'] = ref.id; // Add the ID to the data
-      await ref.set(data); // Use set() for creating documents with generated IDs
+      await ref.set(data).withDefaultTimeout(); // Use set() for creating documents with generated IDs
       return ref.id;
     } catch (e) {
       _log.e("Error adding document to $path: $e");
@@ -84,7 +85,7 @@ class FirestoreRepo implements IFirestoreRepo {
       batch.set(docRef, item);
     }
     try {
-      await batch.commit();
+      await batch.commit().withDefaultTimeout();
       _log.i('Multiple documents created successfully!');
     } catch (e) {
       _log.e('Error creating multiple documents: $e');
@@ -96,7 +97,7 @@ class FirestoreRepo implements IFirestoreRepo {
   Future<void> update(String path, String id, Map<String, dynamic> data) async {
     try {
       final ref = _firestore.collection(path).doc(id);
-      await ref.update(data);
+      await ref.update(data).withDefaultTimeout();
     } catch (e) {
       _log.e("Error updating document in $path with ID $id: $e");
       rethrow;
@@ -107,7 +108,7 @@ class FirestoreRepo implements IFirestoreRepo {
   Future<void> set(String path, String id, Map<String, dynamic> data) async {
     try {
       final ref = _firestore.collection(path).doc(id);
-      await ref.set(data);
+      await ref.set(data).withDefaultTimeout();
     } catch (e) {
       _log.e("Error setting document in $path with ID $id: $e");
       rethrow;
@@ -117,7 +118,7 @@ class FirestoreRepo implements IFirestoreRepo {
   @override
   Future<void> remove(String path, String id) async {
     try {
-      await _firestore.collection(path).doc(id).delete();
+      await _firestore.collection(path).doc(id).delete().withDefaultTimeout();
     } catch (e) {
       _log.e("Error removing document in $path with ID $id: $e");
       rethrow;
