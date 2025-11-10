@@ -18,6 +18,7 @@ import 'auth_service_test.mocks.dart';
   PrefService,
   firebase.User,
   firebase.UserCredential,
+  firebase.UserCredential,
   firebase.AdditionalUserInfo,
   firebase.AuthCredential,
 ])
@@ -194,8 +195,8 @@ void main() {
   group('AuthService - reauthenticateWithGoogle', () {
     test('should call repo to get credential and re-authenticate', () async {
       // Arrange
-      when(mockAuthRepository.getGoogleCredential())
-          .thenAnswer((_) async => mockAuthCredential);
+      when(mockAuthRepository.logInWithGoogle())
+          .thenAnswer((_) async => userCredential);
       when(mockAuthRepository.reauthenticateWithCredential(mockAuthCredential))
           .thenAnswer((_) async => Future.value());
 
@@ -203,7 +204,7 @@ void main() {
       await authService.reauthenticateWithGoogle();
 
       // Assert
-      verify(mockAuthRepository.getGoogleCredential()).called(1);
+      verify(mockAuthRepository.logInWithGoogle()).called(1);
       verify(mockAuthRepository.reauthenticateWithCredential(mockAuthCredential))
           .called(1);
     });

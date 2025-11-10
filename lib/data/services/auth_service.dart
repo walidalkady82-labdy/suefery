@@ -131,7 +131,7 @@ class AuthService {
       final userCredential = await _authRepository.logInWithEmailAndPassword(
         email: email,
         password: password,
-      ).timeout(const Duration(seconds: 10)); 
+      );//.timeout(const Duration(seconds: 15)); 
       
       final user = userCredential.user;
       
@@ -144,7 +144,7 @@ class AuthService {
       // Re-throwing a custom, more specific exception for the UI layer.
       throw LoginEmailPassFirebaseFailure('Login timed out. Please check your network connection and try again.');
     } on FirebaseAuthException catch (e) {
-      _log.e("Login Error: ${e.code}");
+      _log.e("Login Error: ${e.code} , ${e.message}");
       throw LoginEmailPassFirebaseFailure.fromCode(e.code);
     } catch (e) {
       _log.e("Login Error: $e");
