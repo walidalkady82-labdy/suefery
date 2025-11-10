@@ -45,6 +45,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logInPrompt => 'الرجاء تسجيل الدخول';
 
   @override
+  String get logInScreenTitle => 'تسجيل الدخول بسويفري';
+
+  @override
   String get loginTextButton => 'هل لديك حساب بالفعل؟ سجل الدخول';
 
   @override

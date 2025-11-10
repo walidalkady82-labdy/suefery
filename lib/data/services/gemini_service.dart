@@ -11,10 +11,10 @@ import 'remote_config_service.dart';
 class GeminiService {
   final _log = LogRepo('GeminiService');
   final IGeminiRepo _repository;
-  final RemoteConfigService _configService;
+  final bool _useMocks;
   final _random = Random();
 
-  GeminiService(this._repository, this._configService);
+  GeminiService(this._repository, this._useMocks);
 
   // --- 1. PROMPT & CONFIG FOR DELIVERY ASSISTANT ---
 
@@ -100,7 +100,7 @@ class GeminiService {
   /// Processes a chat history as the **Delivery Assistant**.
   Future<AiResponse> getAiOrderResponse(List<ChatMessage> history) async {
     // Check the config value *every time*
-    if (_configService.geminiUseMocks) {
+    if (_useMocks) {
       debugPrint("GeminiService: Using MOCK for getAiOrderResponse()");
       return _getAiOrderResponseMock();
     }
@@ -133,7 +133,7 @@ class GeminiService {
 
   /// Generates recipe ideas as the **Chef**.
   Future<Map<String, dynamic>> generateRecipeSuggestion() async {
-    if (_configService.geminiUseMocks) {
+    if (_useMocks) {
       debugPrint("GeminiService: Using MOCK for generateRecipeSuggestion()");
       return _generateRecipeSuggestionMock();
     }

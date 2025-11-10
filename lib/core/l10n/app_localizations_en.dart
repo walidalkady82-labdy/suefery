@@ -46,6 +46,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logInPrompt => 'Please Log In';
 
   @override
+  String get logInScreenTitle => 'SUEFERY LOGIN';
+
+  @override
   String get loginTextButton => '\'Already have an account? Log in';
 
   @override

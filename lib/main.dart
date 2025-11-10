@@ -167,6 +167,8 @@ class _AppContainerState extends State<AppContainer> {
         initAnalytics();
         _log.i('loading sevices...');
         await initLocator(app);
+        _log.i('ensuring services are ready...');
+        await ensureServicesReady();
         _log.i('initializing payment...');
         await initPayment();
   }

@@ -170,6 +170,12 @@ abstract class AppLocalizations {
   /// **'Please Log In'**
   String get logInPrompt;
 
+  /// scueferey screen title
+  ///
+  /// In en, this message translates to:
+  /// **'SUEFERY LOGIN'**
+  String get logInScreenTitle;
+
   /// The text for the login message text
   ///
   /// In en, this message translates to:

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:suefery/data/enums/query_operator.dart';
 
 
@@ -25,6 +26,8 @@ class FirestoreRepo implements IFirestoreRepo {
   factory FirestoreRepo.create({bool useEmulator = false}) {
     final instance = FirebaseFirestore.instance;
     final log = LogRepo('AuthRepo');
+    // Check for a Dart-defined environment variable to decide on using the emulator.
+
     // Use emulator only in debug mode and if requested
     if (kDebugMode && useEmulator) {
       try {

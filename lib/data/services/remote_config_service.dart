@@ -61,4 +61,8 @@ class RemoteConfigService {
   /// A cloud-controlled switch to enable mock mode.
   /// This overrides the kDebugMode default.
   bool get geminiUseMocks => _remoteConfig.getBool('gemini_use_mocks');
+
+  /// A cloud-controlled switch to enable mock mode.
+  /// This overrides the kDebugMode default.
+  bool get firebaseUseEmulator => _remoteConfig.getBool('firebase_use_emulator');
 }

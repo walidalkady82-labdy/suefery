@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "1050107042949-rfvc8tbr3q25in1j3e9jbhhc357n68ji.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.walidksoft.suefery",
+            "certificate_hash": "465233870663527978f0f3d8fce09317d5b5532f"
+          }
+        },
+        {
           "client_id": "1050107042949-ko5j3rep0udbjr5lgra6e0ifb45f2hgk.apps.googleusercontent.com",
           "client_type": 3
         }

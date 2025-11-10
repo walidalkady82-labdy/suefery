@@ -1,5 +1,7 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
-import '../enums/auth_status.dart';
+import '../../core/errors/authentication_exception.dart';
 import '../models/app_user.dart';
 import '../repositories/i_auth_repo.dart';
 import 'logging_service.dart';
@@ -27,15 +29,6 @@ class AuthService {
     final firebaseUser = _authRepository.currentUser;
     if (firebaseUser == null) return null;
     return AppUser.fromFirebaseUser(firebaseUser);
-  }
-
-  /// Gets the current authentication status.
-  AuthStatus get userAuthStatus {
-    if (_authRepository.currentUser != null) {
-      return AuthStatus.authenticated;
-    } else {
-      return AuthStatus.unauthenticated;
-    }
   }
 
   /// Exposes a stream of [AppUser?]
@@ -133,18 +126,26 @@ class AuthService {
     required String password,
   }) async {
     try {
+      _log.i("Login user: $email");
+      // Await the UserCredential first, then get the user. This is cleaner and safer.
       final userCredential = await _authRepository.logInWithEmailAndPassword(
         email: email,
         password: password,
-      );
+      ).timeout(const Duration(seconds: 10)); 
+      
       final user = userCredential.user;
-      if (user == null) {
-        throw Exception('Could not get user credentials.');
-      }
-      // For email/pass sign-in, they are never a "new" user in this context.
-      await _prefRepo.setIsFirstLogin(false);
+      
+      if (user == null) return null; // Guard against a null user.
+
       await _handleSuccessfulLogin(user);
       return AppUser.fromFirebaseUser(user);
+    } on TimeoutException {
+      _log.e("Login Error: Timeout. The request took too long.");
+      // Re-throwing a custom, more specific exception for the UI layer.
+      throw LoginEmailPassFirebaseFailure('Login timed out. Please check your network connection and try again.');
+    } on FirebaseAuthException catch (e) {
+      _log.e("Login Error: ${e.code}");
+      throw LoginEmailPassFirebaseFailure.fromCode(e.code);
     } catch (e) {
       _log.e("Login Error: $e");
       rethrow;
@@ -158,6 +159,8 @@ class AuthService {
     if (token != null) {
       await _prefRepo.setUserAuthToken(token);
     }
+    // For email/pass sign-in, they are never a "new" user in this context.
+    await _prefRepo.setIsFirstLogin(false);
     await _prefRepo.setUserLoggedInTime(DateTime.now());
     await _prefRepo.setUserIsLoggedin(true);
   }

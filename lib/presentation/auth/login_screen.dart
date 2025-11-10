@@ -25,18 +25,12 @@ class LoginScreen extends StatelessWidget {
             children: <Widget>[
               const Icon(Icons.delivery_dining, size: 80, color: Color(0xFFE5002D)),
               const SizedBox(height: 10),
-              const Text('SUEFERY Login', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF00308F))),
-              const SizedBox(height: 30),
-              Text(
-                'Test roles: customer/rider/partner@suefery.com. Pass: "password123".',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic),
-              ),
+              Text(strings.logInPrompt, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF00308F))),
               const SizedBox(height: 20),
               BlocBuilder<AuthCubit, AuthState>(
                 builder: (context, state) {
                   // We only build the form if the user is unauthenticated.
-                  if (state.authState == AuthStatus.authenticated) {
+                  if (state.authState == AuthStatus.unauthenticated) {
                     // Show a loader or an empty container if state is not Unauthenticated
                     return const Center(child: CircularProgressIndicator());
                   }

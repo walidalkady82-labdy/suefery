@@ -1,6 +1,7 @@
 
 // This is the global instance of GetIt
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:suefery/data/repositories/i_auth_repo.dart';
 import 'package:suefery/data/repositories/i_firestore_repository.dart';
@@ -34,20 +35,23 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
 
   // PrefsRepo (Async setup)
   // We register a factory that returns the Future<PrefsRepository>
-  
+
+  final useEmulatorEnv = dotenv.getBool('USE_FIREBASE_EMULATOR', fallback: false);
+  final useGeminiMocks = dotenv.getBool('gemini_use_mocks', fallback: false);
 
   sl.registerSingleton<IPrefRepo>(prefsRepo);
 
-  // AuthRepo (Sync setup, but with emulator config)
-  sl.registerLazySingleton<IAuthRepo>(() => AuthRepo.create(
-        useEmulator: configService.geminiUseMocks,
-      ));
+  // AuthRepo (Async setup for emulator)
+  sl.registerSingletonAsync<IAuthRepo>(() async {
+    final repo = await AuthRepo.create(useEmulator: useEmulatorEnv);
+    return repo;
+  });
 
-  // FirestoreRepo (Sync setup, with emulator config)
-  sl.registerLazySingleton<IFirestoreRepo>(
-      () => FirestoreRepo.create(
-        useEmulator:  configService.geminiUseMocks
-      ));
+  // FirestoreRepo (Async setup for emulator)
+  sl.registerSingleton<IFirestoreRepo>(
+    FirestoreRepo.create(useEmulator: useEmulatorEnv)
+  );
+
   sl.registerLazySingleton<IGeminiRepo>(
       () => GeminiRepo());
   // --- SERVICES (The "Managers") ---
@@ -57,8 +61,8 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
 
   // Auth Service
   sl.registerLazySingleton<AuthService>(() => AuthService(
-        sl<IAuthRepo>(), // GetIt finds the registered IAuthRepository
-        sl<PrefService>(), // GetIt finds the registered IPrefsRepository
+        sl<IAuthRepo>(),
+        sl<PrefService>(),
       ));
 
   // Prefs Service
@@ -82,6 +86,15 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
       ));
     // Chat Service
   sl.registerLazySingleton<GeminiService>(() => GeminiService(
-       sl<IGeminiRepo >() , sl<RemoteConfigService >() 
+       sl<IGeminiRepo >() , useGeminiMocks
       ));
+}
+
+/// Awaits for all asynchronous singletons to be ready.
+/// This should be called after `initLocator` and before the app runs.
+Future<void> ensureServicesReady() async {
+  // This will ensure that any async singletons, like our repositories,
+  // are fully initialized before they are used.
+  // GetIt will automatically wait for all `registerSingletonAsync` dependencies.
+  await sl.allReady();
 }

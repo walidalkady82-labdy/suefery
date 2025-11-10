@@ -62,7 +62,7 @@ dependencies:
   speech_to_text: ^7.3.0
   shimmer: ^3.0.0
   flutter_stripe: ^12.1.0
-  flutter_paymob: ^2.0.0 # Check for breaking changes
+  flutter_paymob: ^1.0.8 # Check for breaking changes
   cloud_functions: ^5.0.0 # Recommended update
   
 dev_dependencies:

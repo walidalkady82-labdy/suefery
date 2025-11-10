@@ -36,6 +36,9 @@
   "logInPrompt": "Please Log In",
   "@logInPrompt": {"description": "The call-to-action or prompt displayed on the login screen."},
   
+  "logInScreenTitle": "SUEFERY LOGIN",
+  "@logInScreenTitle": {"description": "scueferey screen title"},
+
   "loginTextButton": "'Already have an account? Log in",
   "@loginTextButton": {"description": "The text for the login message text"},
   

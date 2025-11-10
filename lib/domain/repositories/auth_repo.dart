@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/repositories/i_auth_repo.dart';
 import 'log_repo.dart';
@@ -32,7 +33,7 @@ class AuthRepo implements IAuthRepo{
   /// Firebase Auth emulator on localhost:9099.
   ///
   /// Note: Emulators should only be used in debug builds.
-  factory AuthRepo.create({bool useEmulator = false}) {
+  static Future<AuthRepo> create({bool useEmulator = false}) async {
     final instance = FirebaseAuth.instance;
     final googleSignIn = GoogleSignIn.instance;
     final log = LogRepo('AuthRepo');
@@ -41,7 +42,7 @@ class AuthRepo implements IAuthRepo{
       try {
         log.i('AuthRepo: Connecting to Firebase Auth Emulator...');
         final emulatorHost =(!kIsWeb && defaultTargetPlatform == TargetPlatform.android)? '10.0.2.2': 'localhost';
-        instance.useAuthEmulator(emulatorHost, 9099);
+        await instance.useAuthEmulator(emulatorHost, 9099);
         log.i('AuthRepo: Connected to Auth Emulator on localhost:9099');
       } catch (e) {
         log.e('*** FAILED TO CONNECT TO AUTH EMULATOR: $e ***');
@@ -88,6 +89,9 @@ class AuthRepo implements IAuthRepo{
       late final AuthCredential credential;
       if (isWeb) {
         _log.i('using web log in...');
+        final GoogleSignIn signIn = GoogleSignIn.instance;
+        final clientId = dotenv.env['googleSignInwebClientId'];
+        await signIn.initialize(clientId: clientId);
         final googleProvider = GoogleAuthProvider();
         final userCredential = await _firebaseAuth.signInWithPopup(
           googleProvider,
