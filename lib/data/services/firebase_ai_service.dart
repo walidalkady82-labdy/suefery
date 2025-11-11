@@ -3,99 +3,18 @@ import 'dart:math';
 import 'package:suefery/data/models/ai_response.dart';
 import 'package:suefery/data/models/chat_message.dart';
 import 'package:flutter/foundation.dart';
+import 'package:suefery/data/repositories/i_repo_firebase_ai.dart';
 
-import '../../domain/repositories/log_repo.dart';
-import '../repositories/i_gemini_repo.dart';
+import '../repositories/repo_log.dart';
 
-class GeminiService {
-  final _log = LogRepo('GeminiService');
-  final IGeminiRepo _repository;
+class FirebaseAiService {
+  final _log = RepoLog('GeminiService');
+  final IRepoFirebaseAi _repository;
   final bool _useMocks;
   final _random = Random();
 
-  GeminiService(this._repository, this._useMocks);
-
-  // --- 1. PROMPT & CONFIG FOR DELIVERY ASSISTANT ---
-
-  static const String _deliveryAppSystemPrompt = """
-    You are the **Suefery** AI Shopping Assistant for a delivery service operating in Beni Suef, Egypt. 
-    Your role is to process user messages, extract a confirmed order list, and present it back to the user for confirmation.
-    If the user's last message seems to be a confirmation (e.g., 'yes', 'confirm', 'go ahead') for a pending order you just presented, set "order_confirmed": true.
-    If the user's last message is a cancellation (e.g., 'no', 'cancel', 'stop'), respond with a cancellation message and set "order_confirmed": false.
-    
-    1. CONVERSATION: If the user is just chatting or asking general questions, respond naturally (set confirmed=false).
-    2. ORDER PARSING: If the user expresses a clear intent to order items, parse the request into a list of items with quantities and notes.
-    3. JSON OUTPUT: ALWAYS respond with a JSON object containing two keys: "ai_response_text" and "parsed_order".
-    """;
-
-  static final Map<String, dynamic> _deliveryAppGenerationConfig = {
-    'responseMimeType': 'application/json',
-    'responseSchema': {
-      'type': 'OBJECT',
-      'properties': {
-        'ai_response_text': {'type': 'STRING'},
-        'parsed_order': {
-          'type': 'OBJECT',
-          'properties': {
-            'order_confirmed': {'type': 'BOOLEAN'},
-            'requested_items': {
-              'type': 'ARRAY',
-              'items': {
-                'type': 'OBJECT',
-                'properties': {
-                  'item_name': {'type': 'STRING'},
-                  'quantity': {'type': 'INTEGER'},
-                  'notes': {'type': 'STRING'},
-                  'unit_price': {'type': 'NUMBER'}
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  };
-
-  // --- 2. PROMPT & CONFIG FOR CHEF ---
-
-  static const String _chefSystemPrompt = """
-    You are **"Chef Helmy,"** a friendly and practical Egyptian home cook from Beni Suef. 
-    Your goal is to help users decide what to make for lunch *today* by suggesting recipes they can cook using ingredients ordered from our delivery app.
-    Your main job is to create a *shopping list* for the user.
-    You MUST respond with a JSON object *only* (do not add conversational text).
-    """;
-    
-  static final Map<String, dynamic> _chefGenerationConfig = {
-    'responseMimeType': 'application/json',
-    'responseSchema': {
-      'type': 'OBJECT',
-      'properties': {
-        'suggestions': {
-          'type': 'ARRAY',
-          'items': {
-            'type': 'OBJECT',
-            'properties': {
-              'name': {'type': 'STRING'},
-              'description': {'type': 'STRING'},
-              'ingredients': {
-                'type': 'ARRAY',
-                'items': {
-                  'type': 'OBJECT',
-                  'properties': {
-                    'name': {'type': 'STRING'},
-                    'quantity': {'type': 'STRING'}
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  };
-
-  // --- 3. SERVICE METHODS (Using the prompts) ---
-
+  FirebaseAiService(this._repository, this._useMocks);
+  
   /// Processes a chat history as the **Delivery Assistant**.
   Future<AiResponse> getAiOrderResponse(List<ChatMessage> history) async {
     // Check the config value *every time*
@@ -111,17 +30,9 @@ class GeminiService {
             })
         .toList();
 
-    final payload = {
-      'contents': contents,
-      'systemInstruction': {
-        'parts': [{'text': _deliveryAppSystemPrompt}]
-      },
-      'generationConfig': _deliveryAppGenerationConfig
-    };
-
     try {
       final Map<String, dynamic> rawJsonResponse =
-          await _repository.generateContent(payload);
+          await _repository.generateOrderContent(contents);
       return AiResponse.fromMap(rawJsonResponse);
     } catch (e) {
       _log.e('GeminiService Error: $e');
@@ -133,33 +44,18 @@ class GeminiService {
   /// Generates recipe ideas as the **Chef**.
   Future<Map<String, dynamic>> generateRecipeSuggestion() async {
     if (_useMocks) {
-      debugPrint("GeminiService: Using MOCK for generateRecipeSuggestion()");
+      debugPrint("GeminiService: Using MOCK for generateRecipeSuggestion()"); //
       return _generateRecipeSuggestionMock();
     }
 
-    // This is the user's "turn" for this feature
     final userPrompt =
         "Please suggest two popular and quick Egyptian lunch ideas I can make today.";
-
-    // Build the payload specific to the Chef
-    final payload = {
-      'contents': [
-        {
-          'role': 'user',
-          'parts': [{'text': userPrompt}]
-        }
-      ],
-      'systemInstruction': {
-        'parts': [{'text': _chefSystemPrompt}]
-      },
-      'generationConfig': _chefGenerationConfig
-    };
 
     try {
       // Both methods now call the *same* repository method,
       // just with a different payload.
       final Map<String, dynamic> rawJsonResponse =
-          await _repository.generateContent(payload);
+          await _repository.generateRecipeContent(userPrompt);
       
       // We return the raw map, which the Cubit will parse
       return rawJsonResponse;
@@ -226,7 +122,6 @@ class GeminiService {
     
     return AiResponse.fromMap(selectedMock);
   }
-
 
   Future<Map<String, dynamic>> _generateRecipeSuggestionMock() async {
     await Future.delayed(Duration(milliseconds: 200 + _random.nextInt(500)));

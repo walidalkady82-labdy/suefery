@@ -3,23 +3,23 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/errors/authentication_exception.dart';
 import '../models/app_user.dart';
-import '../repositories/i_auth_repo.dart';
+import '../repositories/i_repo_auth.dart';
 import 'logging_service.dart';
 import 'pref_service.dart';
 
 /// Manages all authentication-related business logic.
 ///
-/// This service coordinates the [IAuthRepo] (for data access)
+/// This service coordinates the [IRepoAuth] (for data access)
 /// and the [PrefService] (for session persistence) to perform
 /// sign-in, sign-out, and session management tasks.
 class AuthService {
-  final IAuthRepo _authRepository;
+  final IRepoAuth _authRepository;
   final PrefService _prefRepo;
   final _log = LoggerRepo('AuthService'); // Assuming LoggerRepo exists
 
   /// {@macro authentication_service}
   ///
-  /// Requires an [IAuthRepo] and [PrefService] for its
+  /// Requires an [IRepoAuth] and [PrefService] for its
   /// dependencies (this is called Dependency Injection).
   AuthService(this._authRepository, this._prefRepo);
 

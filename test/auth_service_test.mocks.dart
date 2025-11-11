@@ -8,10 +8,10 @@ import 'dart:async' as _i6;
 import 'package:firebase_auth/firebase_auth.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
-import 'package:suefery/data/repositories/i_auth_repo.dart' as _i5;
+import 'package:suefery/data/repositories/i_repo_auth.dart' as _i5;
 import 'package:suefery/data/services/pref_service.dart' as _i8;
-import 'package:suefery/domain/repositories/log_repo.dart' as _i4;
-import 'package:suefery/domain/repositories/prefs_repos.dart' as _i3;
+import 'package:suefery/data/repositories/repo_log.dart' as _i4;
+import 'package:suefery/data/repositories/repo_prefs.dart' as _i3;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -39,7 +39,7 @@ class _FakePrefsRepo_1 extends _i1.SmartFake implements _i3.PrefsRepo {
     : super(parent, parentInvocation);
 }
 
-class _FakeLogRepo_2 extends _i1.SmartFake implements _i4.LogRepo {
+class _FakeLogRepo_2 extends _i1.SmartFake implements _i4.RepoLog {
   _FakeLogRepo_2(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
@@ -73,7 +73,7 @@ class _FakeUser_7 extends _i1.SmartFake implements _i2.User {
 /// A class which mocks [IAuthRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockIAuthRepository extends _i1.Mock implements _i5.IAuthRepo {
+class MockIAuthRepository extends _i1.Mock implements _i5.IRepoAuth {
   MockIAuthRepository() {
     _i1.throwOnMissingStub(this);
   }
@@ -237,12 +237,12 @@ class MockPrefsService extends _i1.Mock implements _i8.PrefService {
           as _i3.PrefsRepo);
 
   @override
-  _i4.LogRepo get log =>
+  _i4.RepoLog get log =>
       (super.noSuchMethod(
             Invocation.getter(#log),
             returnValue: _FakeLogRepo_2(this, Invocation.getter(#log)),
           )
-          as _i4.LogRepo);
+          as _i4.RepoLog);
 
   @override
   _i6.Future<bool> get isEnableNotifcations =>

@@ -1,6 +1,6 @@
 /// The abstract interface for the Preferences Repository.
 /// This contract defines all raw read/write methods for key-value storage.
-abstract class IPrefRepo {
+abstract class IRepoPref {
   /// Fetches a boolean value for a given [key].
   /// Returns [defaultValue] if the key is not found.
   bool getBool(String key, {bool defaultValue = false});

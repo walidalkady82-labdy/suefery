@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../../domain/repositories/log_repo.dart';
+import '../repositories/repo_log.dart';
 import '../enums/pref_key.dart';
-import '../repositories/i_pref_repo.dart';
+import '../repositories/i_repo_pref.dart';
 
 /// Manages all business logic related to reading and writing user preferences.
 ///
 /// This service handles data-type conversions (e.g., DateTime <-> String)
 /// and provides default values for the application.
 class PrefService {
-  final IPrefRepo _prefsRepo;
+  final IRepoPref _prefsRepo;
   
-  final log = LogRepo('PrefsService');
+  final log = RepoLog('PrefsService');
 
   // The repository is injected via the constructor.
   PrefService(this._prefsRepo);

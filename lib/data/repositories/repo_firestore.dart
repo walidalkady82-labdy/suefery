@@ -4,29 +4,29 @@ import 'package:suefery/data/enums/query_operator.dart';
 import 'package:suefery/core/extensions/future_extension.dart';
 
 
-import '../../data/repositories/i_firestore_repository.dart';
-import 'log_repo.dart'; 
+import 'i_repo_firestore.dart';
+import 'repo_log.dart'; 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kDebugMode, kIsWeb, TargetPlatform;
 
 // Import your enum
 // import 'package:suefery/data/enums/query_operator.dart'; 
 
-class FirestoreRepo implements IFirestoreRepo {
-  final _log = LogRepo('FirestoreRepository');
+class RepoFirestore implements IRepoFirestore {
+  final _log = RepoLog('FirestoreRepository');
   final FirebaseFirestore _firestore;
   
   /// The [FirebaseFirestore] instance is injected.
   /// This allows for easy testing and emulator configuration.
-  FirestoreRepo._({required FirebaseFirestore firestore})  : _firestore = firestore;
-  /// Creates and initializes a new [FirestoreRepo] instance.
+  RepoFirestore._({required FirebaseFirestore firestore})  : _firestore = firestore;
+  /// Creates and initializes a new [RepoFirestore] instance.
   ///
   /// If [useEmulator] is true, it will connect to the local
   /// Firebase Auth emulator on localhost:9099.
   ///
   /// Note: Emulators should only be used in debug builds.
-  factory FirestoreRepo.create({bool useEmulator = false}) {
+  factory RepoFirestore.create({bool useEmulator = false}) {
     final instance = FirebaseFirestore.instance;
-    final log = LogRepo('AuthRepo');
+    final log = RepoLog('AuthRepo');
     // Check for a Dart-defined environment variable to decide on using the emulator.
 
     // Use emulator only in debug mode and if requested
@@ -46,7 +46,7 @@ class FirestoreRepo implements IFirestoreRepo {
     if (!kIsWeb) {
       instance.settings = const Settings(persistenceEnabled: true);
     }
-    return FirestoreRepo._(
+    return RepoFirestore._(
       firestore: instance,
     );
   }
@@ -126,7 +126,7 @@ class FirestoreRepo implements IFirestoreRepo {
     }
   }
 
-@override
+  @override
   Stream<QuerySnapshot<Map<String, dynamic>>> quaryCollectionStream(
     String collectionPath, {
     String? orderBy,

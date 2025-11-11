@@ -1,27 +1,27 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../data/repositories/i_pref_repo.dart';
+import 'i_repo_pref.dart';
 
-/// This is the concrete implementation of [IPrefRepo].
+/// This is the concrete implementation of [IRepoPref].
 /// Its only job is to talk directly to the SharedPreferences plugin.
-class PrefRepo implements IPrefRepo {
+class RepoPref implements IRepoPref {
   final SharedPreferences _prefs;
   final FlutterSecureStorage _secureStorage;
 
   // The SharedPreferences instance is passed in, not created here.
-  PrefRepo(this._prefs,this._secureStorage);
+  RepoPref(this._prefs,this._secureStorage);
 
   /// A static factory for creating an initialized instance.
   /// Your service locator (like GetIt) should call this.
-  static Future<PrefRepo> create() async {
+  static Future<RepoPref> create() async {
     // You can configure platform-specific options here if needed
     // AndroidOptions androidOptions = const AndroidOptions(
     //   encryptedSharedPreferences: true,
     // );
     final secureStorage = FlutterSecureStorage(/*aOptions: androidOptions*/);
     final prefs = await SharedPreferences.getInstance();
-    return PrefRepo(prefs,secureStorage) ;
+    return RepoPref(prefs,secureStorage) ;
   }
 
   @override

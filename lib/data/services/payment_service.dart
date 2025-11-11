@@ -3,7 +3,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http; // For calling the backend
 import 'dart:convert';
 
-import '../../domain/repositories/log_repo.dart';
+import '../repositories/repo_log.dart';
 
 /// A service to handle payment processing logic.
 // class PaymentService {

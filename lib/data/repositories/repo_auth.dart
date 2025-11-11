@@ -4,40 +4,40 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:suefery/core/extensions/future_extension.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../../data/repositories/i_auth_repo.dart';
-import 'log_repo.dart';
+import 'i_repo_auth.dart';
+import 'repo_log.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kDebugMode, kIsWeb;
 
 
 /// {@template authentication_repository}
 /// Repository which manages user authentication.
 /// {@endtemplate}
-class AuthRepo implements IAuthRepo{
+class RepoAuth implements IRepoAuth{
   // 💡 FIX: Ensure your .env file has a key defined, e.g., 'WEB_CLIENT_ID'
   // final String webClientId = dotenv.env['WEB_CLIENT_ID']!;
   // final String serverClientId = dotenv.env['SERVER_CLIENT_ID']!;
-  final _log = LogRepo('AuthRepo');
+  final _log = RepoLog('AuthRepo');
   final initialAuthToken = const String.fromEnvironment('__initial_auth_token');
   final GoogleSignIn _googleSignIn;//(clientId: kIsWeb ? webClientId : null);
   final FirebaseAuth _firebaseAuth;
 
   /// Private constructor. Use the factory `AuthRepo.create()` to
   /// instantiate this class.
-  AuthRepo._({
+  RepoAuth._({
     required FirebaseAuth firebaseAuth,
     required GoogleSignIn googleSignIn,
   })  : _firebaseAuth = firebaseAuth,
         _googleSignIn = googleSignIn;
-  /// Creates and initializes a new [AuthRepo] instance.
+  /// Creates and initializes a new [RepoAuth] instance.
   ///
   /// If [useEmulator] is true, it will connect to the local
   /// Firebase Auth emulator on localhost:9099.
   ///
   /// Note: Emulators should only be used in debug builds.
-  static Future<AuthRepo> create({bool useEmulator = false}) async {
+  static Future<RepoAuth> create({bool useEmulator = false}) async {
     final instance = FirebaseAuth.instance;
     final googleSignIn = GoogleSignIn.instance;
-    final log = LogRepo('AuthRepo');
+    final log = RepoLog('AuthRepo');
     // Use emulator only in debug mode and if requested
     if (kDebugMode && useEmulator) {
       try {
@@ -51,7 +51,7 @@ class AuthRepo implements IAuthRepo{
             '*** Make sure the emulator is running: firebase emulators:start ***');
       }
     }
-    return AuthRepo._(
+    return RepoAuth._(
       firebaseAuth: instance,
       googleSignIn: googleSignIn,
     );

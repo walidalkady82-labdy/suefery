@@ -1,10 +1,10 @@
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../domain/repositories/log_repo.dart';
+import '../repositories/repo_log.dart';
 
 class RemoteConfigService {
-  final _log = LogRepo('RemoteConfigService');
+  final _log = RepoLog('RemoteConfigService');
   final FirebaseRemoteConfig _remoteConfig;
 
   // --- Default values ---
@@ -38,9 +38,9 @@ class RemoteConfigService {
     // 3. Fetch and activate the new values
     try {
       await remoteConfig.fetchAndActivate();
-      LogRepo('RemoteConfigService').i('Fetched & activated new config.');
+      RepoLog('RemoteConfigService').i('Fetched & activated new config.');
     } catch (e) {
-      LogRepo('RemoteConfigService').w('Failed to fetch remote config: $e');
+      RepoLog('RemoteConfigService').w('Failed to fetch remote config: $e');
       // If it fails, the app will just use the default values.
     }
 

@@ -3,22 +3,22 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
-import 'package:suefery/data/repositories/i_auth_repo.dart';
-import 'package:suefery/data/repositories/i_firestore_repository.dart';
-import 'package:suefery/data/repositories/i_gemini_repo.dart';
-import 'package:suefery/data/services/gemini_service.dart';
+import 'package:suefery/data/repositories/i_repo_auth.dart';
+import 'package:suefery/data/repositories/i_repo_firebase_ai.dart';
+import 'package:suefery/data/repositories/i_repo_firestore.dart';
+import 'package:suefery/data/repositories/repo_firebase_ai.dart';
+import 'package:suefery/data/services/firebase_ai_service.dart';
 import 'package:suefery/data/services/order_service.dart';
 import 'package:suefery/data/services/user_service.dart';
-import 'package:suefery/domain/repositories/firestore_repos.dart';
-import 'package:suefery/domain/repositories/gemini_repo.dart';
+import 'package:suefery/data/repositories/repo_firestore.dart';
 
-import 'data/repositories/i_pref_repo.dart';
+import 'data/repositories/i_repo_pref.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/chat_service.dart';
 import 'data/services/pref_service.dart';
 import 'data/services/remote_config_service.dart';
-import 'domain/repositories/auth_repo.dart';
-import 'domain/repositories/prefs_repos.dart';
+import 'data/repositories/repo_auth.dart';
+import 'data/repositories/repo_prefs.dart';
 
 final sl = GetIt.instance; // sl = Service Locator
 /// Initializes all services and repositories for the app.
@@ -26,7 +26,7 @@ final sl = GetIt.instance; // sl = Service Locator
 Future<void> initLocator(FirebaseApp firebaseApp) async {
 
   final configService = await RemoteConfigService.create();
-  final prefsRepo = await PrefRepo.create();
+  final prefsRepo = await RepoPref.create();
   // --- CONFIGURATION ---
   // Determine if we should use emulators (adjust this logic as needed)
   //const bool useEmulators = kDebugMode; 
@@ -39,20 +39,20 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
   final useEmulatorEnv = dotenv.getBool('USE_FIREBASE_EMULATOR', fallback: false);
   final useGeminiMocks = dotenv.getBool('gemini_use_mocks', fallback: false);
 
-  sl.registerSingleton<IPrefRepo>(prefsRepo);
+  sl.registerSingleton<IRepoPref>(prefsRepo);
 
   // AuthRepo (Async setup for emulator)
-  sl.registerSingletonAsync<IAuthRepo>(() async {
-    return await AuthRepo.create(useEmulator: useEmulatorEnv);
+  sl.registerSingletonAsync<IRepoAuth>(() async {
+    return await RepoAuth.create(useEmulator: useEmulatorEnv);
   });
 
   // FirestoreRepo (Async setup for emulator)
-  sl.registerSingleton<IFirestoreRepo>(
-    FirestoreRepo.create(useEmulator: useEmulatorEnv)
+  sl.registerSingleton<IRepoFirestore>(
+    RepoFirestore.create(useEmulator: useEmulatorEnv)
   );
 
-  sl.registerLazySingleton<IGeminiRepo>(
-      () => GeminiRepo());
+  sl.registerLazySingleton<IRepoFirebaseAi>(
+      () => RepoFirebaseAi.create());
   // --- SERVICES (The "Managers") ---
   
   // Remote Config Service (Async) ---
@@ -60,32 +60,32 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
 
   // Auth Service
   sl.registerLazySingleton<AuthService>(() => AuthService(
-        sl<IAuthRepo>(),
+        sl<IRepoAuth>(),
         sl<PrefService>(),
       ));
 
   // Prefs Service
   sl.registerLazySingleton<PrefService>(() => PrefService(
-        sl<IPrefRepo>(), // GetIt finds the registered IPrefsRepository
+        sl<IRepoPref>(), // GetIt finds the registered IPrefsRepository
       ));
       
   // User Service
   sl.registerLazySingleton<UserService>(() => UserService(
-        sl<IFirestoreRepo>(), // GetIt finds the registered IFirestoreRepository
+        sl<IRepoFirestore>(), // GetIt finds the registered IFirestoreRepository
       ));
       
   // Order Service
   sl.registerLazySingleton<OrderService>(() => OrderService(
-        sl<IFirestoreRepo>(), // GetIt finds the registered IFirestoreRepository
+        sl<IRepoFirestore>(), // GetIt finds the registered IFirestoreRepository
         sl<RemoteConfigService>(), // GetIt finds the registered RemoteConfigService
       ));
   // Chat Service
   sl.registerLazySingleton<ChatService>(() => ChatService(
-       sl<IFirestoreRepo>() 
+       sl<IRepoFirestore>() 
       ));
     // Chat Service
-  sl.registerLazySingleton<GeminiService>(() => GeminiService(
-       sl<IGeminiRepo >() , useGeminiMocks
+  sl.registerLazySingleton<FirebaseAiService>(() => FirebaseAiService(
+       sl<IRepoFirebaseAi >() , useGeminiMocks
       ));
 }
 

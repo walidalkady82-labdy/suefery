@@ -8,7 +8,7 @@ import 'package:suefery/data/enums/message_sender.dart';
 import 'package:suefery/data/models/ai_response.dart';
 import 'package:suefery/data/models/billing_details.dart';
 import 'package:suefery/data/models/structured_order.dart';
-import 'package:suefery/data/services/gemini_service.dart';
+import 'package:suefery/data/services/firebase_ai_service.dart';
 import 'package:suefery/data/services/order_service.dart';
 import 'package:suefery/locator.dart';
 
@@ -72,7 +72,7 @@ class HomeCubit extends Cubit<HomeState> {
   final AuthService _authService = sl<AuthService>();
   final ChatService _chatService = sl<ChatService>();
   final OrderService _orderService = sl<OrderService>();
-  final GeminiService _geminiService = sl<GeminiService>();
+  final FirebaseAiService _geminiService = sl<FirebaseAiService>();
   //final PaymentService _paymentService = sl<PaymentService>();
 
   String get currentUserId => _authService.currentAppUser?.id ?? '';

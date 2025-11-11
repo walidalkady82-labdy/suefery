@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 /// The abstract interface for the Authentication Repository.
 /// This contract defines all methods related to interacting with the
 /// authentication provider (e.g., Firebase).
-abstract class IAuthRepo {
+abstract class IRepoAuth {
   /// Emits the current Firebase user when the auth state changes.
   /// Emits `null` if the user signs out.
   Stream<User?> get authStateChanges;

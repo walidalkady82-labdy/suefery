@@ -1,0 +1,1 @@
+enum GenerationContentType {recipe , order}

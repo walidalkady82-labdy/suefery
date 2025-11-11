@@ -1,17 +1,21 @@
 import 'dart:async';
 import 'package:suefery/data/models/chat_message.dart';
+import 'package:suefery/data/services/ai_chat_response.dart';
+import 'package:suefery/data/services/firebase_ai_service.dart'; // Import FirebaseAiService
+import 'package:suefery/data/enums/model_type.dart'; // Import the new enum
 
-import '../../domain/repositories/log_repo.dart';
-import '../repositories/i_firestore_repository.dart';
+import '../repositories/repo_log.dart';
+import '../repositories/i_repo_firestore.dart';
 
 class ChatService {
-  final IFirestoreRepo _firestoreRepo;
-  final _log = LogRepo('ChatService');
+  final IRepoFirestore _firestoreRepo;
+  final FirebaseAiService _firebaseAiService; // New dependency
+  final _log = RepoLog('ChatService');
 
   // This logic now lives in the service
   static const String _basePath = 'chats';
 
-  ChatService(this._firestoreRepo);
+  ChatService(this._firestoreRepo, this._firebaseAiService); // Update constructor
 
   /// Builds the Firestore path for a given chat.
   String _getCollectionPath(String chatId) {
@@ -73,5 +77,35 @@ class ChatService {
     final path = _getCollectionPath(chatId);
     // Use the repo's update method, targeting the specific message document
     await _firestoreRepo.update(path, message.id, message.toMap());
+  }
+
+  /// Processes a user message by selecting the appropriate AI model
+  /// and returning a structured response.
+  Future<AiChatResponse> processUserMessage(String chatId, String userMessage, List<ChatMessage> chatHistory) async {
+    final ModelType modelType = _selectModelType(chatId, userMessage);
+    _log.i('Selected model type: $modelType for chat ID: $chatId, message: "$userMessage"');
+
+    switch (modelType) {
+      case ModelType.order:
+        final aiResponse = await _firebaseAiService.getAiOrderResponse(chatHistory);
+        return AiChatResponse(orderResponse: aiResponse);
+      case ModelType.chef:
+        final recipeSuggestion = await _firebaseAiService.generateRecipeSuggestion();
+        return AiChatResponse(recipeSuggestion: recipeSuggestion);
+     
+      default:
+        // For chef-related chat or general chat, use the generic text generation
+        final genericResponse = await _firebaseAiService.generateText(prompt: userMessage, history: chatHistory.map((m) => m.toMap()).toList());
+        return AiChatResponse(genericChatResponse: genericResponse);
+    }
+  }
+
+  /// Selects the appropriate chat model based on the chat ID and message content.
+  ModelType _selectModelType(String chatId, String message) {
+    if (chatId.startsWith('chef-')) {
+      return ModelType.chef;
+    }
+    // Default to order model for general chat that might involve ordering
+    return ModelType.order;
   }
 }

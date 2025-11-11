@@ -6,15 +6,15 @@ import 'package:suefery/data/models/order_item.dart';
 import 'package:suefery/data/models/structured_order.dart';
 import 'package:suefery/data/enums/order_status.dart';
 
-import '../../domain/repositories/log_repo.dart';
+import '../repositories/repo_log.dart';
 import '../enums/query_operator.dart';
-import '../repositories/i_firestore_repository.dart';
+import '../repositories/i_repo_firestore.dart';
 import 'remote_config_service.dart'; // Assuming path
 
 class OrderService {
-  final IFirestoreRepo _firestoreRepo;
+  final IRepoFirestore _firestoreRepo;
   final RemoteConfigService _configService;
-  final _log = LogRepo('OrderService');
+  final _log = RepoLog('OrderService');
   final String _collectionPath = 'orders'; // Business logic!
 
   OrderService(this._firestoreRepo, this._configService);

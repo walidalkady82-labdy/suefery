@@ -1,9 +1,9 @@
 import 'package:suefery/data/models/app_user.dart';
 
-import '../repositories/i_firestore_repository.dart'; // Assuming you have this model
+import '../repositories/i_repo_firestore.dart'; // Assuming you have this model
 
 class UserService {
-  final IFirestoreRepo _firestoreRepo;
+  final IRepoFirestore _firestoreRepo;
   final String _collectionPath = 'users'; // Specific logic!
 
   UserService(this._firestoreRepo);

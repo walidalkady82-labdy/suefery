@@ -4,7 +4,7 @@ import '../enums/query_operator.dart';
 
 
 
-abstract class IFirestoreRepo {
+abstract class IRepoFirestore {
   /// Generates a new unique document ID for a given collection path.
   String generateId(String path);
 

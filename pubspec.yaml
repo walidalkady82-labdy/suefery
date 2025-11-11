@@ -39,7 +39,6 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   logger: ^2.6.2
-  google_generative_ai: ^0.4.7
   google_mobile_ads: ^6.0.0
   google_sign_in: ^7.2.0
   flutter_dotenv: ^6.0.0

@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:suefery/data/models/app_user.dart';
-import 'package:suefery/data/repositories/i_auth_repo.dart';
+import 'package:suefery/data/repositories/i_repo_auth.dart';
 import 'package:suefery/data/services/auth_service.dart';
 import 'package:suefery/data/services/pref_service.dart';
 
@@ -14,7 +14,7 @@ import 'auth_service_test.mocks.dart';
 // This tells mockito which classes to generate mocks for.
 // You must re-run the build_runner command if you add more.
 @GenerateMocks([
-  IAuthRepo,
+  IRepoAuth,
   PrefService,
   firebase.User,
   firebase.UserCredential,
