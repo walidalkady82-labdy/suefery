@@ -1150,16 +1150,16 @@ class ChatInputBar extends StatelessWidget {
                 leading: const Icon(Icons.receipt_long),
                 title: const Text('My Past Orders'),
                 onTap: () {
-                  // TODO: Implement past orders logic
                   Navigator.of(context).pop();
+                  cubit.changeView(2); // Switch to the Order History tab
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.help_outline),
                 title: const Text('Help'),
                 onTap: () {
-                  // TODO: Implement help logic
                   Navigator.of(context).pop();
+                  cubit.getHelpMessage();
                 },
               ),
             ],

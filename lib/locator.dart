@@ -1,6 +1,7 @@
 
 // This is the global instance of GetIt
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:suefery/data/repositories/i_repo_auth.dart';
@@ -51,8 +52,9 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
     RepoFirestore.create(useEmulator: useEmulatorEnv)
   );
 
-  sl.registerLazySingleton<IRepoFirebaseAi>(
-      () => RepoFirebaseAi.create());
+  // No longer needed, as AI logic is now in a Cloud Function.
+  // sl.registerLazySingleton<IRepoFirebaseAi>(
+  //     () => RepoFirebaseAi.create());
   // --- SERVICES (The "Managers") ---
   
   // Remote Config Service (Async) ---
@@ -73,19 +75,23 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
   sl.registerLazySingleton<UserService>(() => UserService(
         sl<IRepoFirestore>(), // GetIt finds the registered IFirestoreRepository
       ));
-      
+
+  // Register Firebase Functions with the correct region
+  sl.registerLazySingleton(() => FirebaseFunctions.instanceFor(app: firebaseApp, region: 'us-central1'));
+
+  sl.registerLazySingleton<FirebaseAiService>(() => FirebaseAiService(
+       sl<FirebaseFunctions>() , useGeminiMocks
+      ));    
   // Order Service
   sl.registerLazySingleton<OrderService>(() => OrderService(
         sl<IRepoFirestore>(), // GetIt finds the registered IFirestoreRepository
         sl<RemoteConfigService>(), // GetIt finds the registered RemoteConfigService
       ));
-  // Chat Service
-  sl.registerLazySingleton<ChatService>(() => ChatService(
-       sl<IRepoFirestore>() 
-      ));
+
     // Chat Service
-  sl.registerLazySingleton<FirebaseAiService>(() => FirebaseAiService(
-       sl<IRepoFirebaseAi >() , useGeminiMocks
+  sl.registerLazySingleton<ChatService>(() => ChatService(
+       sl<IRepoFirestore>() ,
+       sl<FirebaseAiService>()
       ));
 }
 

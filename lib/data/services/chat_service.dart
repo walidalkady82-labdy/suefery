@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:suefery/data/models/chat_message.dart';
-import 'package:suefery/data/services/ai_chat_response.dart';
 import 'package:suefery/data/services/firebase_ai_service.dart'; // Import FirebaseAiService
 import 'package:suefery/data/enums/model_type.dart'; // Import the new enum
+import 'package:suefery/data/models/ai_chat_response.dart';
 
 import '../repositories/repo_log.dart';
 import '../repositories/i_repo_firestore.dart';
@@ -82,14 +82,14 @@ class ChatService {
   /// Processes a user message by selecting the appropriate AI model
   /// and returning a structured response.
   Future<AiChatResponse> processUserMessage(String chatId, String userMessage, List<ChatMessage> chatHistory) async {
-    final ModelType modelType = _selectModelType(chatId, userMessage);
+    final AiModelType modelType = _selectModelType(chatId, userMessage);
     _log.i('Selected model type: $modelType for chat ID: $chatId, message: "$userMessage"');
 
     switch (modelType) {
-      case ModelType.order:
+      case AiModelType.order:
         final aiResponse = await _firebaseAiService.getAiOrderResponse(chatHistory);
         return AiChatResponse(orderResponse: aiResponse);
-      case ModelType.chef:
+      case AiModelType.chef:
         final recipeSuggestion = await _firebaseAiService.generateRecipeSuggestion();
         return AiChatResponse(recipeSuggestion: recipeSuggestion);
      
@@ -101,11 +101,24 @@ class ChatService {
   }
 
   /// Selects the appropriate chat model based on the chat ID and message content.
-  ModelType _selectModelType(String chatId, String message) {
+  AiModelType _selectModelType(String chatId, String message) {
+    final lowerCaseMessage = message.toLowerCase();
+
     if (chatId.startsWith('chef-')) {
-      return ModelType.chef;
+      return AiModelType.chef;
     }
-    // Default to order model for general chat that might involve ordering
-    return ModelType.order;
+
+    // Keywords to trigger the 'chef' model for recipe suggestions
+    if (lowerCaseMessage.contains('suggest a recipe')) {
+      return AiModelType.chef;
+    }
+
+    // Keywords to trigger the 'order' model
+    const orderKeywords = ['buy', 'get me', 'order', 'add', 'i want'];
+    if (orderKeywords.any((keyword) => lowerCaseMessage.contains(keyword))) {
+      return AiModelType.order;
+    }
+
+    return AiModelType.general;
   }
 }

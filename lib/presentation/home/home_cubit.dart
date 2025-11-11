@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:suefery/data/enums/model_type.dart';
 import 'package:suefery/data/enums/order_status.dart';
 import 'package:suefery/data/enums/message_sender.dart';
 import 'package:suefery/data/models/ai_response.dart';
+import 'package:suefery/data/models/ai_chat_response.dart';
 import 'package:suefery/data/models/billing_details.dart';
 import 'package:suefery/data/models/structured_order.dart';
 import 'package:suefery/data/services/firebase_ai_service.dart';
@@ -27,6 +29,7 @@ class HomeState {
   final List<StructuredOrder> orders;
   final bool isTyping;
   final int selectedViewIndex;
+  final AiModelType aiModelType;
 
 
   const HomeState({
@@ -37,6 +40,7 @@ class HomeState {
     this.orders = const [],
     this.isTyping = false,
     this.selectedViewIndex = 0,
+    this.aiModelType = AiModelType.general, // Provide a default value
   });
 
   HomeState copyWith({
@@ -47,6 +51,7 @@ class HomeState {
     List<StructuredOrder>? orders,
     bool? isTyping,
     int? selectedViewIndex,
+    AiModelType? aiModelType,
   }) {
     return HomeState(
       messages: messages ?? this.messages,
@@ -56,14 +61,26 @@ class HomeState {
       orders: orders ?? this.orders, // This is now for the 'History' tab
       isTyping: isTyping ?? this.isTyping,
       selectedViewIndex: selectedViewIndex ?? this.selectedViewIndex,
+      aiModelType: aiModelType ?? this.aiModelType,
     );
   }
+  @override
+  List<Object?> get props => [
+        messages,
+        isLoading,
+        geminiIsLoading,
+        geminiIsSuccessful,
+        orders, // This is now for the 'History' tab
+        isTyping,
+        selectedViewIndex,
+        aiModelType,
+      ];
 }
 
 class HomeCubit extends Cubit<HomeState> {
   final _log = LoggerRepo('HomeCubit');
   
-  HomeCubit() : super(HomeState());
+  HomeCubit() : super(const HomeState()); // Use a const constructor
   // Path Structure: /artifacts/{appId}/public/data/chats/{orderId}/messages/{messageId}
   
   static const String _basePath = 'chats';
@@ -72,7 +89,6 @@ class HomeCubit extends Cubit<HomeState> {
   final AuthService _authService = sl<AuthService>();
   final ChatService _chatService = sl<ChatService>();
   final OrderService _orderService = sl<OrderService>();
-  final FirebaseAiService _geminiService = sl<FirebaseAiService>();
   //final PaymentService _paymentService = sl<PaymentService>();
 
   String get currentUserId => _authService.currentAppUser?.id ?? '';
@@ -113,47 +129,100 @@ class HomeCubit extends Cubit<HomeState> {
     // 2. Add user message to chat immediately for responsiveness
     await _addUserMessageToChat(prompt);
 
-    // 4. If not confirming/cancelling, proceed to call Gemini
+    // 3. Process the message through the ChatService to get a structured AI response.
     try {
-      final AiResponse aiResponse = await _geminiService.getAiOrderResponse(state.messages);
+      final aiChatResponse =
+          await _chatService.processUserMessage(currentUserId, prompt, state.messages);
 
-      // 6. Handle Gemini's response
-      if (aiResponse.parsedOrder.orderConfirmed && aiResponse.parsedOrder.requestedItems.isNotEmpty) {
-        // AI has parsed an order. Create a confirmation message in the chat.
-        final confirmationMessage = ChatMessage(
+      // 4. Handle the specific type of response from the service.
+      if (aiChatResponse.isOrderResponse) {
+        final aiResponse = aiChatResponse.orderResponse!;
+        if (aiResponse.parsedOrder.orderConfirmed && aiResponse.parsedOrder.requestedItems.isNotEmpty) {
+          final confirmationMessage = ChatMessage(
+            id: _orderService.generateId(),
+            senderId: 'gemini',
+            text: aiResponse.aiResponseText,
+            timestamp: DateTime.now(),
+            senderType: MessageSender.gemini,
+            messageType: ChatMessageType.orderConfirmation,
+            parsedOrder: aiResponse.parsedOrder,
+          );
+          await _chatService.sendMessage(currentUserId, confirmationMessage);
+        } else {
+          final aiMessage = ChatMessage(
+            id: _orderService.generateId(),
+            senderId: 'gemini',
+            text: aiResponse.aiResponseText,
+            timestamp: DateTime.now(),
+            senderType: MessageSender.gemini,
+          );
+          await _chatService.sendMessage(currentUserId, aiMessage);
+        }
+      } else if (aiChatResponse.isRecipeSuggestion) {
+        final recipe = aiChatResponse.recipeSuggestion!;
+        // The backend returns a map, let's create a nice message.
+        final recipeMessage = ChatMessage(
           id: _orderService.generateId(),
           senderId: 'gemini',
-          text: aiResponse.aiResponseText,
+          text: 'Here is a recipe idea for you:', // Title text
           timestamp: DateTime.now(),
           senderType: MessageSender.gemini,
-          messageType: ChatMessageType.orderConfirmation, // <-- SET NEW TYPE
-          parsedOrder: aiResponse.parsedOrder, // <-- ATTACH ORDER DATA
+          messageType: ChatMessageType.recipe, // Set the type
+          // Extract data from the map
+          recipeName: recipe['name'] as String?,
+          recipeIngredients: (recipe['ingredients'] as List<dynamic>?)
+              ?.map((e) => "${e['name']} (${e['quantity']})")
+              .toList(),
         );
-        // Initialize the items for this confirmation message in the state
-
-        // Persist the message; the stream will update the UI state.
-        await _chatService.sendMessage(currentUserId, confirmationMessage);
-        // --- FIX: Reset loading state after sending confirmation message ---
-        emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: true));
-      } else {
-        // It was just a conversational message, no order detected. Add the plain text response.
+        await _chatService.sendMessage(currentUserId, recipeMessage);
+      } else if (aiChatResponse.isGenericChat) {
         final aiMessage = ChatMessage(
           id: _orderService.generateId(),
           senderId: 'gemini',
-          text: aiResponse.aiResponseText,
+          text: aiChatResponse.genericChatResponse!,
           timestamp: DateTime.now(),
           senderType: MessageSender.gemini,
         );
-        // Persist the message; the stream will update the UI state.
-        await _chatService.sendMessage(currentUserId, aiMessage); 
-        emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: true));
+        await _chatService.sendMessage(currentUserId, aiMessage);
       }
+
+      emit(state.copyWith(geminiIsSuccessful: true));
     } catch (e) {
-      _log.e('Error calling Gemini service: $e');
-      emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: false));
+      _log.e('Error processing user message: $e');
+      emit(state.copyWith(geminiIsSuccessful: false));
+    } finally {
+      // This block will always run, ensuring the indicator is turned off.
+      emit(state.copyWith(geminiIsLoading: false));
     }
   }
 
+  /// A convenience method to trigger a recipe suggestion.
+  Future<void> suggestRecipe() async {
+    await submitOrderPrompt('suggest a recipe');
+  }
+
+  /// Fetches a generic help message from the AI and adds it to the chat.
+  Future<void> getHelpMessage() async {
+    emit(state.copyWith(geminiIsLoading: true));
+    try {
+      // We don't add the user's "Help" prompt to the chat history.
+      // We just use it to get a generic response from the service.
+      final aiChatResponse = await _chatService.processUserMessage(currentUserId, 'Help', state.messages);
+
+      if (aiChatResponse.isGenericChat) {
+        // Add only the AI's response to the chat.
+        await _addUserMessageToChat(aiChatResponse.genericChatResponse!, sender: MessageSender.gemini);
+      }
+      emit(state.copyWith(geminiIsSuccessful: true));
+    } catch (e) {
+      _log.e('Error getting help message: $e');
+      emit(state.copyWith(geminiIsSuccessful: false));
+      // Optionally, add a local error message to the chat
+      await _addUserMessageToChat("Sorry, I couldn't fetch help information right now.", sender: MessageSender.system);
+    } finally {
+      emit(state.copyWith(geminiIsLoading: false));
+    }
+  }
   /// Called by the modal's "Confirm" button.
   Future<bool?> confirmAndPayForOrder(BuildContext context, AiParsedOrder parsedOrder, ChatMessage message) async {
     emit(state.copyWith(isLoading: true));
@@ -352,43 +421,6 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
   
-  Future<void> suggestRecipe() async {
-    emit(state.copyWith(geminiIsLoading: true));
-    
-    // 1. Call the service (no change here)
-    final result = await _geminiService.generateRecipeSuggestion();
-    
-    // 2. Get the *first* suggestion from the list
-    // (Your Gemini prompt returns a 'suggestions' list)
-    final suggestion =  result['ingredients'];//(result['ingredients'] as List).firstOrNull;
-    
-    if (suggestion != null) {
-      // 3. Create a new ChatMessage with the recipe data
-      final recipeMessage = ChatMessage(
-        id: _orderService.generateId(),
-        senderId: 'gemini',
-        text: 'Here is a lunch idea for you:', // Fallback/title text
-        timestamp: DateTime.now(),
-        senderType: MessageSender.gemini,
-        messageType: ChatMessageType.recipe, // SET THE TYPE
-        recipeName: result['name'],
-        recipeIngredients: (result['ingredients'] as List<dynamic>)
-            .map((e) => "${e['name']} (${e['quantity']})") // Format ingredients
-            .toList(),
-      );
-
-      // 4. Add the new message to the chat list
-      emit(state.copyWith(
-        geminiIsLoading: false,
-        geminiIsSuccessful: true,
-        messages: List.from(state.messages)..add(recipeMessage),
-      ));
-    } else {
-      // Handle error if no suggestion was returned
-      emit(state.copyWith(geminiIsLoading: false, geminiIsSuccessful: false));
-    }
-  }
-
   // void sendMessage() {
   //   // 1. Get the text from the controller and trim whitespace
   //   final text = _controller.text.trim();

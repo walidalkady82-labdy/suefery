@@ -1,4 +1,4 @@
-enum ModelType {
+enum AiModelType {
   order,
   chef,
   general,

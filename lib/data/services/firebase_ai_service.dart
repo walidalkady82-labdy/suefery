@@ -1,20 +1,51 @@
 import 'dart:async';
-import 'dart:math';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:suefery/data/enums/message_sender.dart';
 import 'package:suefery/data/models/ai_response.dart';
 import 'package:suefery/data/models/chat_message.dart';
 import 'package:flutter/foundation.dart';
-import 'package:suefery/data/repositories/i_repo_firebase_ai.dart';
 
 import '../repositories/repo_log.dart';
 
 class FirebaseAiService {
-  final _log = RepoLog('GeminiService');
-  final IRepoFirebaseAi _repository;
+  final _log = RepoLog('FirebaseAiService');
+  final FirebaseFunctions _functions;
   final bool _useMocks;
-  final _random = Random();
 
-  FirebaseAiService(this._repository, this._useMocks);
-  
+  FirebaseAiService(this._functions, this._useMocks);
+
+  /// A generic method to call the geminiProxy Cloud Function.
+  Future<Map<String, dynamic>> _callGeminiProxy({
+    required String modelType,
+    required List<ChatMessage> history,
+  }) async {
+    try {
+      _log.i('Calling geminiProxy with modelType: $modelType...');
+      final callable = _functions.httpsCallable('geminiProxy');
+      final response = await callable.call<Map<String, dynamic>>({
+        'modelType': modelType,
+        'history': history
+            .map((m) => {
+                  'role': m.senderType == MessageSender.user ? 'user' : 'model',
+                  'text': m.text,
+                })
+            .toList(),
+      });
+      _log.i('Successfully received response from geminiProxy.');
+      return response.data;
+    } on FirebaseFunctionsException catch (e, s) {
+      _log.e(
+        'FirebaseFunctionsException calling geminiProxy: ${e.code} - ${e.message}',
+        stackTrace: s,
+      );
+      // Rethrow to be handled by the calling method.
+      rethrow;
+    } catch (e, s) {
+      _log.e('Generic error calling geminiProxy: $e', stackTrace: s);
+      rethrow;
+    }
+  }
+
   /// Processes a chat history as the **Delivery Assistant**.
   Future<AiResponse> getAiOrderResponse(List<ChatMessage> history) async {
     // Check the config value *every time*
@@ -23,21 +54,12 @@ class FirebaseAiService {
       return _getAiOrderResponseMock();
     }
 
-    final contents = history
-        .map((m) => {
-              'role': m.senderType == 'user' ? 'user' : 'model',
-              'parts': [{'text': m.text}]
-            })
-        .toList();
-
     try {
-      final Map<String, dynamic> rawJsonResponse =
-          await _repository.generateOrderContent(contents);
+      final rawJsonResponse = await _callGeminiProxy(modelType: 'order', history: history);
       return AiResponse.fromMap(rawJsonResponse);
     } catch (e) {
-      _log.e('GeminiService Error: $e');
-      return AiResponse.error(
-          'Sorry, I\'m having trouble connecting. Please try again.');
+      _log.e('getAiOrderResponse Error: $e');
+      return AiResponse.error('Sorry, I\'m having trouble connecting. Please try again.');
     }
   }
 
@@ -48,101 +70,71 @@ class FirebaseAiService {
       return _generateRecipeSuggestionMock();
     }
 
-    final userPrompt =
-        "Please suggest two popular and quick Egyptian lunch ideas I can make today.";
-
     try {
-      // Both methods now call the *same* repository method,
-      // just with a different payload.
-      final Map<String, dynamic> rawJsonResponse =
-          await _repository.generateRecipeContent(userPrompt);
-      
-      // We return the raw map, which the Cubit will parse
+      // The 'chef' model in the backend doesn't require history.
+      final rawJsonResponse = await _callGeminiProxy(modelType: 'chef', history: []);
       return rawJsonResponse;
     } catch (e) {
-      debugPrint('GeminiService Error (Recipe): $e');
-      return {
-        'suggestions': []
-      }; // Return an empty list on error
+      _log.e('generateRecipeSuggestion Error: $e');
+      return {'suggestions': []}; // Return an empty list on error
+    }
+  }
+
+  /// Generates a generic text response as the **General Assistant**.
+  Future<String> generateText({required String prompt, List<Map<String, dynamic>>? history}) async {
+    if (_useMocks) {
+      debugPrint("FirebaseAiService: Using MOCK for generateText()");
+      return "This is a mock response to your question.";
+    }
+
+    // The cloud function expects a List<ChatMessage>. We'll convert the raw history
+    // and add the new prompt as the last message.
+    final chatHistory = (history ?? [])
+        .map((h) => ChatMessage.fromMap(h..['id'] = 'temp'..['timestamp'] = DateTime.now().toIso8601String()))
+        .toList();
+    //TODO: check id and sender id
+    chatHistory.add(ChatMessage(
+      id: 'temp_user_prompt',
+      senderId: 'temp_user',
+      text: prompt,
+      senderType: MessageSender.user,
+      timestamp: DateTime.now(),
+    ));
+
+    try {
+      final result = await _callGeminiProxy(modelType: 'general', history: chatHistory);
+      // The 'general' model returns a map like {'text': '...'}
+      return result['text'] as String? ?? "Sorry, I couldn't process that.";
+    } catch (e) {
+      _log.e('generateText Error: $e');
+      return "I'm having trouble thinking right now. Please try again in a moment.";
     }
   }
 
   // --- Private Mock Helpers ---
 
   Future<AiResponse> _getAiOrderResponseMock() async {
-    await Future.delayed(Duration(milliseconds: 300 + _random.nextInt(700)));
-
-    // --- 3. CREATE A LIST OF MOCK ORDER RESPONSES ---
-    final mockResponses = [
-      // Mock 1: Confirmed order
-      {
-        "ai_response_text":
-            "Mock 1: Sure thing! I've got 2 bottles of Water and 1 bag of Chips. Does this look correct?",
-        "parsed_order": {
-          "order_confirmed": true,
-          "requested_items": [
-            {"item_name": "Water Bottle", "quantity": 2, "notes": "Large", "unit_price": 5.0},
-            {"item_name": "Chips", "quantity": 1, "notes": "Spicy", "unit_price": 8.0}
-          ]
-        }
-      },
-      // Mock 2: Just chatting (order NOT confirmed)
-      {
-        "ai_response_text":
-            "Mock 2: Hello! How can I help you today?",
-        "parsed_order": {
-          "order_confirmed": false,
-          "requested_items": []
-        }
-      },
-      // Mock 3: Another confirmed order
-      {
-        "ai_response_text":
-            "Mock 3: You got it. That's 5 packs of Molto. Ready to confirm?",
-        "parsed_order": {
-          "order_confirmed": true,
-          "requested_items": [
-            {"item_name": "Molto", "quantity": 5, "notes": "Cheese flavor", "unit_price": 3.0}
-          ]
-        }
-      },
-      // Mock 4: Just chatting
-      {
-        "ai_response_text":
-            "Mock 4: We deliver all over Beni Suef! What can I get for you?",
-        "parsed_order": {
-          "order_confirmed": false,
-          "requested_items": []
-        }
+    await Future.delayed(const Duration(seconds: 1));
+    return AiResponse.fromMap({
+      "ai_response_text": "Mock: I've got 2 bottles of Water and 1 bag of Chips. Correct?",
+      "parsed_order": {
+        "order_confirmed": true,
+        "requested_items": [
+          {"item_name": "Water Bottle", "quantity": 2, "notes": "Large", "unit_price": 5.0},
+          {"item_name": "Chips", "quantity": 1, "notes": "Spicy", "unit_price": 8.0}
+        ]
       }
-    ];
-
-    // --- 4. PICK A RANDOM ONE ---
-    final selectedMock = mockResponses[_random.nextInt(mockResponses.length)]; //
-    
-    return AiResponse.fromMap(selectedMock);
+    });
   }
 
   Future<Map<String, dynamic>> _generateRecipeSuggestionMock() async {
-    await Future.delayed(Duration(milliseconds: 200 + _random.nextInt(500)));
-    final mockRecipes = [
-      {
-        'name': 'Mock Koshari',
-        'ingredients': [
-          {'name':'Mock Rice', 'quantity':'1'}, 
-          {'name':'Mock Lentils', 'quantity':'2'},  
-          {'name':'Mock Tomato Sauce', 'quantity':'3'}, 
-          ]
-      },
-      {
-        'name': 'Mock Molokhia',
-        'ingredients': [
-          {'name':'Molokhia leaves', 'quantity':'1'}, 
-          {'name':'Chicken Broth', 'quantity':'1'}, 
-          {'name':'Garlic', 'quantity':'1'}, 
-          ]
-      }
-    ];
-    return mockRecipes[_random.nextInt(mockRecipes.length)];
+    await Future.delayed(const Duration(seconds: 1));
+    return {
+      'name': 'Mock Koshari',
+      'ingredients': [
+        {'name': 'Mock Rice', 'quantity': '1 cup'},
+        {'name': 'Mock Lentils', 'quantity': '1 cup'},
+      ]
+    };
   }
 }
