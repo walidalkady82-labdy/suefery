@@ -49,7 +49,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logInScreenTitle => 'SUEFERY LOGIN';
 
   @override
-  String get loginTextButton => '\'Already have an account? Log in';
+  String get loginButton => '\'Log in';
+
+  @override
+  String get loginTextButton => '\'Already have an account?Log in';
+
+  @override
+  String get logoutTextButton => 'Log out';
 
   @override
   String get signUpButton => 'sign up';
@@ -160,4 +166,78 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileTitle => 'Profile';
+
+  @override
+  String get pendingOrdersTextButton => 'Pending Orders';
+
+  @override
+  String get orderTextButton => 'Orders';
+
+  @override
+  String get appBarTitle => 'Gemini Chef';
+
+  @override
+  String get welcomeTitle => '👋 Welcome to Chef AI!';
+
+  @override
+  String get welcomeLottieTitle => 'Here\'s a quick look at what I can do:';
+
+  @override
+  String get welcomeFirstTimePrompt =>
+      'Ready to order? To save your history and place orders, please sign in or register below.';
+
+  @override
+  String get welcomeReturningPrompt =>
+      'Welcome back! Please sign in or register to continue your session.';
+
+  @override
+  String animationError(String error) {
+    return 'Could not load animation: $error';
+  }
+
+  @override
+  String get signInTitle => 'Sign In';
+
+  @override
+  String get registerTitle => 'Register';
+
+  @override
+  String get verifyEmailTitle => 'Verify Your Email';
+
+  @override
+  String get verifyEmailBody =>
+      'We\'ve sent a verification link to your email. Please check your inbox (and spam folder) to continue.';
+
+  @override
+  String get verifyEmailResendButton => 'Resend Verification Email';
+
+  @override
+  String get verifyEmailBackButton => 'Back to Login';
+
+  @override
+  String get recipeTitleFallback => 'Recipe';
+
+  @override
+  String get recipeNoIngredients => 'No ingredients listed.';
+
+  @override
+  String get unknownAuthState => 'Unknown Authentication State.';
+
+  @override
+  String get menuTooltip => 'Menu';
+
+  @override
+  String get chatHint => 'Type a message...';
+
+  @override
+  String get authHintChoice => 'Type \'Sign In\' or \'Register\'';
+
+  @override
+  String get authHintEmail => 'Enter your email...';
+
+  @override
+  String get authHintPassword => 'Enter your password...';
+
+  @override
+  String get authHintConfirmPassword => 'Confirm your password...';
 }

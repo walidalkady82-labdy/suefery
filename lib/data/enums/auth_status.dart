@@ -3,5 +3,6 @@ enum AuthStatus {
   awaitingVerification,
   unauthenticated,
   inProgress,
+  failure,
   none,
 }

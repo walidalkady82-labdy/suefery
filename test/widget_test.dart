@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:suefery/data/enums/message_sender.dart';
-import 'package:suefery/data/models/chat_message.dart';
+import 'package:suefery/data/models/chat_message.txt';
 import 'package:suefery/data/services/chat_service.dart';
 
 void main() {
@@ -9,7 +10,7 @@ void main() {
     final mockRepo = MockGeminiRepo();
     final service = ChatService(mockRepo);
     final history = [ChatMessage(
-      text: 'i need 2 coke and 1 chips', 
+      content: 'i need 2 coke and 1 chips', 
       senderType: MessageSender.user, 
       senderId: '', 
       timestamp: DateTime.now()
@@ -30,7 +31,7 @@ void main() {
     final mockRepo = MockGeminiFailureRepo();
     final service = ChatService(mockRepo);
     final history = [ChatMessage(
-      text: 'hi', 
+      content: 'hi', 
       senderType: MessageSender.user, 
       senderId: '', 
       timestamp: DateTime.now()

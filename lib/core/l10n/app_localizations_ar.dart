@@ -48,7 +48,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logInScreenTitle => 'تسجيل الدخول بسويفري';
 
   @override
+  String get loginButton => 'تسجيل الدخول';
+
+  @override
   String get loginTextButton => 'هل لديك حساب بالفعل؟ سجل الدخول';
+
+  @override
+  String get logoutTextButton => 'تسجيل الخروج';
 
   @override
   String get signUpButton => 'التسجيل';
@@ -159,4 +165,78 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get profileTitle => 'الملف الشخصي';
+
+  @override
+  String get pendingOrdersTextButton => 'طلبات قيد الانتظار';
+
+  @override
+  String get orderTextButton => 'طلبات';
+
+  @override
+  String get appBarTitle => 'الشيف جيميناي';
+
+  @override
+  String get welcomeTitle => '👋 مرحبًا بك في مساعد الشيف!';
+
+  @override
+  String get welcomeLottieTitle => 'إليك نظرة سريعة على ما يمكنني القيام به:';
+
+  @override
+  String get welcomeFirstTimePrompt =>
+      'هل أنت مستعد للطلب؟ لحفظ سجل طلباتك ولتتمكن من الطلب، يرجى تسجيل الدخول أو إنشاء حساب أدناه.';
+
+  @override
+  String get welcomeReturningPrompt =>
+      'مرحبًا بعودتك! يرجى تسجيل الدخول أو التسجيل لمتابعة جلستك.';
+
+  @override
+  String animationError(String error) {
+    return 'لا يمكن تحميل الرسوم المتحركة: $error';
+  }
+
+  @override
+  String get signInTitle => 'تسجيل الدخول';
+
+  @override
+  String get registerTitle => 'التسجيل';
+
+  @override
+  String get verifyEmailTitle => 'تحقق من بريدك الإلكتروني';
+
+  @override
+  String get verifyEmailBody =>
+      'لقد أرسلنا رابط تحقق إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد (ومجلد الرسائل غير المرغوب فيها) للمتابعة.';
+
+  @override
+  String get verifyEmailResendButton => 'إعادة إرسال بريد التحقق';
+
+  @override
+  String get verifyEmailBackButton => 'العودة لتسجيل الدخول';
+
+  @override
+  String get recipeTitleFallback => 'وصفة';
+
+  @override
+  String get recipeNoIngredients => 'لا توجد مكونات مدرجة.';
+
+  @override
+  String get unknownAuthState => 'حالة مصادقة غير معروفة.';
+
+  @override
+  String get menuTooltip => 'القائمة';
+
+  @override
+  String get chatHint => 'اكتب رسالة...';
+
+  @override
+  String get authHintChoice => 'اكتب \'تسجيل الدخول\' أو \'تسجيل\'';
+
+  @override
+  String get authHintEmail => 'أدخل بريدك الإلكتروني...';
+
+  @override
+  String get authHintPassword => 'أدخل كلمة المرور الخاصة بك...';
+
+  @override
+  String get authHintConfirmPassword => 'أعد تأكيد كلمة المرور...';
 }

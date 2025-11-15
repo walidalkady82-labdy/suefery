@@ -176,11 +176,23 @@ abstract class AppLocalizations {
   /// **'SUEFERY LOGIN'**
   String get logInScreenTitle;
 
+  /// The text for the login button
+  ///
+  /// In en, this message translates to:
+  /// **'\'Log in'**
+  String get loginButton;
+
   /// The text for the login message text
   ///
   /// In en, this message translates to:
-  /// **'\'Already have an account? Log in'**
+  /// **'\'Already have an account?Log in'**
   String get loginTextButton;
+
+  /// The text for the logout text
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get logoutTextButton;
 
   /// The text for the standard sign-up button.
   ///
@@ -397,6 +409,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile'**
   String get profileTitle;
+
+  /// pending Orders button text
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Orders'**
+  String get pendingOrdersTextButton;
+
+  /// Orders text button
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get orderTextButton;
+
+  /// Main title in the AppBar
+  ///
+  /// In en, this message translates to:
+  /// **'Gemini Chef'**
+  String get appBarTitle;
+
+  /// The first message in the anonymous welcome flow
+  ///
+  /// In en, this message translates to:
+  /// **'👋 Welcome to Chef AI!'**
+  String get welcomeTitle;
+
+  /// The title for the Lottie presentation bubble
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s a quick look at what I can do:'**
+  String get welcomeLottieTitle;
+
+  /// The final prompt in the anonymous flow asking the user to sign up
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to order? To save your history and place orders, please sign in or register below.'**
+  String get welcomeFirstTimePrompt;
+
+  /// The message shown to a returning anonymous user
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back! Please sign in or register to continue your session.'**
+  String get welcomeReturningPrompt;
+
+  /// Error message if the Lottie file fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load animation: {error}'**
+  String animationError(String error);
+
+  /// The title for the Sign In form bubble
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get signInTitle;
+
+  /// The title for the Register form bubble
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get registerTitle;
+
+  /// Title for the email verification screen
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Your Email'**
+  String get verifyEmailTitle;
+
+  /// Body text for the email verification screen
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent a verification link to your email. Please check your inbox (and spam folder) to continue.'**
+  String get verifyEmailBody;
+
+  /// Button text to resend the verification email
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Verification Email'**
+  String get verifyEmailResendButton;
+
+  /// Button text to go back to the login flow
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get verifyEmailBackButton;
+
+  /// Fallback title for a recipe bubble
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe'**
+  String get recipeTitleFallback;
+
+  /// Fallback text when a recipe has no ingredients
+  ///
+  /// In en, this message translates to:
+  /// **'No ingredients listed.'**
+  String get recipeNoIngredients;
+
+  /// Error message for an unhandled auth state
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Authentication State.'**
+  String get unknownAuthState;
+
+  /// Tooltip for the main menu icon button
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get menuTooltip;
+
+  /// Default hint text for the chat input bar when authenticated
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message...'**
+  String get chatHint;
+
+  /// Hint text when asking the user to choose between sign in or register
+  ///
+  /// In en, this message translates to:
+  /// **'Type \'Sign In\' or \'Register\''**
+  String get authHintChoice;
+
+  /// Hint text when asking the user for their email
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email...'**
+  String get authHintEmail;
+
+  /// Hint text when asking the user for their password
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password...'**
+  String get authHintPassword;
+
+  /// Hint text when asking the user to confirm their password
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your password...'**
+  String get authHintConfirmPassword;
 }
 
 class _AppLocalizationsDelegate

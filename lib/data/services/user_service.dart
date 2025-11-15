@@ -1,4 +1,4 @@
-import 'package:suefery/data/models/app_user.dart';
+import 'package:suefery/data/models/user_model.dart';
 
 import '../repositories/i_repo_firestore.dart'; // Assuming you have this model
 
@@ -8,8 +8,8 @@ class UserService {
 
   UserService(this._firestoreRepo);
 
-  /// Gets a stream of a single user, converting it to an [AppUser] model.
-  Stream<AppUser?> getUserStream(String userId) {
+  /// Gets a stream of a single user, converting it to an [UserModel] model.
+  Stream<UserModel?> getUserStream(String userId) {
     return _firestoreRepo
         .quaryDocumentStream(_collectionPath, userId)
         .map((snapshot) {
@@ -17,22 +17,22 @@ class UserService {
         return null;
       }
       // Business Logic: Handles data conversion
-      return AppUser.fromMap(snapshot.data()!);
+      return UserModel.fromMap(snapshot.data()!);
     });
   }
 
   /// Fetches a single user by their ID.
-  Future<AppUser?> getUser(String userId) async {
+  Future<UserModel?> getUser(String userId) async {
     final snapshot =
         await _firestoreRepo.getDocumentSnapShot(_collectionPath, userId);
     if (!snapshot.exists || snapshot.data() == null) {
       return null;
     }
-    return AppUser.fromMap(snapshot.data()!);
+    return UserModel.fromMap(snapshot.data()!);
   }
 
-  /// Creates a new user in the database from an [AppUser] object.
-  Future<void> createUser(AppUser user) {
+  /// Creates a new user in the database from an [UserModel] object.
+  Future<void> createUser(UserModel user) {
     // Business Logic: Ensures a new user is created with their ID
     // and handles data conversion.
     return _firestoreRepo.update(

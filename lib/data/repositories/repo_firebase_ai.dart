@@ -107,7 +107,7 @@ class RepoFirebaseAi implements IRepoFirebaseAi {
       _log.e('API Error: Response was empty (no text or function call).');
       throw Exception('Failed to get response from AI: Response was empty.');
     } catch (e, s) {
-      _log.e('API Error in generateContent $e',stackTrace:  s);
+      _log.e('API Error in generateContent $e',  s);
       rethrow;
     }
   }
@@ -126,7 +126,7 @@ class RepoFirebaseAi implements IRepoFirebaseAi {
       }
       return jsonDecode(jsonText) as Map<String, dynamic>;
     } catch (e, s) {
-      _log.e('API Error in generateRecipeContent: $e',stackTrace:  s);
+      _log.e('API Error in generateRecipeContent: $e', s);
       rethrow;
     }
   }
@@ -160,7 +160,7 @@ class RepoFirebaseAi implements IRepoFirebaseAi {
         throw Exception('Failed to get response from AI: No text in response.');
       }
     } catch (e, s) {
-      _log.e('API Error in generateText: $e',stackTrace:  s);
+      _log.e('API Error in generateText: $e',  s);
       rethrow;
     }
   }

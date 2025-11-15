@@ -1,21 +1,16 @@
-
-// This is the global instance of GetIt
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:suefery/data/repositories/i_repo_auth.dart';
-import 'package:suefery/data/repositories/i_repo_firebase_ai.dart';
 import 'package:suefery/data/repositories/i_repo_firestore.dart';
-import 'package:suefery/data/repositories/repo_firebase_ai.dart';
 import 'package:suefery/data/services/firebase_ai_service.dart';
-import 'package:suefery/data/services/order_service.dart';
 import 'package:suefery/data/services/user_service.dart';
 import 'package:suefery/data/repositories/repo_firestore.dart';
-
 import 'data/repositories/i_repo_pref.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/chat_service.dart';
+import 'data/services/order_service.dart';
 import 'data/services/pref_service.dart';
 import 'data/services/remote_config_service.dart';
 import 'data/repositories/repo_auth.dart';
@@ -82,7 +77,7 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
   sl.registerLazySingleton<FirebaseAiService>(() => FirebaseAiService(
        sl<FirebaseFunctions>() , useGeminiMocks
       ));    
-  // Order Service
+  //Order Service
   sl.registerLazySingleton<OrderService>(() => OrderService(
         sl<IRepoFirestore>(), // GetIt finds the registered IFirestoreRepository
         sl<RemoteConfigService>(), // GetIt finds the registered RemoteConfigService

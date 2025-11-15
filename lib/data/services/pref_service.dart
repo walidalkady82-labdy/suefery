@@ -52,6 +52,13 @@ class PrefService {
     await _prefsRepo.setBool(PreferencesKey.isFirstLogin.name, value);
   }
 
+  // --- New Logic for Onboarding ---
+  bool get hasSeenWelcomeChat => _prefsRepo.getBool(PreferencesKey.hasSeenWelcomeChat.name);
+
+  Future<void> setHasSeenWelcomeChat(bool value) async {
+    await _prefsRepo.setBool(PreferencesKey.hasSeenWelcomeChat.name, value);
+  }
+
   bool get isUserLoggedin  =>
       _prefsRepo.getBool(PreferencesKey.userIsLoggedin.name);
 

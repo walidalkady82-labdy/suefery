@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class PulsingDotsIndicator extends StatefulWidget {
-  const PulsingDotsIndicator({super.key});
+class TypingIndicator extends StatefulWidget {
+  const TypingIndicator({super.key});
 
   @override
-  State<PulsingDotsIndicator> createState() => _PulsingDotsIndicatorState();
+  State<TypingIndicator> createState() => _TypingIndicatorState();
 }
 
-class _PulsingDotsIndicatorState extends State<PulsingDotsIndicator>
+class _TypingIndicatorState extends State<TypingIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;

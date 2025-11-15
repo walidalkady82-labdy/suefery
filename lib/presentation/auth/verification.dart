@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 
-import 'auth_cubit.dart';
+import '../home/auth_cubit.dart';
 
 class VerificationScreen extends StatelessWidget {
   final String email;

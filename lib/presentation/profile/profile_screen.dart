@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
-import 'package:suefery/presentation/auth/auth_cubit.dart';
+import 'package:suefery/presentation/home/auth_cubit.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

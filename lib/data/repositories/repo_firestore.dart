@@ -60,6 +60,12 @@ class RepoFirestore implements IRepoFirestore {
   @override
   Future<String> add(String path, Map<String, dynamic> data,{String? id}) async {
     try {
+      // --- Defensive Programming: Prevent invalid paths ---
+      if (path.contains('//')) {
+        final error = ArgumentError('A collection path must not contain "//". Path: "$path"');
+        _log.e(error.toString());
+        throw error;
+      }
       DocumentReference<Map<String, dynamic>> ref;
       if (id != null) {
         ref = _firestore.collection(path).doc(id);

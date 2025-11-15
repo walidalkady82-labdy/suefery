@@ -3,6 +3,7 @@ enum PreferencesKey {
   currentUserId,
   authToken,
   isFirstLogin,
+  hasSeenWelcomeChat,
   userIsLoggedin,
   userLoginTime,
   userLoggedOffTime,

@@ -23,7 +23,8 @@
 
   "googleSignin": "تسجيل الدخول باستخدام جوجل",
 
-  "toSignup": "للتسجيل",
+ 
+ "toSignup": "للتسجيل",
   
   "emailHint": "البريد الإلكتروني",
 
@@ -56,7 +57,8 @@
 
   "partnerStore": "متجر  شركاء",
   "total": "الإجمالى",
-  "fastestDeliveryZone": "منطقة التوصيل الأسرع",
+  
+"fastestDeliveryZone": "منطقة التوصيل الأسرع",
   "verificationNeeded": "البريد الإلكتروني لم يتم التحقق",
   "checkStatusButton": "تحقق من الحالة",
   "welcomeMessage": "مرحبا!",
@@ -68,7 +70,101 @@
   "changeLanguage": "تغيير اللغة",
   "selectLanguage": "اختر اللغة",
   "currentLanguage": "اللغة الحالية هي: {currentLanguage}",
+  "@currentLanguage": {
+    "description": "اللغة الحالية المحددة",
+    "placeholders": {
+      "currentLanguage": {
+        "type": "String",
+        "example": "ar"
+      }
+    }
+  },
   "darkMode": "تفعيل وضع الليلي",
   "profileTitle": "الملف الشخصي",
-  "logInScreenTitle" : "تسجيل الدخول بسويفري"
+  "logInScreenTitle" : "تسجيل الدخول بسويفري",
+  "loginButton" : "تسجيل الدخول",
+  "logoutTextButton" : "تسجيل الخروج",
+  "pendingOrdersTextButton" : "طلبات قيد الانتظار",
+  "orderTextButton" : "طلبات",
+
+  "appBarTitle": "الشيف جيميناي",
+  "@appBarTitle": {"description": "العنوان الرئيسي في شريط التطبيق"},
+
+  "welcomeTitle": "👋 مرحبًا بك في مساعد الشيف!",
+  "@welcomeTitle": {"description": "الرسالة الأولى في تدفق الترحيب المجهول"},
+
+  "welcomeLottieTitle": "إليك نظرة سريعة على ما يمكنني القيام به:",
+  "@welcomeLottieTitle": {"description": "العنوان الخاص بفقاعة عرض اللوتي"},
+
+  "welcomeFirstTimePrompt": "هل أنت مستعد للطلب؟ لحفظ سجل طلباتك ولتتمكن من الطلب، يرجى تسجيل الدخول أو إنشاء حساب أدناه.",
+  "@welcomeFirstTimePrompt": {"description": "المطالبة النهائية في التدفق المجهول التي تطلب من المستخدم التسجيل"},
+
+  "welcomeReturningPrompt": "مرحبًا بعودتك! يرجى تسجيل الدخول أو التسجيل لمتابعة جلستك.",
+  "@welcomeReturningPrompt": {"description": "الرسالة التي تظهر للمستخدم المجهول العائد"},
+
+  "animationError": "لا يمكن تحميل الرسوم المتحركة: {error}",
+  "@animationError": {
+    "description": "رسالة خطأ في حال فشل تحميل ملف اللوتي",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "الأصل غير موجود"
+      }
+    }
+  },
+
+  "signInTitle": "تسجيل الدخول",
+  "@signInTitle": {"description": "العنوان الخاص بفقاعة نموذج تسجيل الدخول"},
+
+  "registerTitle": "التسجيل",
+  "@registerTitle": {"description": "العنوان الخاص بفقاعة نموذج التسجيل"},
+  
+  "verifyEmailTitle": "تحقق من بريدك الإلكتروني",
+  "@verifyEmailTitle": {"description": "عنوان شاشة التحقق من البريد الإلكتروني"},
+
+  "verifyEmailBody": "لقد أرسلنا رابط تحقق إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد (ومجلد الرسائل غير المرغوب فيها) للمتابعة.",
+  "@verifyEmailBody": {"description": "النص الأساسي لشاشة التحقق من البريد الإلكتروني"},
+
+  "verifyEmailResendButton": "إعادة إرسال بريد التحقق",
+  "@verifyEmailResendButton": {"description": "نص زر إعادة إرسال بريد التحقق"},
+
+  "verifyEmailBackButton": "العودة لتسجيل الدخول",
+  "@verifyEmailBackButton": {"description": "نص زر العودة لتدفق تسجيل الدخول"},
+
+  "recipeTitleFallback": "وصفة",
+  "@recipeTitleFallback": {"description": "عنوان احتياطي لفقاعة الوصفة"},
+
+  "recipeNoIngredients": "لا توجد مكونات مدرجة.",
+  "@recipeNoIngredients": {"description": "نص احتياطي عندما لا تحتوي الوصفة على مكونات"},
+
+  "unknownAuthState": "حالة مصادقة غير معروفة.",
+  "@unknownAuthState": {"description": "رسالة خطأ لحالة مصادقة غير معالجة"},
+
+  "menuTooltip": "القائمة",
+  "@menuTooltip": {"description": "تلميح لزر أيقونة القائمة الرئيسية"},
+
+   "chatHint": "اكتب رسالة...",
+    "@chatHint": {
+        "description": "النص التلقائي لشريط إدخال الدردشة عند المصادقة"
+    },
+
+    "authHintChoice": "اكتب 'تسجيل الدخول' أو 'تسجيل'",
+    "@authHintChoice": {
+        "description": "نص تلميح عندما يُطلب من المستخدم الاختيار بين تسجيل الدخول أو التسجيل"
+    },
+
+    "authHintEmail": "أدخل بريدك الإلكتروني...",
+    "@authHintEmail": {
+        "description": "نص تلميح عند سؤال المستخدم عن بريده الإلكتروني"
+    },
+
+    "authHintPassword": "أدخل كلمة المرور الخاصة بك...",
+    "@authHintPassword": {
+        "description": "نص تلميح عند سؤال المستخدم عن كلمة المرور الخاصة به"
+    },
+
+    "authHintConfirmPassword": "أعد تأكيد كلمة المرور...",
+    "@authHintConfirmPassword": {
+        "description": "نص تلميح عند مطالبة المستخدم بتأكيد كلمة المرور الخاصة به"
+    }
 }

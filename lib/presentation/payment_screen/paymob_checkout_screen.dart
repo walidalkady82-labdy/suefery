@@ -2,14 +2,14 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 // The main import should be sufficient as it exports the response model.
 import 'package:flutter_paymob/flutter_paymob.dart';
-import '../../data/models/billing_details.dart';
+import 'package:suefery/locator.dart';
+
+import '../../data/services/auth_service.dart';
 
 class PaymobCheckoutScreen extends StatefulWidget {
   final double amount;
-  final BillingDetails billingDetails;
-
   const PaymobCheckoutScreen(
-      {super.key, required this.amount, required this.billingDetails});
+      {super.key, required this.amount});
 
   @override
   State<PaymobCheckoutScreen> createState() => _PaymobCheckoutScreenState();
@@ -17,7 +17,7 @@ class PaymobCheckoutScreen extends StatefulWidget {
 
 class _PaymobCheckoutScreenState extends State<PaymobCheckoutScreen> {
   bool _isProcessing = false;
-
+  final AuthService _authService = sl<AuthService>();
   // --- Pay with Card via Backend ---
   Future<void> _startCardPayment(BuildContext context) async {
     if (_isProcessing) return;
@@ -28,13 +28,12 @@ class _PaymobCheckoutScreenState extends State<PaymobCheckoutScreen> {
 
     try {
       // 1. Call the Firebase Function to get the payment key.
-      final callable =
-          FirebaseFunctions.instance.httpsCallable('createPaymobPaymentIntent');
+      final callable = FirebaseFunctions.instance.httpsCallable('createPaymobPaymentIntent');
 
       final response = await callable.call(<String, dynamic>{
         'amount': widget.amount,
         'currency': 'EGP',
-        'billingData': widget.billingDetails.toJson(),
+        'billingData': _authService.currentAppUser?.toMap(),
       });
 
       final paymentKey = response.data['paymentKey'];

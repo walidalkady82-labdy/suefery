@@ -1,0 +1,85 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
+import '../enums/message_sender.dart';
+
+class ChatMessage extends Equatable{
+  
+  final String id;
+  final MessageSender senderType;
+  final String senderId;
+  final String content;
+  final DateTime timestamp;
+  final dynamic data;
+  
+  const ChatMessage({
+    required this.id,
+    required this.senderType,
+    required this.senderId,
+    required this.content,
+    required this.timestamp,
+    this.data,
+  });
+
+  factory ChatMessage.fromMap(Map<String, dynamic> data) {
+    
+    // Helper function to safely parse Firebase Timestamps or other date formats
+    DateTime parseTimestamp(dynamic timestamp) {
+      if (timestamp == null) return DateTime.now();
+      // This is a basic mock. A real app would check `timestamp is Timestamp`
+      if (timestamp is Timestamp) {
+        return timestamp.toDate();
+      }
+
+      if (timestamp is String) {
+        return DateTime.tryParse(timestamp) ?? DateTime.now();
+      }
+      // Fallback for DateTime objects
+      return timestamp as DateTime;
+    }
+
+    return ChatMessage(
+      id: data['id'] ?? '',
+      senderId: data['senderId'] != null ? data['senderId'] as String : 'unknown_sender',
+      content: data['text']  != null ? data['text'] as String : '',
+      senderType: MessageSender.values.firstWhere(
+        (e) => e.name == data['senderType'],
+        orElse: () => MessageSender.system, // Default fallback
+      ) ,
+      timestamp: parseTimestamp(data['timestamp']),
+      data: data,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'senderType': senderType.name,
+      'senderId': senderId,
+      'text': content,
+      'timestamp': Timestamp.fromDate(timestamp), 
+      'data': data,
+    };
+  }
+
+  ChatMessage copyWith({
+    String? id,
+    MessageSender? senderType,
+    String? senderId,
+    String? content,
+    DateTime? timestamp,
+    dynamic data,
+  }) {
+    return ChatMessage(
+      id: id ?? this.id,
+      senderType: senderType ?? this.senderType,
+      senderId: senderId ?? this.senderId,
+      content: content ?? this.content,
+      timestamp: timestamp ?? this.timestamp,
+      data: data ?? this.data,
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, senderType, senderId, content, timestamp , data ];
+
+}

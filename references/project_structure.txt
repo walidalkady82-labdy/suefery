@@ -1,29 +1,57 @@
 /lib
 ├── core/
-│   ├── injection_container.dart        // Primary Dependency Injection setup
-│   ├── common_widgets/                 // Shared UI components (e.g., LoadingIndicator)
-│   └── errors/                         // Error models and exception handlers
+│   ├── errors/
+│   ├── extensions/
+│   ├── l10n/
+│   ├── utils/
+│   └── widgets/                     // Shared, "dumb" UI components
+│       │
+│       ├── chat/                    // <-- NEW: Your reusable chat UI kit
+│       │   │
+│       │   ├── bubbles/             // <-- NEW: All bubble renderers
+│       │   │   ├── auth_form_bubble.dart
+│       │   │   ├── LoadingBubble.dart
+│       │   │   ├── OrderBubble.dart
+│       │   │   ├── PendingOrderBubble.dart
+│       │   │   ├── PromotionBubble.dart
+│       │   │   ├── RecipeBubble.dart
+│       │   │   ├── text_bubble.dart
+│       │   │   └── video_presentation_bubble.dart
+│       │   │
+│       │   ├── models/              // <-- NEW: UI-specific models for the chat
+│       │   │   ├── chat_input_bar_io.dart   // (Contains TextChatItem, RecipeSuggestionItem, etc.)
+│       │   │   ├── chat_item.dart // (Contains Input & Callbacks)
+│       │   │   └── chat_view_io.dart      // (Contains Input & Callbacks)
+│       │   │
+│       │   ├── chat_input_bar.dart    // <-- NEW "dumb" widget
+│       │   ├── chat_message_list.dart // <-- NEW "dumb" widget
+│       │   └── chat_view.dart         // <-- NEW "dumb" widget
+│       │
+│       └── common_app_bar.dart      // (Other existing shared widgets...)
 │
 ├── data/
-│   ├── models/                         // Data models (User, Booking, GeminiResponse)
-│   ├── repositories/                   // Abstract repository interfaces
-│   └── services/                       
-│       ├── **auth_service.dart** // ⚡ Global Service: Handles Firebase/API Auth calls
-│       └── **gemini_service.dart** // ⚡ Global Service: Handles AI/LLM API calls
-│
-├── domain/
-│   ├── usecases/                       // Business logic functions (e.g., GetBookingDetails)
-│   └── repositories/                   // Repository implementations (e.g., AuthRepoImpl)
+│   ├── enums/
+│   ├── models/                      // "Real" data models (from API/DB)
+│   ├── repositories/
+│   └── services/
 │
 ├── presentation/
-│   ├── auth/                           // Login, Register screens
-│   │   └── **auth_cubit.dart** // BLoC for Auth state management
-│   ├── home/                           // Main dashboard
-│   ├── booking/                        // Feature-specific files
-│   │   ├── booking_page.dart
-│   │   └── booking_cubit.dart          // Feature BLoC
-│   └── gemini_assistant/
-│       ├── **gemini_cubit.dart** // BLoC for Gemini interaction
-│       └── assistant_page.dart
+│   ├── auth/
+│   │
+│   ├── home/                        // "Smart" feature module
+│   │   │
+│   │   ├── cubit/                   // <-- Renamed for clarity
+│   │   │   ├── home_cubit.dart
+│   │   │   └── home_state.dart
+│   │   │
+│   │   ├── view/                    // <-- Renamed for clarity
+│   │   │   └── home_screen.dart     // <-- NEW "smart" ChatScreen
+│   │   │
+│   │   └── widgets/                 // <-- NEW: Widgets ONLY used by home
+│   │       └── home_action_menu.dart// (The content of your modal sheet)
+│   │
+│   ├── history/
+│   ├── account/
+│   └── payment/
 │
-└── main.dart                           // Top-level App setup
+└── main.dart

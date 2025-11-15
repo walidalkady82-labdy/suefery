@@ -39,9 +39,15 @@
   "logInScreenTitle": "SUEFERY LOGIN",
   "@logInScreenTitle": {"description": "scueferey screen title"},
 
-  "loginTextButton": "'Already have an account? Log in",
+  "loginButton": "'Log in",
+  "@loginButton": {"description": "The text for the login button"},
+
+  "loginTextButton": "'Already have an account?Log in",
   "@loginTextButton": {"description": "The text for the login message text"},
   
+  "logoutTextButton": "Log out",
+  "@logoutTextButton": {"description": "The text for the logout text"},
+
   "signUpButton": "sign up",
   "@signUpButton": {"description": "The text for the standard sign-up button."},
   
@@ -90,7 +96,8 @@
   "emailRequiredErrorMessage": "Email is required",
   "@emailRequiredErrorMessage": {"description": "Error message when the email field is left empty."},
   
-  "emailInvalidErrorMessage": "Email is Invalid",
+  
+"emailInvalidErrorMessage": "Email is Invalid",
   "@emailInvalidErrorMessage": {"description": "Error message when the entered email format is incorrect."},
   
   "passwordRequiredErrorMessage": "Password is required",
@@ -141,7 +148,8 @@
   "selectLanguage": "Select Language",
   "@selectLanguage": {"description": "Select language "},
 
-  "currentLanguage": "Current Language is: {currentLanguage}",
+  "currentLanguage": 
+"Current Language is: {currentLanguage}",
   "@currentLanguage": {
     "description": "Current Selected language" , 
     "placeholders": {
@@ -155,6 +163,95 @@
   "@darkMode": {"description": "Set dark mode"},
 
   "profileTitle": "Profile",
-  "@profileTitle": {"description": "profile screen title"}
-}
+  "@profileTitle": {"description": "profile screen title"},
 
+  "pendingOrdersTextButton": "Pending Orders",
+  "@pendingOrdersTextButton": {"description": "pending Orders button text"}, 
+  
+  "orderTextButton": "Orders",
+  "@orderTextButton": {"description": "Orders text button"},
+
+  "appBarTitle": "Gemini Chef",
+  "@appBarTitle": {"description": "Main title in the AppBar"},
+
+  "welcomeTitle": "👋 Welcome to Chef AI!",
+  "@welcomeTitle": {"description": "The first message in the anonymous welcome flow"},
+
+  "welcomeLottieTitle": "Here's a quick look at what I can do:",
+  "@welcomeLottieTitle": {"description": "The title for the Lottie presentation bubble"},
+
+  "welcomeFirstTimePrompt": "Ready to order? To save your history and place orders, please sign in or register below.",
+  "@welcomeFirstTimePrompt": {"description": "The final prompt in the anonymous flow asking the user to sign up"},
+
+  "welcomeReturningPrompt": "Welcome back! Please sign in or register to continue your session.",
+  "@welcomeReturningPrompt": {"description": "The message shown to a returning anonymous user"},
+
+  "animationError": "Could not load animation: {error}",
+  "@animationError": {
+    "description": "Error message if the Lottie file fails to load",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Asset not found"
+      }
+    }
+  },
+
+  "signInTitle": "Sign In",
+  "@signInTitle": {"description": "The title for the Sign In form bubble"},
+
+  "registerTitle": "Register",
+  "@registerTitle": {"description": "The title for the Register form bubble"},
+
+  "verifyEmailTitle": "Verify Your Email",
+  "@verifyEmailTitle": {"description": "Title for the email verification screen"},
+
+  "verifyEmailBody": "We've sent a verification link to your email. Please check your inbox (and spam folder) to continue.",
+  "@verifyEmailBody": {"description": "Body text for the email verification screen"},
+
+  "verifyEmailResendButton": "Resend Verification Email",
+  "@verifyEmailResendButton": {"description": "Button text to resend the verification email"},
+
+  "verifyEmailBackButton": "Back to Login",
+  "@verifyEmailBackButton": {"description": "Button text to go back to the login flow"},
+
+  "recipeTitleFallback": "Recipe",
+  "@recipeTitleFallback": {"description": "Fallback title for a recipe bubble"},
+
+  "recipeNoIngredients": "No ingredients listed.",
+  "@recipeNoIngredients": {"description": "Fallback text when a recipe has no ingredients"},
+
+  "unknownAuthState": "Unknown Authentication State.",
+  "@unknownAuthState": {"description": "Error message for an unhandled auth state"},
+
+  "menuTooltip": "Menu",
+  "@menuTooltip": {"description": "Tooltip for the main menu icon button"},
+
+    "chatHint": "Type a message...",
+    "@chatHint": {
+        "description": "Default hint text for the chat input bar when authenticated"
+    },
+
+    "authHintChoice": "Type 'Sign In' or 'Register'",
+    "@authHintChoice": {
+        "description": "Hint text when asking the user to choose between sign in or register"
+    },
+
+    "authHintEmail": "Enter your email...",
+    "@authHintEmail": {
+        "description": "Hint text when asking the user for their email"
+    },
+
+    "authHintPassword": "Enter your password...",
+    "@authHintPassword": {
+        "description": "Hint text when asking the user for their password"
+    },
+
+    "authHintConfirmPassword": "Confirm your password...",
+    "@authHintConfirmPassword": {
+        "description": "Hint text when asking the user to confirm their password"
+    }
+
+    
+  
+}

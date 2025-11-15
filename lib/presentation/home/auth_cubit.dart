@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:suefery/data/models/app_user.dart';
+import 'package:suefery/data/models/user_model.dart';
 import 'package:suefery/locator.dart';
 import '../../data/enums/auth_status.dart';
 import '../../data/services/auth_service.dart';
@@ -19,7 +19,7 @@ class AuthState {
   final bool obscureText;
   final bool isLogin;
   final AuthStatus authState;
-  final AppUser? user;
+  final UserModel? user;
   
   const AuthState({
     this.isLoading = false,
@@ -30,8 +30,8 @@ class AuthState {
     this.autovalidateMode = AutovalidateMode.disabled,
     this.obscureText = true,
     this.isLogin = true,
-    this.authState = AuthStatus.unauthenticated,
-    this.user
+    this.authState = AuthStatus.inProgress,
+    this.user,
     });
   AuthState copyWith({
     bool? isLoading,
@@ -43,7 +43,7 @@ class AuthState {
     bool? obscureText,
     bool? isLogin,
     AuthStatus? authState,
-    AppUser? user,
+    UserModel? user,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,      
@@ -66,11 +66,11 @@ class AuthCubit extends Cubit<AuthState> {
           authSubscription = _authService.authStateChanges.listen(_onAuthStateChanged);
         }
   final AuthService _authService = sl<AuthService>();
-  late final StreamSubscription<AppUser?> authSubscription;
+  late final StreamSubscription<UserModel?> authSubscription;
 
-  AppUser? get currentUser => _authService.currentAppUser;
+  UserModel? get currentUser => _authService.currentAppUser;
 
-  void _onAuthStateChanged(AppUser? user) {
+  void _onAuthStateChanged(UserModel? user) {
     if (user != null) {
       emit(state.copyWith(authState: AuthStatus.authenticated, user: user));
     } else {
@@ -112,7 +112,7 @@ class AuthCubit extends Cubit<AuthState> {
     emit(currentFormState.copyWith(isLogin: !currentFormState.isLogin));
   }
 
-  Future<void> signIn() async {
+  Future<void> signIn(String email, String password) async {
     final formState = state;
     emit(formState.copyWith(isLoading: true, errorMessage: ''));
 
@@ -123,8 +123,8 @@ class AuthCubit extends Cubit<AuthState> {
       );
       // On success, the auth stream will emit Authenticated state.
     } catch (e) {
-      final errorMessage = 'Login Failed: ${e.toString().split(':').last.trim()}';
-      _log.e(errorMessage);
+      final errorMessage = e.toString();
+      _log.e('Login Failed: $errorMessage');
       emit(state.copyWith(errorMessage: errorMessage, isLoading: false));
       
       // Optional: Reset error after a delay
@@ -147,8 +147,8 @@ class AuthCubit extends Cubit<AuthState> {
       await _authService.signInWithGoogle();
       // On success, the auth stream will emit Authenticated state.
     } catch (e) {
-      final errorMessage = 'Google Login Failed: ${e.toString().split(':').last.trim()}';
-      _log.e(errorMessage);
+      final errorMessage = e.toString();
+      _log.e('Google Login Failed: $errorMessage');
       emit(state.copyWith(isLoading: false, errorMessage: errorMessage));
     } finally {
       if (state.authState == AuthStatus.unauthenticated) {
@@ -202,7 +202,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
   //TODO check errors message to integrate with strings
-  Future<void> signUp() async{
+  Future<void> signUp(String email, String password) async{
     final formState = state;
     if (formState.password != formState.confirmPassword) {
       emit(formState.copyWith(errorMessage: 'Passwords do not match.'));
@@ -221,8 +221,8 @@ class AuthCubit extends Cubit<AuthState> {
       );
       // On success, the auth state stream will handle navigation.
     } catch (e) {
-      final errorMessage = 'Sign Up Failed: ${e.toString().split(':').last.trim()}';
-      _log.e(errorMessage);
+      final errorMessage = e.toString();
+      _log.e('Sign Up Failed: $errorMessage');
       emit(state.copyWith(errorMessage: errorMessage));
     } finally {
       if (state.authState== AuthStatus.unauthenticated) {

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/errors/authentication_exception.dart';
-import '../models/app_user.dart';
+import '../models/user_model.dart';
 import '../repositories/i_repo_auth.dart';
 import 'logging_service.dart';
 import 'pref_service.dart';
@@ -23,23 +23,23 @@ class AuthService {
   /// dependencies (this is called Dependency Injection).
   AuthService(this._authRepository, this._prefRepo);
 
-  /// Gets the current [AppUser] by mapping the repository's [User].
+  /// Gets the current [UserModel] by mapping the repository's [User].
   /// Returns `null` if no user is signed in.
-  AppUser? get currentAppUser {
+  UserModel? get currentAppUser {
     final firebaseUser = _authRepository.currentUser;
     if (firebaseUser == null) return null;
-    return AppUser.fromFirebaseUser(firebaseUser);
+    return UserModel.fromFirebaseUser(firebaseUser);
   }
 
   /// Exposes a stream of [AppUser?]
   ///
   /// This maps the repository's Firebase [User?] stream to your
   /// app's internal [AppUser?] model.
-  Stream<AppUser?> get authStateChanges {
+  Stream<UserModel?> get authStateChanges {
     return _authRepository.authStateChanges.map((firebaseUser) {
       if (firebaseUser == null) return null;
       // You could also fetch user data from Firestore here
-      return AppUser.fromFirebaseUser(firebaseUser);
+      return UserModel.fromFirebaseUser(firebaseUser);
     });
   }
     // Refactor ActionCodeSettings into a reusable getter
@@ -77,7 +77,7 @@ class AuthService {
   Future<void> reloadUser() => _authRepository.reloadUser();
 
   /// Handles the business logic for Google Sign-In.
-  Future<AppUser?> signInWithGoogle() async {
+  Future<UserModel?> signInWithGoogle() async {
     try {
       final userCredential = await _authRepository.logInWithGoogle();
       final user = userCredential.user;
@@ -87,7 +87,7 @@ class AuthService {
             userCredential.additionalUserInfo?.isNewUser ?? false;
         await _prefRepo.setIsFirstLogin(isNewUser);
         await _handleSuccessfulLogin(user);
-        return AppUser.fromFirebaseUser(user);
+        return UserModel.fromFirebaseUser(user);
       }
       return null;
     } catch (e) {
@@ -97,7 +97,7 @@ class AuthService {
   }
 
   /// Handles the business logic for Email/Pass Sign-Up.
-  Future<AppUser?> signUpWithEmailAndPassword({
+  Future<UserModel?> signUpWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
@@ -111,7 +111,7 @@ class AuthService {
       if (user != null) {
         await _prefRepo.setIsFirstLogin(true);
         await _handleSuccessfulLogin(user);
-        return AppUser.fromFirebaseUser(user);
+        return UserModel.fromFirebaseUser(user);
       }
       return null;
     } catch (e) {
@@ -121,7 +121,7 @@ class AuthService {
   }
 
   /// Handles the business logic for Email/Pass Sign-In.
-  Future<AppUser?> signInWithEmailAndPassword({
+  Future<UserModel?> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
@@ -140,13 +140,20 @@ class AuthService {
 
       _log.i("Handling successful login for user: ${user.email}");
       await _handleSuccessfulLogin(user);
-      return AppUser.fromFirebaseUser(user);
+      return UserModel.fromFirebaseUser(user);
     } on TimeoutException {
       _log.e("Login Error: Timeout. The request took too long.");
       // Re-throwing a custom, more specific exception for the UI layer.
       throw LoginEmailPassFirebaseFailure('Login timed out. Please check your network connection and try again.');
     } on FirebaseAuthException catch (e) {
       _log.e("Login Error: ${e.code} , ${e.message}");
+      // --- FIX: Handle 'invalid-credential' specifically ---
+      // This error often means the user signed up with a different provider (e.g., Google).
+      if (e.code == 'invalid-credential') {
+        throw LoginEmailPassFirebaseFailure(
+          'This account might have been created using a different sign-in method. Please try signing in with Google.',
+        );
+      }
       throw LoginEmailPassFirebaseFailure.fromCode(e.code);
     } catch (e) {
       _log.e("Login Error: $e");

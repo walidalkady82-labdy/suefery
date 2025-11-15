@@ -10,15 +10,17 @@ import 'package:flutter_paymob/flutter_paymob.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
 import 'package:suefery/locator.dart';
 import 'package:suefery/presentation/settings/settings_cubit.dart';
-import 'package:suefery/presentation/auth/auth_cubit.dart';
+import 'package:suefery/presentation/home/auth_cubit.dart';
 import 'firebase_options.dart';
-import 'presentation/auth/auth_checker.dart';
 import 'data/services/logging_service.dart';
+import 'presentation/home/home_cubit.dart';
+import 'presentation/home/home_screen.dart';
 
 final _log = LoggerRepo('main');
 Future<void> main() async {
   // Ensure Flutter engine is initialized before running the app
-  
+  _log.i('initializing app...');
+  WidgetsFlutterBinding.ensureInitialized();
   _log.i('Loading app...');
   runApp(
     MultiBlocProvider(
@@ -164,22 +166,22 @@ class _AppContainerState extends State<AppContainer> {
     // Start the initialization process when the widget is created
     _initialization = init();
   }
+  
   Future<void> init() async {
-       _log.i('initializing app...');
-        WidgetsFlutterBinding.ensureInitialized();
-        _log.i('loading environment variables...');
-        await _initEnvironmentVars();
-        _log.i('initializing Firebase...');
-        final app = await _initializeFirebase();
-        _log.i('handling analytics...');
-        initAnalytics();
-        _log.i('loading sevices...');
-        await initLocator(app);
-        _log.i('ensuring services are ready...');
-        await ensureServicesReady();
-        _log.i('initializing payment...');
-        await initPayment();
+    _log.i('loading environment variables...');
+    await _initEnvironmentVars();
+    _log.i('initializing Firebase...');
+    final app = await _initializeFirebase();
+    _log.i('handling analytics...');
+    initAnalytics();
+    _log.i('loading sevices...');
+    await initLocator(app);
+    _log.i('ensuring services are ready...');
+    await ensureServicesReady();
+    _log.i('initializing payment...');
+    await initPayment();
   }
+  
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -265,29 +267,32 @@ class SUEFERYApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {    
-    return BlocBuilder<SettingsCubit, SettingsState>(
-      builder: (context, settingsState) {
-        return MaterialApp(
-          onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appTitle,          
-          theme: settingsState.appTheme.themeData,
-          darkTheme: ThemeData(
-            brightness: Brightness.dark,
-            primaryColor: const Color(0xFF00796B),
-            colorScheme: ColorScheme.fromSwatch(
-              primarySwatch: Colors.teal,
-              brightness: Brightness.dark,
-            ).copyWith(
-              secondary: const Color(0xFFFFA000),
+    return BlocProvider(
+            create: (context) => HomeCubit(),
+            child: BlocBuilder<HomeCubit, HomeState>(
+              builder: (context, homeState) {
+                return MaterialApp(
+                  onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appTitle,          
+                  theme: context.read<SettingsCubit>().state.appTheme.themeData,
+                  darkTheme: ThemeData(
+                    brightness: Brightness.dark,
+                    primaryColor: const Color(0xFF00796B),
+                    colorScheme: ColorScheme.fromSwatch(
+                      primarySwatch: Colors.teal,
+                      brightness: Brightness.dark,
+                    ).copyWith(
+                      secondary: const Color(0xFFFFA000),
+                    ),
+                    useMaterial3: true,
+                  ),
+                  themeMode: context.read<SettingsCubit>().state.themeMode, // Use the themeMode from the SettingsCubit
+                  locale: context.read<SettingsCubit>().state.locale, // Use the locale from the SettingsCubit
+                  localizationsDelegates: AppLocalizations.localizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  home: HomeScreen(),
+                );
+              },
             ),
-            useMaterial3: true,
-          ),
-          themeMode: settingsState.themeMode, // Use the themeMode from the SettingsCubit
-          locale: settingsState.locale, // Use the locale from the SettingsCubit
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const AuthChecker(),
-        );
-      },
     );
   }
 }

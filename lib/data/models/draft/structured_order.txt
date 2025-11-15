@@ -83,7 +83,7 @@ class StructuredOrder{
       deliveryAddress: data['deliveryAddress'] as String? ?? '',
       status: OrderStatus.values.firstWhere(
         (e) => e.name == (data['status'] as String?),
-        orElse: () => OrderStatus.New, // Default fallback
+        orElse: () => OrderStatus.pending, // Default fallback
       ),
       progress: (data['progress'] as num?)?.toDouble() ?? 0.0,
       riderId: data['riderId'] as String? ?? '',

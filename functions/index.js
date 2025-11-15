@@ -213,6 +213,12 @@ exports.geminiProxy = onCall(
     {
       // Enforce App Check (still vital!)
       enforceAppCheck: true,
+      // --- ADDITION: Add rate limiting ---
+      // This limits each function instance to 15 calls per minute.
+      rateLimits: {
+        timePeriod: "60s",
+        maxCalls: 15,
+      },
       // We no longer need secrets!
       region: "us-central1", // Make sure this matches your Vertex AI region
     },
@@ -221,10 +227,15 @@ exports.geminiProxy = onCall(
       if (!request.auth) {
         throw new HttpsError("unauthenticated", "You must be logged in.");
       }
-      const {history, modelType} = request.data;
-      if (!history || !modelType) {
-        throw new HttpsError("invalid-argument", "Missing 'history' or 'modelType'.");
+      // --- FIX: Determine modelType based on incoming data ---
+      const {history, tools} = request.data;
+      let {modelType} = request.data;
+
+      if (!history) {
+        throw new HttpsError("invalid-argument", "Missing 'history' parameter.");
       }
+      // If 'tools' are provided, we can infer the modelType is 'order'.
+      if (tools) modelType = "order";
 
       // 2. Initialize Vertex AI
       // Project ID is automatically read from the function's environment
