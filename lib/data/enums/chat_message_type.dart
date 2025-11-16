@@ -1,1 +1,12 @@
-enum ChatMessageType { text, recipe, orderConfirmation, promotion,videoPresentation, error ,signInForm , registerForm }
+enum ChatMessageType { 
+  text, 
+  recipe, 
+  orderConfirmation, 
+  promotion,
+  videoPresentation, 
+  error ,
+  signInForm , 
+  registerForm,
+  authChoice,
+  helpChoice
+}

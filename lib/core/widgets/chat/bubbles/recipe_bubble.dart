@@ -1,31 +1,60 @@
 import 'package:flutter/material.dart';
 
+import '../../../../data/enums/message_sender.dart';
 import '../models/chat_item.dart';
+import 'bubble_layout.dart';
 
 class RecipeBubble extends StatelessWidget {
-  const RecipeBubble({super.key, required this.item});
   final RecipeSuggestionItem item;
+
+  const RecipeBubble({
+    super.key,
+    required this.item,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // A custom widget for showing a recipe
-    return Card(
-      elevation: 2.0,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(item.title, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Image.network(item.imageUrl), // 
+    return BubbleLayout(
+      sender: MessageSender.gemini, // This bubble is always from the AI
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Placeholder Image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: Image.network(
+              item.imageUrl,
+              height: 150,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              // Error builder in case the image fails to load
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: const Center(child: Icon(Icons.broken_image)),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
 
-// [Image of a recipe]
+          // 2. Title
+          Text(
+            item.title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: DefaultTextStyle.of(context).style.color,
+                ),
+          ),
+          const SizedBox(height: 8),
 
-            const SizedBox(height: 8),
-            Text(item.description),
-          ],
-        ),
+          // 3. Description / Ingredients
+          Text(item.description),
+        ],
       ),
     );
   }

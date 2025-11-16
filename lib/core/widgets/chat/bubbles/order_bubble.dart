@@ -2,40 +2,44 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../../data/enums/message_sender.dart';
 import '../models/chat_item.dart';
+import 'bubble_layout.dart';
 
 class OrderBubble extends StatelessWidget {
-  const OrderBubble({super.key, required this.item});
-  
   final OrderSummeryItem item;
+
+  const OrderBubble({
+    super.key,
+    required this.item,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.blueGrey[100], // Or your theme's color
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Order Confirmed: #${item.orderNumber}',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+    final theme = Theme.of(context);
+
+    return BubbleLayout(
+      // This could be from MessageSender.system or .gemini
+      sender: MessageSender.gemini,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Order Confirmed: #${item.orderNumber}',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              // Use the bubble's default text color
+              color: DefaultTextStyle.of(context).style.color,
             ),
-            const Divider(height: 16),
-            Text(item.itemsSummary),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                'Total: \$${item.totalPrice.toStringAsFixed(2)}',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          Text(item.itemsSummary),
+          const SizedBox(height: 8),
+          Text(
+            'Total: EGP ${item.totalPrice.toStringAsFixed(2)}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }

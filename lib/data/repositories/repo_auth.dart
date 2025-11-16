@@ -133,7 +133,7 @@ class RepoAuth implements IRepoAuth{
     return _firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
-    ).withDefaultTimeout();
+    );//.withDefaultTimeout(duration: Duration(seconds: 30));
 
   }
 

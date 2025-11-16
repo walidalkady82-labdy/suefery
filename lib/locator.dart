@@ -47,9 +47,6 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
     RepoFirestore.create(useEmulator: useEmulatorEnv)
   );
 
-  // No longer needed, as AI logic is now in a Cloud Function.
-  // sl.registerLazySingleton<IRepoFirebaseAi>(
-  //     () => RepoFirebaseAi.create());
   // --- SERVICES (The "Managers") ---
   
   // Remote Config Service (Async) ---

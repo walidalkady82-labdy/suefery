@@ -35,7 +35,6 @@ class SettingsCubit extends Cubit<SettingsState> {
   void setLocale(Locale newLocale) {
     if (state.locale == newLocale) return;
 
-    emit(state.copyWith(locale: newLocale));
     _prefService.setlanguage(newLocale.languageCode);
     emit(state.copyWith(locale: newLocale));
   }

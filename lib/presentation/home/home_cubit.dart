@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+import 'package:suefery/core/errors/authentication_exception.dart';
 // --- Consolidated Models ---
 import 'package:suefery/data/models/order_model.dart';
 import 'package:suefery/data/models/chat_message_model.dart';
@@ -150,7 +152,6 @@ class HomeCubit extends Cubit<HomeState> {
     }
     // --- End of routing logic ---
 
-    // --- FIX: Prevent Gemini calls for anonymous users ---
     // If the user is not logged in and not in an auth flow, they shouldn't be able to chat.
     if (currentUserId.isEmpty) {
       _log.w('Anonymous user tried to chat. Prompting to sign in.');
@@ -178,13 +179,15 @@ class HomeCubit extends Cubit<HomeState> {
 
     Future<void> showPostVideoAuthMessages() async {
     _log.i('Video ended. Starting auth dialogue.');
-    final finalMessage = _createAiMessage(
-      content: "Ready to get started? To save your history and place orders, please type **Sign In** or **Register**.",
+    final authChoiceMessage = _createAiMessage(
+      content: "Ready to get started? To save your history and place orders, please select an option below.",
       senderType: MessageSender.gemini,
+      messageType: ChatMessageType.authChoice, // New message type
+      choices: ['Sign In', 'Register'], // The choices for the buttons
     );
     
     emit(state.copyWith(
-      messages: List.from(state.messages)..add(finalMessage),
+      messages: List.from(state.messages)..add(authChoiceMessage),
       authStep: AuthStep.awaitingChoice, // <-- SET AUTH STEP
     ));
   }
@@ -196,7 +199,8 @@ class HomeCubit extends Cubit<HomeState> {
 
   /// Fetches a generic help message from the AI.
   Future<void> getHelpMessage() async {
-    await submitOrderPrompt('Help me');
+    // Let the AI handle the help message via its 'getHelp' tool.
+    await submitOrderPrompt('help');
   }
 
   /// Starts the voice-to-text listener.
@@ -221,13 +225,12 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   /// Called by the [PendingOrderBubble]'s "Confirm" button.
-  Future<bool?> confirmAndPayForOrder(
-      BuildContext context, AiParsedOrder parsedOrder, ChatMessageModel message) async {
+  /// 
+  Future<bool?> confirmAndPayForOrder(BuildContext context, AiParsedOrder parsedOrder, ChatMessageModel message) async {
     emit(state.copyWith(isLoading: true));
 
     // --- 1. Calculate Total ---
-    final double subtotal = parsedOrder.requestedItems.fold(
-        0.0, (sum, item) => sum + (item.quantity * item.unitPrice));
+    final double subtotal = parsedOrder.requestedItems.fold( 0.0, (sum, item) => sum + (item.quantity * item.unitPrice));
     // TODO: Get fee from RemoteConfigService
     const double deliveryFee = 10.0;
     final double grandTotal = subtotal + deliveryFee;
@@ -292,11 +295,11 @@ class HomeCubit extends Cubit<HomeState> {
 
   /// Called by the [PendingOrderBubble]'s "Cancel" button.
   Future<void> cancelParsedOrder(ChatMessageModel message) async {
+    // This is a user-initiated cancellation from a specific bubble.
     _markMessageAsActioned(message, status: 'Cancelled');
     _log.i('User cancelled pending order.');
-    const cancelText =
-        'Okay, I\'ve cancelled that. What else can I help you with?';
-    await _addUserMessageToChat(cancelText, sender: MessageSender.system);
+    // Let the AI confirm the cancellation.
+    await submitOrderPrompt('The user cancelled the proposed order. Please confirm this to them.');
   }
 
   /// Updates the quantity of an item in a [PendingOrderBubble].
@@ -366,20 +369,20 @@ class HomeCubit extends Cubit<HomeState> {
   /// --- REFACTORED: Routes auth prompts to the correct handler. ---
   Future<void> _handleAuthPrompt(String prompt) async {
     // Add user message to chat, masking passwords.
-    await _addUserMessageToChat(_maskIfPassword(prompt));
+    await _addUserMessageToChat(_maskIfPassword(prompt), saveToDb: false);
 
     switch (state.authStep) {
       case AuthStep.awaitingChoice:
-        await _handleAuthChoice(prompt);
+        await handleAuthChoice(prompt);
         break;
-
+ 
       case AuthStep.awaitingLoginEmail:
         await _handleLoginEmail(prompt);
         break;
       case AuthStep.awaitingLoginPassword:
         await _handleLoginPassword(prompt);
         break;
-
+ 
       case AuthStep.awaitingRegisterEmail:
         await _handleRegisterEmail(prompt);
         break;
@@ -395,27 +398,34 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   /// --- NEW: Handles the "Sign In" or "Register" choice. ---
-  Future<void> _handleAuthChoice(String prompt) async {
+  Future<void> handleAuthChoice(String prompt) async {
     final choice = prompt.toLowerCase().trim();
+    final userChoiceMessage = await _addUserMessageToChat(prompt, saveToDb: false);
+
     if (choice.contains("sign in") || choice.contains("login")) {
-      await _addUserMessageToChat("Great! What's your email?", sender: MessageSender.gemini);
-      emit(state.copyWith(authStep: AuthStep.awaitingLoginEmail));
+      final geminiPrompt = _createAiMessage(content: "Great! What's your email?");
+      // Clear previous messages and show only the prompt
+      emit(state.copyWith(messages: [userChoiceMessage, geminiPrompt], authStep: AuthStep.awaitingLoginEmail));
     } else if (choice.contains("register")) {
-      await _addUserMessageToChat("Okay, let's create an account. What's your email?", sender: MessageSender.gemini);
-      emit(state.copyWith(authStep: AuthStep.awaitingRegisterEmail));
+      final geminiPrompt = _createAiMessage(content: "Okay, let's create an account. What's your email?");
+      // Clear previous messages and show only the prompt
+      emit(state.copyWith(messages: [userChoiceMessage, geminiPrompt], authStep: AuthStep.awaitingRegisterEmail));
     } else {
-      await _addUserMessageToChat("Sorry, I didn't get that. Please type **Sign In** or **Register**.", sender: MessageSender.gemini);
+      await _addUserMessageToChat("Sorry, I didn't get that. Please type **Sign In** or **Register**.", sender: MessageSender.gemini, saveToDb: false);
     }
   }
 
   /// --- NEW: Handles the email step for both login and registration. ---
   Future<void> _handleLoginEmail(String email) async {
     if (!_isValidEmail(email)) {
-      await _addUserMessageToChat("That doesn't look like a valid email. Please try again.", sender: MessageSender.gemini);
+      final userMessage = await _addUserMessageToChat(_maskIfPassword(email), saveToDb: false);
+      final geminiMessage = _createAiMessage(content: "That doesn't look like a valid email. Please try again.");
+      emit(state.copyWith(messages: [userMessage, geminiMessage]));
       return;
     }
-    await _addUserMessageToChat("Thanks. Now, what's your password?", sender: MessageSender.gemini);
-    emit(state.copyWith(authStep: AuthStep.awaitingLoginPassword, authEmail: email.trim()));
+    final userMessage = await _addUserMessageToChat(_maskIfPassword(email), saveToDb: false);
+    final geminiMessage = _createAiMessage(content: "Thanks. Now, what's your password?");
+    emit(state.copyWith(authStep: AuthStep.awaitingLoginPassword, authEmail: email.trim(), messages: [userMessage, geminiMessage]));
   }
 
   /// --- NEW: Handles the password step for login. ---
@@ -424,40 +434,51 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       await _authService.signInWithEmailAndPassword(email: state.authEmail, password: password.trim());
       // Success is handled by the AuthCubit listener.
-      emit(state.copyWith(geminiIsLoading: false, authStep: AuthStep.none));
-    } catch (e) {
-      _log.e("Conversational Sign in failed: $e");
-      final errorMessage = _getCleanAuthErrorMessage(e);
-      await _addUserMessageToChat("Login failed: $errorMessage. Let's try again. What's your email?", sender: MessageSender.gemini);
-      emit(state.copyWith(geminiIsLoading: false, authStep: AuthStep.awaitingLoginEmail, authEmail: ''));
+      emit(state.copyWith(geminiIsLoading: false, authStep: AuthStep.none, authEmail: '', authPassword: ''));
+    } on firebase.FirebaseAuthException catch (e) {
+      _log.e("Conversational Sign in failed: ${e.code}");
+      final failure = LoginEmailPassFirebaseFailure.fromCode(e.code);
+      final geminiMessage = _createAiMessage(content: "Login failed: ${failure.message}. Let's try again. What's your email?");
+      emit(state.copyWith(geminiIsLoading: false, authStep: AuthStep.awaitingLoginEmail, authEmail: '', messages: [geminiMessage]));
     }
   }
 
   /// --- NEW: Handles the email step for registration. ---
   Future<void> _handleRegisterEmail(String email) async {
     if (!_isValidEmail(email)) {
-      await _addUserMessageToChat("That doesn't look like a valid email. Please enter a valid email address.", sender: MessageSender.gemini);
+      final userMessage = await _addUserMessageToChat(_maskIfPassword(email), saveToDb: false);
+      final geminiMessage = _createAiMessage(content: "That doesn't look like a valid email. Please enter a valid email address.");
+      emit(state.copyWith(messages: [userMessage, geminiMessage]));
       return;
     }
-    await _addUserMessageToChat("Got it. Please create a password (at least 6 characters).", sender: MessageSender.gemini);
-    emit(state.copyWith(authStep: AuthStep.awaitingRegisterPassword, authEmail: email.trim()));
+    final userMessage = await _addUserMessageToChat(_maskIfPassword(email), saveToDb: false);
+    final geminiMessage = _createAiMessage(content: "Got it. Please create a password (at least 6 characters).");
+    emit(state.copyWith(authStep: AuthStep.awaitingRegisterPassword, authEmail: email.trim(), messages: [userMessage, geminiMessage]));
   }
 
   /// --- NEW: Handles the password creation step. ---
   Future<void> _handleRegisterPassword(String password) async {
     if (password.trim().length < 6) {
-      await _addUserMessageToChat("That password is a bit short. Please try a different one (at least 6 characters).", sender: MessageSender.gemini);
+      final userMessage = await _addUserMessageToChat(_maskIfPassword(password), saveToDb: false);
+      final geminiMessage = _createAiMessage(content: "That password is a bit short. Please try a different one (at least 6 characters).");
+      emit(state.copyWith(messages: [userMessage, geminiMessage]));
       return; // Stay on this step
     }
-    await _addUserMessageToChat("Great. Please type your password again to confirm.", sender: MessageSender.gemini);
-    emit(state.copyWith(authStep: AuthStep.awaitingRegisterConfirm, authPassword: password.trim()));
+    final userMessage = await _addUserMessageToChat(_maskIfPassword(password), saveToDb: false);
+    final geminiMessage = _createAiMessage(content: "Great. Please type your password again to confirm.");
+    emit(state.copyWith(authStep: AuthStep.awaitingRegisterConfirm, authPassword: password.trim(), messages: [userMessage, geminiMessage]));
   }
 
   /// --- NEW: Handles the password confirmation step. ---
   Future<void> _handleRegisterConfirmPassword(String confirmPassword) async {
     if (state.authPassword != confirmPassword.trim()) {
-      await _addUserMessageToChat("Those passwords don't match. Let's start the registration over. What's your email?", sender: MessageSender.gemini);
-      emit(state.copyWith(authStep: AuthStep.awaitingRegisterEmail, authEmail: '', authPassword: ''));
+      final userMessage = await _addUserMessageToChat(_maskIfPassword(confirmPassword), saveToDb: false);
+      final geminiMessage = _createAiMessage(content: "Those passwords don't match. Let's start the registration over. What's your email?");
+      emit(state.copyWith(
+        authStep: AuthStep.awaitingRegisterEmail, 
+        authEmail: '', 
+        authPassword: '', 
+        messages: [userMessage, geminiMessage]));
       return;
     }
 
@@ -465,12 +486,17 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       await _authService.signUpWithEmailAndPassword(email: state.authEmail, password: state.authPassword);
       // Success is handled by the AuthCubit listener.
-      emit(state.copyWith(geminiIsLoading: false, authStep: AuthStep.none));
-    } catch (e) {
-      _log.e("Conversational Sign up failed: $e");
-      final errorMessage = _getCleanAuthErrorMessage(e);
-      await _addUserMessageToChat("Sorry, sign up failed: $errorMessage. Let's try again. What's your email?", sender: MessageSender.gemini);
-      emit(state.copyWith(geminiIsLoading: false, authStep: AuthStep.awaitingRegisterEmail, authEmail: '', authPassword: ''));
+      emit(state.copyWith(geminiIsLoading: false, authStep: AuthStep.none, authEmail: '', authPassword: ''));
+    } on firebase.FirebaseAuthException catch (e) {
+      _log.e("Conversational Sign up failed: ${e.code}");
+      final failure = RegisterFirebaseFailure.fromCode(e.code);
+      final geminiMessage = _createAiMessage(content: "Sorry, sign up failed: ${failure.message}. Let's try again. What's your email?");
+      emit(state.copyWith(
+        geminiIsLoading: false, 
+        authStep: AuthStep.awaitingRegisterEmail, 
+        authEmail: '', 
+        authPassword: '',
+        messages: [geminiMessage]));
     }
   }
 
@@ -485,17 +511,6 @@ class HomeCubit extends Cubit<HomeState> {
   /// --- NEW: Simple email validation using regex. ---
   bool _isValidEmail(String email) {
     return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email.trim());
-  }
-
-  /// --- NEW: Helper to get a user-friendly error message. ---
-  String _getCleanAuthErrorMessage(Object e) {
-    // Firebase exceptions often have a format like "[firebase_auth/...] message"
-    // This extracts the human-readable part.
-    final message = e.toString();
-    if (message.contains('] ')) {
-      return message.split('] ').last;
-    }
-    return "An unexpected error occurred."; // Fallback
   }
 
   // =======================================================================
@@ -531,6 +546,7 @@ class HomeCubit extends Cubit<HomeState> {
       },
     );
   }
+
   Future<void> _buildFirstTimeAnonymousChat() async {
     _log.i('Building first-time interactive welcome sequence locally.');
     
@@ -558,19 +574,21 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> _buildReturningAnonymousChat() async {
     _log.i('Building returning anonymous user prompt.');
-    final welcomeBackMessage = _createAiMessage(
-      content: "Welcome back! To continue, please type **Sign In** or **Register**.",
+    final authChoiceMessage = _createAiMessage(
+      content: "Welcome back! To continue, please select an option below.",
       senderType: MessageSender.gemini,
+      messageType: ChatMessageType.authChoice, // New message type
+      choices: ['Sign In', 'Register'], // The choices for the buttons
     );
     // --- MODIFIED: Set auth step ---
     emit(state.copyWith(
-      messages: [welcomeBackMessage],
+      messages: [authChoiceMessage],
       authStep: AuthStep.awaitingChoice,
     ));
   }
 
   /// Private helper to add a message to the chat service and update state.
-  Future<ChatMessageModel> _addUserMessageToChat(String text, {MessageSender sender = MessageSender.user}) async {
+  Future<ChatMessageModel> _addUserMessageToChat(String text, {MessageSender sender = MessageSender.user, bool saveToDb = true}) async {
     final newMessage = ChatMessageModel(
       id: _orderService.generateId(),
       senderId: sender == MessageSender.user ? currentUserId : 'gemini', 
@@ -579,7 +597,7 @@ class HomeCubit extends Cubit<HomeState> {
       senderType: sender,
     );
     emit(state.copyWith(messages: List.from(state.messages)..add(newMessage)));
-    if (currentUserId.isNotEmpty) {
+    if (currentUserId.isNotEmpty && saveToDb) {
       try {
         await _chatService.sendMessage(_currentChatId, newMessage);
       } catch (e) {
@@ -590,29 +608,38 @@ class HomeCubit extends Cubit<HomeState> {
   }
   
 /// Processes the AI's response and returns the ChatMessage to be saved.
-    Future<ChatMessageModel> _processAiResponse(ToolUseResponse aiResponse) async {
+  Future<ChatMessageModel> _processAiResponse(ToolUseResponse aiResponse) async {
      if (aiResponse.isToolCall) {
       return _handleToolCall(aiResponse);
     } else {
       return _handleTextResponse(aiResponse);
     }
   }
+  
   ChatMessageModel _handleToolCall(ToolUseResponse response) {
     final args = response.arguments ?? {};
     switch (response.toolName) {
-      case 'createOrder': return _buildOrderMessage(args);
-      case 'suggestRecipe': return _buildRecipeMessage(args);
-      case 'getHelp': return _buildHelpMessage(args);
+      case 'createOrder':
+        return _buildOrderMessage(args);
+      case 'suggestRecipe':
+        return _buildRecipeMessage(args);
+      case 'buildOrderFromRecipe':
+        return _buildOrderFromRecipeMessage(args);
+      case 'cancelOrder':
+      case 'getHelp':
+        return _buildInfoMessage(args);
       default:
         _log.e('Unknown tool: ${response.toolName}');
         return _buildUnknownToolMessage(response.toolName);
     }
   }
+  
   ChatMessageModel _handleTextResponse(ToolUseResponse response) {
     return _createAiMessage(
       content: response.textResponse ?? "Sorry, I'm not sure what to say.",
     );
   }
+  
   ChatMessageModel _buildOrderMessage(Map<String, dynamic> args) {
     final parsedOrder = AiParsedOrder.fromMap(args);
     return _createAiMessage(
@@ -621,6 +648,7 @@ class HomeCubit extends Cubit<HomeState> {
       parsedOrder: parsedOrder,
     );
   }
+  
   ChatMessageModel _buildRecipeMessage(Map<String, dynamic> args) {
     return _createAiMessage(
       content: 'Here is a recipe idea for you:',
@@ -629,16 +657,51 @@ class HomeCubit extends Cubit<HomeState> {
       recipeIngredients: (args['ingredients'] as List?)?.cast<String>(),
     );
   }
-  ChatMessageModel _buildHelpMessage(Map<String, dynamic> args) {
+
+  ChatMessageModel _buildOrderFromRecipeMessage(Map<String, dynamic> args) {
+    // Find the last recipe in the chat history
+    final lastRecipe = state.messages.lastWhere(
+      (m) => m.messageType == ChatMessageType.recipe,
+      orElse: () => ChatMessageModel.empty(),
+    );
+
+    if (lastRecipe.id.isEmpty || lastRecipe.recipeIngredients == null) {
+      return _createAiMessage(content: "Sorry, I couldn't find a recipe to order from.");
+    }
+
+    // Convert ingredients to order items (assuming a quantity of 1 and placeholder price)
+    final items = lastRecipe.recipeIngredients!
+        .map((ingredient) => AiParsedItem(
+              itemName: ingredient,
+              quantity: 1,
+              unitPrice: 10.0, // Placeholder price
+            ))
+        .toList();
+
+    final parsedOrder = AiParsedOrder(
+      requestedItems: items,
+      aiResponseText: args['aiResponseText'] as String? ?? 'Here are the ingredients from your last recipe.',
+    );
+
     return _createAiMessage(
-      content: (args['helpText'] as String?) ?? "I'm here to help!",
+      content: args['aiResponseText'] as String?,
+      messageType: ChatMessageType.orderConfirmation,
+      parsedOrder: parsedOrder,
     );
   }
+
+  ChatMessageModel _buildInfoMessage(Map<String, dynamic> args) {
+    return _createAiMessage(
+      content: (args['aiResponseText'] as String?) ?? (args['helpText'] as String?) ?? "Okay, done.",
+    );
+  }
+  
   ChatMessageModel _buildUnknownToolMessage(String? toolName) {
     return _createAiMessage(
       content: "I understood a tool '$toolName', but I don't know how to use it.",
     );
   }
+  
   Future<void> _handleError(Object e) async {
     emit(state.copyWith(geminiIsSuccessful: false));
     await _addUserMessageToChat(
@@ -646,6 +709,7 @@ class HomeCubit extends Cubit<HomeState> {
       sender: MessageSender.system,
     );
   }
+  
   ChatMessageModel _createAiMessage({
     String? content,
     ChatMessageType messageType = ChatMessageType.text,
@@ -654,6 +718,7 @@ class HomeCubit extends Cubit<HomeState> {
     String? recipeName,
     List<String>? recipeIngredients,
     String? mediaUrl,
+    List<String>? choices,
   }) {
     return ChatMessageModel(
       id: _orderService.generateId(),
@@ -667,9 +732,11 @@ class HomeCubit extends Cubit<HomeState> {
       recipeIngredients: recipeIngredients,
       mediaUrl: mediaUrl,
       isActioned: false,
+      choices: choices,
       actionStatus: null,
     );
   }
+  
   void _markMessageAsActioned(ChatMessageModel message, {required String status, String? orderId}) {
     final index = state.messages.indexWhere((m) => m.id == message.id);
     if (index != -1) {

@@ -13,61 +13,6 @@ class FirebaseAiService {
 
   FirebaseAiService(this._functions, this._useMocks);
 
-  /// --- NEW: Define the tools your app provides ---
-  /// This list is sent to the AI so it knows what it can do.
-  final _appTools = [
-    {
-      "name": "createOrder",
-      "description": "Creates a new food order from a list of items.",
-      "parameters": {
-        "type": "OBJECT",
-        "properties": {
-          "items": {
-            "type": "ARRAY",
-            "description": "A list of food items to order.",
-            "items": {
-              "type": "OBJECT",
-              "properties": {
-                "itemName": {"type": "STRING"},
-                "quantity": {"type": "NUMBER"},
-                "notes": {"type": "STRING", "description": "e.g., 'extra spicy'"},
-                "unitPrice": {"type": "NUMBER", "description": "The estimated price per item"}
-              },
-              "required": ["itemName", "quantity", "unitPrice"]
-            }
-          },
-          "aiResponseText": {"type": "STRING", "description": "A confirmation message to show the user."}
-        },
-        "required": ["items", "aiResponseText"]
-      }
-    },
-    {
-      "name": "suggestRecipe",
-      "description": "Suggests a recipe for the user.",
-      "parameters": {
-        "type": "OBJECT",
-        "properties": {
-          "recipeName": {"type": "STRING"},
-          "imageUrl": {"type": "STRING"},
-          "ingredients": {"type": "ARRAY", "items": {"type": "STRING"}},
-          "instructions": {"type": "ARRAY", "items": {"type": "STRING"}}
-        },
-        "required": ["recipeName", "ingredients", "instructions"]
-      }
-    },
-    {
-      "name": "getHelp",
-      "description": "Provides a help message about the app.",
-      "parameters": {
-        "type": "OBJECT",
-        "properties": {
-          "helpText": {"type": "STRING"}
-        },
-        "required": ["helpText"]
-      }
-    }
-  ];
-
   /// --- REPLACES ALL OTHER METHODS ---
   /// Gets a structured response from the AI, which will be
   /// either a tool call or a simple text message.
@@ -81,8 +26,6 @@ class FirebaseAiService {
       _log.i('Calling geminiProxy with tool definitions...');
       final callable = _functions.httpsCallable('geminiProxy');
       
-      // Assumes your 'geminiProxy' function is updated
-      // to accept a 'tools' argument.
       final response = await callable.call<Map<String, dynamic>>({
         'history': history
             .map((m) => {
@@ -90,7 +33,6 @@ class FirebaseAiService {
                   'text': m.content,
                 })
             .toList(),
-        'tools': _appTools, // <-- Pass the tool definitions
       });
 
       _log.i('Successfully received structured response from geminiProxy.');
@@ -284,4 +226,3 @@ class FirebaseAiService {
 //     };
 //   }
 // }
-

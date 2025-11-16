@@ -118,3 +118,19 @@ class VideoPresentationItem extends ChatItem {
     this.onVideoEnd,
   }); 
 }
+
+class AuthChoiceItem extends ChatItem {
+  final String id;
+  final String text;
+  final List<String> choices;
+  final ValueChanged<String> onChoiceSelected;
+  final MessageSender sender; // <-- ADDED THIS
+
+  const AuthChoiceItem({
+    required this.id,
+    required this.text,
+    required this.choices,
+    required this.onChoiceSelected,
+    this.sender = MessageSender.gemini, // <-- ADDED THIS
+  });
+}

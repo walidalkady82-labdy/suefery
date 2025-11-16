@@ -1,214 +1,154 @@
 import 'package:flutter/material.dart';
 
+import '../../../../data/enums/message_sender.dart';
 import '../../../../data/models/ai_parsed_order.dart';
 import '../models/chat_item.dart';
+import 'bubble_layout.dart';
 
 /// A "dumb" bubble widget that displays a pending order confirmation.
 ///
 /// It allows the user to modify item quantities and confirm or cancel
 /// the order via the callbacks provided in [PendingOrderChatItem].
-class PendingOrderBubble extends StatelessWidget {
-  const PendingOrderBubble({super.key, required this.item});
-
+class PendingOrderBubble extends StatefulWidget {
   final PendingOrderChatItem item;
+
+  const PendingOrderBubble({
+    super.key,
+    required this.item,
+  });
+
+  @override
+  State<PendingOrderBubble> createState() => _PendingOrderBubbleState();
+}
+
+class _PendingOrderBubbleState extends State<PendingOrderBubble> {
+  bool _isConfirming = false;
+
+  void _handleConfirm(BuildContext context) async {
+    setState(() => _isConfirming = true);
+    // The cubit callback will handle payment & async work
+    await widget.item.onConfirm(context);
+    if (mounted) {
+      // The cubit will update the message, but we stop loading
+      // in case of a payment failure.
+      setState(() => _isConfirming = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Calculate totals
-    final double subtotal = item.parsedOrder.requestedItems.fold(
-      0.0,
-      (sum, item) => sum + (item.quantity * item.unitPrice),
-    );
-    // TODO: Get fee from a config/service, not hardcoded
-    const double deliveryFee = 10.0; 
-    final double grandTotal = subtotal + deliveryFee;
+    final theme = Theme.of(context);
+    final order = widget.item.parsedOrder;
+    final bubbleTextColor = theme.colorScheme.onSecondaryContainer;
 
-    return Card(
-      elevation: 2.0,
-      color: Theme.of(context).colorScheme.surfaceVariant,
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Order Confirmation",
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const Divider(height: 16),
-
-            // --- List of Items ---
-            ...item.parsedOrder.requestedItems.asMap().entries.map((entry) {
-              int index = entry.key;
-              AiParsedItem orderItem = entry.value;
-              return _buildItemRow(
-                context,
-                orderItem,
-                index,
-                !item.isActioned, // Enabled if not actioned
-              );
-            }),
-
-            const Divider(height: 16),
-
-            // --- Totals ---
-            _buildTotalRow("Subtotal", subtotal),
-            _buildTotalRow("Delivery Fee", deliveryFee),
-            _buildTotalRow("Grand Total", grandTotal, isBold: true),
-
-            const SizedBox(height: 16),
-
-            // --- Action Buttons ---
-            if (item.isActioned)
-              _buildActionedChip(context)
-            else
-              _buildActionButtons(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Builds a single row for an item in the order list.
-  Widget _buildItemRow(
-    BuildContext context,
-    AiParsedItem orderItem,
-    int index,
-    bool isEnabled,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          // --- Quantity Controls ---
-          SizedBox(
-            width: 90, // Fixed width for controls
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 30,
-                  height: 30,
-                  child: IconButton.filledTonal(
-                    iconSize: 14,
-                    icon: const Icon(Icons.remove),
-                    onPressed: isEnabled
-                        ? () => item.onUpdateQuantity(index, -1)
-                        : null,
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    '${orderItem.quantity}',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                SizedBox(
-                  width: 30,
-                  height: 30,
-                  child: IconButton.filledTonal(
-                    iconSize: 14,
-                    icon: const Icon(Icons.add),
-                    onPressed: isEnabled
-                        ? () => item.onUpdateQuantity(index, 1)
-                        : null,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          // --- Item Name & Notes ---
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  orderItem.itemName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                if (orderItem.notes != null && orderItem.notes!.isNotEmpty)
-                  Text(
-                    orderItem.notes!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          // --- Line Item Total ---
-          Text(
-            "EGP ${(orderItem.quantity * orderItem.unitPrice).toStringAsFixed(2)}",
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Builds a row for displaying a total (e.g., "Subtotal", "EGP 150.00")
-  Widget _buildTotalRow(String label, double amount, {bool isBold = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-          Text(
-            "EGP ${amount.toStringAsFixed(2)}",
-            style: TextStyle(
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Builds the "Cancel" and "Confirm" buttons.
-  Widget _buildActionButtons(BuildContext context) {
-    return Row(
+    // Build the content for the bubble
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: item.onCancel,
-            child: const Text("Cancel"),
+        // 1. AI's introductory text
+        if (order.aiResponseText != null && order.aiResponseText!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: Text(order.aiResponseText!),
           ),
+
+        // 2. List of items
+        ..._buildItemList(order.requestedItems, bubbleTextColor),
+
+        // 3. Separator
+        Divider(
+          height: 20,
+          color: bubbleTextColor.withOpacity(0.5),
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: FilledButton(
-            child: const Text("Confirm & Pay"),
-            onPressed: () => item.onConfirm(context),
+
+        // 4. Action Buttons (or Status)
+        if (widget.item.isActioned)
+          // Show status if already actioned
+          Text(
+            widget.item.actionStatus ?? 'Actioned',
+            style: theme.textTheme.titleMedium
+                ?.copyWith(color: bubbleTextColor, fontWeight: FontWeight.bold),
+          )
+        else if (_isConfirming)
+          // Show loading indicator
+          const Center(child: CircularProgressIndicator())
+        else
+          // Show confirm/cancel buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: widget.item.onCancel,
+                style: TextButton.styleFrom(foregroundColor: bubbleTextColor),
+                child: const Text('Cancel'),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                onPressed: () => _handleConfirm(context),
+                // Style button to pop
+                style: FilledButton.styleFrom(
+                  backgroundColor: theme.colorScheme.onSecondary,
+                  foregroundColor: theme.colorScheme.secondary,
+                ),
+                child: const Text('Confirm & Pay'),
+              ),
+            ],
           ),
-        ),
       ],
     );
+
+    // Return the content wrapped in the layout
+    return BubbleLayout(
+      sender: MessageSender.gemini, // This bubble is always from the AI
+      child: content,
+    );
   }
 
-  /// Builds the "chip" that shows the final status (e.g., "Confirmed").
-  Widget _buildActionedChip(BuildContext context) {
-    final bool isCancelled =
-        item.actionStatus?.toLowerCase() == 'cancelled';
-    return Center(
-      child: Chip(
-        label: Text(
-          item.actionStatus ?? "Actioned",
-          style: TextStyle(
-            color: isCancelled
-                ? Theme.of(context).colorScheme.onError
-                : Theme.of(context).colorScheme.onSecondaryContainer,
-          ),
+  // Helper to build the list of items with quantity steppers
+  List<Widget> _buildItemList(List<AiParsedItem> items, Color iconColor) {
+    return List.generate(items.length, (index) {
+      final item = items[index];
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          children: [
+            // Item name
+            Expanded(
+              child: Text(
+                item.itemName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            // Quantity Stepper
+            if (!widget.item.isActioned) // Only show if not actioned
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline),
+                    color: iconColor,
+                    iconSize: 20,
+                    onPressed: item.quantity > 1
+                        ? () => widget.item.onUpdateQuantity(index, -1)
+                        : null,
+                  ),
+                  Text(item.quantity.toString(),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    color: iconColor,
+                    iconSize: 20,
+                    onPressed: () => widget.item.onUpdateQuantity(index, 1),
+                  ),
+                ],
+              ),
+            if (widget.item.isActioned) // Show final quantity if actioned
+              Text(
+                'Qty: ${item.quantity}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+          ],
         ),
-        backgroundColor: isCancelled
-            ? Theme.of(context).colorScheme.error
-            : Theme.of(context).colorScheme.secondaryContainer,
-      ),
-    );
+      );
+    });
   }
 }

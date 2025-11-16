@@ -27,7 +27,7 @@ class ChatService {
         .quaryCollectionStream(
       path,
       orderBy: 'timestamp',
-      isDescending: false, // <-- Corrected: Oldest first
+      isDescending: false, 
     )
         .map((snapshot) {
       return snapshot.docs.map((doc) {

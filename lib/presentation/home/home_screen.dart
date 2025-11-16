@@ -123,7 +123,14 @@ class HomeScreen extends StatelessWidget {
             imageUrl: 'https://via.placeholder.com/150', // Add imageUrl to your model
           );
         
-        // --- REMOVED: signInForm and registerForm cases ---
+        case ChatMessageType.authChoice:
+          return AuthChoiceItem(
+            id: msg.id,
+            text: msg.content ?? '',
+            choices: msg.choices ?? [],
+            onChoiceSelected: (choice) => cubit.handleAuthChoice(choice),
+            sender: msg.senderType, 
+          );
 
         //TODO: PromotionItem (if you implement this tool)
         case ChatMessageType.promotion:
@@ -148,7 +155,7 @@ class HomeScreen extends StatelessWidget {
     return items;
   }
 
-  /// --- NEW: Helper to set the hint text in the input bar ---
+  /// --- Helper to set the hint text in the input bar ---
   String _getHintText(AuthStep step, AppLocalizations strings) {
     // You will need to add these strings to your .arb file
     // e.g., "authHintChoice": "Type 'Sign In' or 'Register'",
@@ -202,7 +209,7 @@ class HomeScreen extends StatelessWidget {
             homeCubit.loadChat();
             homeCubit.loadPendingOrders();
           }
-          // --- ADDED: Tell HomeCubit to build the anonymous flow ---
+          // --- build the anonymous flow ---
           if (authState.authState == AuthStatus.unauthenticated) {
             homeCubit.setupAnonymousChat(); // This kicks off the anon flow
           }
@@ -217,7 +224,7 @@ class HomeScreen extends StatelessWidget {
           builder: (context, authState) {
             final homeCubit = context.read<HomeCubit>();
 
-            // --- FIX: This block now correctly handles the initial loading ---
+            // --- handles the initial loading ---
             _log.i("Checking Auth State: ${authState.authState}");
             if (authState.authState == AuthStatus.inProgress || authState.authState == AuthStatus.none) {
               _log.i("Handle Loading (Initial check & InProgress)");
@@ -232,7 +239,7 @@ class HomeScreen extends StatelessWidget {
               );
             }
 
-            // --- MODIFIED: Unauthenticated and Authenticated builders ---
+            // --- Unauthenticated and Authenticated builders ---
             
             // Both unauthenticated and authenticated users will see a ChatView.
             // The only difference is the *data* and *callbacks* we pass in.
@@ -262,10 +269,6 @@ class HomeScreen extends StatelessWidget {
                     
                     final chatViewCallbacks = ChatViewCallbacks(
                       inputBarCallbacks: inputBarCallbacks,
-                      // These are null, which is correct.
-                      // The conversational flow doesn't use these form callbacks.
-                      // onSignIn: null, (Removed from class)
-                      // onRegister: null, (Removed from class)
                     );
 
                     // --- Configure Input Bar UI ---
@@ -274,8 +277,8 @@ class HomeScreen extends StatelessWidget {
                       isLoading: homeState.geminiIsLoading, // Shows loading during sign-in
                       hintText: isAuthenticated 
                         ? strings.chatHint // "Type a message..."
-                        : _getHintText(homeState.authStep, strings), // Dynamic hint
-                      isDisabled: false, // <-- ALWAYS ENABLED NOW
+                        : _getHintText(homeState.authStep, strings), 
+                      isDisabled: false, 
                     );
 
                     final chatViewInput = ChatViewInput(

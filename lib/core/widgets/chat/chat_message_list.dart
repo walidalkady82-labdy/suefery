@@ -40,6 +40,9 @@ class ChatMessageList extends StatelessWidget {
 
           OrderSummeryItem() => OrderBubble(item: item),
           
+          AuthChoiceItem() => AuthChoiceBubble(item: item),
+          
+
           VideoPresentationItem() => VideoPlayerBubble(
               title: item.title,
               videoUrl: item.videoUrl,

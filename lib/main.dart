@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -64,7 +65,7 @@ Future<void> _initEnvironmentVars() async {
  Future<FirebaseApp> _initializeFirebase() async {
     final useEmulatorEnv = dotenv.getBool('USE_FIREBASE_EMULATOR', fallback: false);
     // 1. Get environment variables
-    final  emulatorHost = dotenv.get('local_device_ip');
+    final  emulatorHost = "localhost";//dotenv.get('local_device_ip');
     final firebaseConfigJson = const String.fromEnvironment('__firebase_config', defaultValue: '{}');
     //final appId = const String.fromEnvironment('__app_id', defaultValue: 'default-app-id');
     late final FirebaseApp app;
@@ -94,6 +95,19 @@ Future<void> _initEnvironmentVars() async {
       // If config is missing, initialize a default app (will likely fail on API calls)
       app = await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     }
+
+    // --- INITIALIZE APP CHECK ---
+    final appCheckWebKey = dotenv.get('app_check_site_key');
+    await FirebaseAppCheck.instance.activate(
+      // Use Play Integrity for real Android builds.
+      androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      // Use App Attest for real iOS builds.
+      appleProvider: kDebugMode ? AppleProvider.debug : AppleProvider.appAttest,
+      // Use reCAPTCHA v3 for web. You must configure this in the Firebase console.
+      // Replace 'YOUR_RECAPTCHA_V3_SITE_KEY' with the key from your Firebase project settings.
+
+      webProvider: ReCaptchaV3Provider(appCheckWebKey),
+    );
 
        // await FirebaseStorage.instance.useEmulator(
       // host: 'localhost',

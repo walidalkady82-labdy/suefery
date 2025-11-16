@@ -24,7 +24,7 @@ admin.initializeApp();
 // Set global options for the functions.
 setGlobalOptions({maxInstances: 10});
 /**
- * Creates a Paymob payment key.
+ * Creates a Paymob payment key. 
  * This function orchestrates the 3-step process to get a payment key from
  * Paymob.
  *
@@ -107,106 +107,103 @@ exports.createPaymobPaymentIntent = onCall(async (request) => {
   }
 });
 
-// --- 1. Define AI Personalities (System Prompts & Tools) ---
+// --- 1. Define a SINGLE AI Personality (System Prompt) ---
+const systemInstruction = {
+  parts: [{
+    text: "You are \"Suefery\", a multi-talented assistant for a delivery app " +
+          "in Egypt. You can act in several roles based on the user's needs, " +
+          "which are defined by your available tools. You must understand " +
+          "and respond in both Egyptian Arabic (colloquial) and English.\n\n" +
+          "Your roles are:\n" +
+          "1.  **Order Assistant**: When a user wants to order food or " +
+          "groceries, use the `createOrder` tool to structure their request.\n" +
+          "2.  **Chef**: If a user asks for cooking ideas, use the " +
+          "`suggestRecipe` tool to provide a recipe.\n" +
+          "3.  **Helpful Guide**: If the user asks for help, use the `getHelp` " +
+          "tool.\n\n" +
+          "Your primary goal is to analyze the user's message and decide if " +
+          "it matches one of your tools. If it does not (e.g., they are " +
+          "making small talk or asking a general question), just respond " +
+          "naturally and conversationally as a friendly assistant.",
+  }],
+};
 
-const extractOrderFunction = {
-  name: "extractOrder",
-  description: "Extracts order details from a user's grocery list",
-  parameters: {
-    type: "OBJECT",
-    properties: {
-      items: {
-        type: "ARRAY",
-        description: "A list of grocery items. Each item is an object.",
+// --- NEW: Define all function tools here ---
+const functionDeclarations = [
+  {
+    name: "createOrder",
+    description: "Creates a new food order from a list of items.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
         items: {
-          type: "OBJECT",
-          properties: {
-            item: {
-              type: "STRING", // eslint-disable-line max-len
-              description: "The name of the grocery item (e.g., 'milk', " + // eslint-disable-line max-len
-                           "'bread', 'apples').",
+          type: "ARRAY",
+          description: "A list of food items to order.",
+          items: {
+            type: "OBJECT",
+            properties: {
+              itemName: {type: "STRING"},
+              quantity: {type: "NUMBER"},
+              notes: {type: "STRING", description: "e.g., 'extra spicy'"},
+              unitPrice: {type: "NUMBER", description: "The estimated price per item"},
             },
-            quantity: {
-              type: "NUMBER",
-              description: "The count or amount of the item. Defaults to 1 " +
-                           "if not specified.",
-            },
-            unit: {
-              type: "STRING", // eslint-disable-line max-len
-              description: "The unit of measurement (e.g., 'kg', 'liter', " + // eslint-disable-line max-len
-                           "'pack', 'loaves'). Optional.",
-            },
+            required: ["itemName", "quantity", "unitPrice"],
           },
-          required: ["item", "quantity"],
         },
+        aiResponseText: {type: "STRING", description: "A confirmation message to show the user."},
       },
-      store: {
-        type: "STRING", // eslint-disable-line max-len
-        description: "The name or type of store (e.g., 'supermarket', " + // eslint-disable-line max-len
-                     "'bakery'). Optional.",
-      },
-      notes: {
-        type: "STRING", // eslint-disable-line max-len
-        description: "Any additional notes or preferences from the user. " + // eslint-disable-line max-len
-                     "Optional.",
-      },
+      required: ["items", "aiResponseText"],
     },
-    required: ["items"],
   },
-};
-
-const getModelConfig = (modelType) => {
-  switch (modelType) {
-    case "order":
-      return {
-        systemInstruction: {
-          parts: [
-            {
-              text: "You are \"Suefery\", an expert grocery and delivery " + // eslint-disable-line max-len
-                    "order assistant in Egypt. Your role is to receive " + // eslint-disable-line max-len
-                    "unstructured text from a user and convert it *only* " + // eslint-disable-line max-len
-                    "into a structured JSON format using the `extractOrder` " + // eslint-disable-line max-len
-                    "function. You must understand Egyptian Arabic " + // eslint-disable-line max-len
-                    "(colloial) and English. If a quantity isn't specified, " + // eslint-disable-line max-len
-                    "default to 1. Do not respond with conversational text. " +
-                    "Only call the function.",
-            },
-          ],
-        },
-        tools: [{functionDeclarations: [extractOrderFunction]}],
-      };
-    case "chef":
-      return {
-        systemInstruction: {
-          parts: [{
-            text: "You are \"Chef Suefery\", a helpful and creative " +
-                  "Egyptian chef. You specialize in simple, delicious " +
-                  "recipes that can be made from common household " +
-                  "ingredients. You must respond in the user's language " +
-                  "(Egyptian Arabic or English). Your tone is encouraging, " +
-                  "friendly, and warm. Keep recipes concise and easy to " +
-                  "follow.",
-          }],
-        },
-        tools: [],
-      };
-    case "general":
-    default:
-      return {
-        systemInstruction: {
-          parts: [{
-            text: "You are \"Suefery\", a general-purpose helpful assistant " + // eslint-disable-line max-len
-                  "for a delivery app. You can answer questions about the " + // eslint-disable-line max-len
-                  "service, chat with the user, or provide general help. " + // eslint-disable-line max-len
-                  "You must respond in the user's language (Egyptian " + // eslint-disable-line max-len
-                  "Arabic or English). Your tone is polite, professional, " + // eslint-disable-line max-len
-                  "and helpful.", // eslint-disable-line max-len
-          }],
-        },
-        tools: [],
-      };
-  }
-};
+  {
+    name: "suggestRecipe",
+    description: "Suggests a recipe for the user.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        recipeName: {type: "STRING"},
+        imageUrl: {type: "STRING"},
+        ingredients: {type: "ARRAY", items: {type: "STRING"}},
+        instructions: {type: "ARRAY", items: {type: "STRING"}},
+      },
+      required: ["recipeName", "ingredients", "instructions"],
+    },
+  },
+  {
+    name: "buildOrderFromRecipe",
+    description: "Creates a new food order based on the ingredients of a previously suggested recipe.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        recipeName: {type: "STRING", description: "The name of the recipe to order ingredients for."},
+        aiResponseText: {type: "STRING", description: "A confirmation message for ordering the recipe ingredients."},
+      },
+      required: ["recipeName", "aiResponseText"],
+    },
+  },
+  {
+    name: "cancelOrder",
+    description: "Cancels the current pending order proposal.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        aiResponseText: {type: "STRING", description: "A confirmation message that the order was cancelled."},
+      },
+      required: ["aiResponseText"],
+    },
+  },
+  {
+    name: "getHelp",
+    description: "Provides a help message about the app.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        helpText: {type: "STRING"},
+      },
+      required: ["helpText"],
+    },
+  },
+];
 
 // --- 2. The Cloud Function (Refactored for Vertex AI) ---
 exports.geminiProxy = onCall(
@@ -224,22 +221,23 @@ exports.geminiProxy = onCall(
     },
     async (request) => {
       // 1. Get data from the app (and check auth)
+      console.log("geminiProxy: triggered!");
+      console.log("geminiProxy: checking auth!");
       if (!request.auth) {
+        console.log("geminiProxy: unauthenticated You must be logged in.!");
         throw new HttpsError("unauthenticated", "You must be logged in.");
       }
-      // --- FIX: Determine modelType based on incoming data ---
-      const {history, tools} = request.data;
-      let {modelType} = request.data;
+      console.log("geminiProxy: auth ok!"); 
+      const {history} = request.data;
 
       if (!history) {
-        throw new HttpsError("invalid-argument", "Missing 'history' parameter.");
+        throw new HttpsError("invalid-argument", "Missing 'history' or 'tools' parameter.");
       }
-      // If 'tools' are provided, we can infer the modelType is 'order'.
-      if (tools) modelType = "order";
 
       // 2. Initialize Vertex AI
       // Project ID is automatically read from the function's environment
       const project = process.env.GCLOUD_PROJECT;
+      console.log(project);
       const location = "us-central1"; // Must be a supported Gemini region
 
       if (!project || project !== "suefery-d2bf2") {
@@ -250,15 +248,14 @@ exports.geminiProxy = onCall(
       const vertexAI = new VertexAI({project, location});
 
       // 3. Get the correct AI personality
-      const config = getModelConfig(modelType);
       const model = vertexAI.getGenerativeModel({
         // Use the Vertex AI model name
-        model: "gemini-1.5-flash-001",
-        systemInstruction: config.systemInstruction,
-        tools: config.tools,
+        model: "gemini-2.5-flash",
+        systemInstruction: systemInstruction,
+        tools: [{functionDeclarations: functionDeclarations}],
       });
 
-      // 4. Set safety settings (same as before)
+      // 4. Set safety settings (same as before) 
       const safetySettings = [
         {
           category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -275,10 +272,10 @@ exports.geminiProxy = onCall(
       const lastMessage = contentHistory.pop();
       if (!lastMessage || lastMessage.role !== "user") {
         throw new HttpsError("invalid-argument", "Last message must be from user.");
-      }
+      } 
 
       // 6. Call the Vertex AI Gemini API
-      try {
+      try { 
         const chat = model.startChat({history: contentHistory, safetySettings});
         const result = await chat.sendMessage(lastMessage.parts[0].text);
         const response = result.response;
@@ -290,13 +287,14 @@ exports.geminiProxy = onCall(
         }
 
         // Check for a function call first
-        const functionCall = candidate.content.parts.find(
+        const toolCall = candidate.content.parts.find(
             (part) => part.functionCall,
         )?.functionCall;
 
-        if (functionCall) {
-          // It's an order! Return the structured JSON.
-          return functionCall.args;
+        if (toolCall) {
+          // It's a tool call! Return the structured JSON.
+          logger.info(`AI is calling tool: ${toolCall.name}`);
+          return {toolCall: {name: toolCall.name, arguments: toolCall.args}};
         }
 
         // If no function call, join all text parts
@@ -313,9 +311,29 @@ exports.geminiProxy = onCall(
         // No response
         return {text: "Sorry, I'm not sure how to respond to that."};
       } catch (error) {
-        console.error("Error calling Vertex AI API:", error);
+        // --- REFACTORED: More detailed error handling ---
+        logger.error("Error calling Vertex AI API:", {
+          // Log the full error object for detailed inspection in Cloud Logging
+          errorObject: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+        });
+
+        // Check if the response was blocked due to safety settings
+        if (error.response && error.response.promptFeedback &&
+            error.response.promptFeedback.blockReason) {
+          logger.warn("AI response blocked due to safety settings.", {
+            reason: error.response.promptFeedback.blockReason,
+          });
+          throw new HttpsError(
+              "invalid-argument",
+              "Your request was blocked for safety reasons. Please rephrase your message.",
+          );
+        }
+
+        // For other errors, throw a more generic but still informative error.
         throw new HttpsError(
-            "internal", "Failed to communicate with AI.", error.message,
+            "unavailable", // Use 'unavailable' to indicate a backend service failed
+            "The AI service is currently unavailable. Please try again later.",
+            {originalMessage: error.message}, // Pass original error for client-side logging
         );
       }
     },
