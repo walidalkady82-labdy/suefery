@@ -89,8 +89,6 @@ class ChatMessageModel extends Equatable {
               'items': parsedOrder!.requestedItems.map((e) => {
                 'itemName': e.itemName,
                 'quantity': e.quantity,
-                'notes': e.notes,
-                'unitPrice': e.unitPrice,
               }).toList(),
               'aiResponseText': parsedOrder!.aiResponseText,
             }

@@ -43,6 +43,7 @@ class PendingOrderChatItem extends ChatItem {
     required this.isActioned,
     this.actionStatus,
     required this.onConfirm,
+    required this.onSubmitDraft,
     required this.onCancel,
     required this.onUpdateQuantity,
   });
@@ -54,6 +55,7 @@ class PendingOrderChatItem extends ChatItem {
 
   // Callbacks for the bubble's buttons
   final Future<bool?> Function(BuildContext context) onConfirm;
+  final VoidCallback onSubmitDraft;
   final VoidCallback onCancel;
   final Function(int itemIndex, int change) onUpdateQuantity;
 }

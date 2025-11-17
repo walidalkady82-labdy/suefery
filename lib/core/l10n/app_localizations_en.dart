@@ -240,4 +240,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authHintConfirmPassword => 'Confirm your password...';
+
+  @override
+  String get cancelOrder => 'Cancel';
+
+  @override
+  String get confirmAndPay => 'Confirm and Pay';
 }

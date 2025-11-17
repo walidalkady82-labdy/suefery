@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
   "appTitle": "SUEFERY Multi-Role App",
-  "@appTitle": {"description": "The main title for the complete multi-role application."},
+  "@appTitle": {"description": "The main title for the application."},
   
   "customerTitle": "SUEFERY Customer App",
   "@customerTitle": {"description": "The title for the Customer-facing application or section."},
@@ -250,8 +250,7 @@
     "authHintConfirmPassword": "Confirm your password...",
     "@authHintConfirmPassword": {
         "description": "Hint text when asking the user to confirm their password"
-    }
-
-    
-  
+    },
+    "cancelOrder" : "Cancel",
+    "confirmAndPay" : "Confirm and Pay"  
 }

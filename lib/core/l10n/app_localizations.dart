@@ -98,7 +98,7 @@ abstract class AppLocalizations {
     Locale('en'),
   ];
 
-  /// The main title for the complete multi-role application.
+  /// The main title for the application.
   ///
   /// In en, this message translates to:
   /// **'SUEFERY Multi-Role App'**
@@ -547,6 +547,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm your password...'**
   String get authHintConfirmPassword;
+
+  /// No description provided for @cancelOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelOrder;
+
+  /// No description provided for @confirmAndPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm and Pay'**
+  String get confirmAndPay;
 }
 
 class _AppLocalizationsDelegate

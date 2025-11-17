@@ -73,7 +73,6 @@ class OrderService {
           .toList();
     });
   }
-
   /// Creates a new [OrderModel] from an [AiParsedOrder].
   Future<OrderModel> createOrder(AiParsedOrder aiOrder,
       {required String customerId, required String customerName}) async {
@@ -91,13 +90,12 @@ class OrderService {
 
     // 3. Convert AiParsedItem (DTO) to OrderItem (DB Model)
     final List<OrderItem> orderItems = aiOrder.requestedItems.map((aiItem) {
-      estimatedTotal += (aiItem.unitPrice * aiItem.quantity);
+      //estimatedTotal += (aiItem.unitPrice * aiItem.quantity);
       return OrderItem(
-        productId: '', // Placeholder, you'd look this up
+        id: '', // Placeholder, you'd look this up
         name: aiItem.itemName,
-        quantity: aiItem.quantity,
-        unitPrice: aiItem.unitPrice,
-        notes: aiItem.notes,
+        quantity: aiItem.quantity, 
+        unitPrice: 0,
       );
     }).toList();
 
@@ -120,6 +118,47 @@ class OrderService {
       return newOrder;
     } catch (e) {
       _log.e('Failed to save new order: $e');
+      rethrow;
+    }
+  }
+  /// Creates a new "draft" order from an AI-parsed order.
+  /// This order has no price and is awaiting a quote from a partner.
+  Future<OrderModel> createDraftOrder(AiParsedOrder aiOrder,
+      {required String customerId, required String customerName}) async {
+    _log.i('Creating draft order for customer: $customerId');
+
+    // 1. Generate a unique ID for the draft.
+    final newOrderId = generateId();
+
+    // 2. Convert AiParsedItem to OrderItem (price will be 0.0)
+    final List<OrderItem> orderItems = aiOrder.requestedItems.map((aiItem) {
+      return OrderItem(
+        id: '', // No product ID at this stage
+        name: aiItem.itemName,
+        quantity: aiItem.quantity,
+        unitPrice: 0.0, // Price is unknown in a draft
+      );
+    }).toList();
+
+    // 3. Build the OrderModel with a 'draft' status
+    final newOrder = OrderModel(
+      id: newOrderId,
+      userId: customerId,
+      estimatedTotal: 0.0, // No total for a draft
+      deliveryFee: 0.0, // No fee for a draft
+      deliveryAddress: 'To be confirmed',
+      status: OrderStatus.draft, // <-- Key difference
+      items: orderItems,
+      createdAt: DateTime.now(),
+    );
+
+    // 4. Save the new draft order to Firestore
+    try {
+      await _firestoreRepo.add(_collectionPath, newOrder.toMap(), id: newOrderId);
+      _log.i('Successfully created draft order: $newOrderId');
+      return newOrder;
+    } catch (e) {
+      _log.e('Failed to save new draft order: $e');
       rethrow;
     }
   }

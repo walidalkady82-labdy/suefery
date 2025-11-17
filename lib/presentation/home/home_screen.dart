@@ -109,6 +109,7 @@ class HomeScreen extends StatelessWidget {
             isActioned: msg.isActioned,
             actionStatus: msg.actionStatus,
             // Pass the cubit methods as callbacks
+            onSubmitDraft: () => cubit.submitDraftOrder(msg),
             onConfirm: (context) => cubit.confirmAndPayForOrder(context, msg.parsedOrder!, msg),
             onCancel: () => cubit.cancelParsedOrder(msg),
             onUpdateQuantity: (itemIndex, change) => cubit.updatePendingOrderItemQuantity(msg.id, itemIndex, change),

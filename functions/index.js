@@ -35,6 +35,8 @@ setGlobalOptions({maxInstances: 10});
  * @param {object} context - The context of the function call.
  * @return {Promise<{paymentKey: string}>} - A promise that resolves with the payment key.
  */
+
+
 exports.createPaymobPaymentIntent = onCall(async (request) => {
   const {amount, currency, billingData} = request.data;
 
@@ -144,10 +146,9 @@ const functionDeclarations = [
             properties: {
               itemName: {type: "STRING"},
               quantity: {type: "NUMBER"},
-              notes: {type: "STRING", description: "e.g., 'extra spicy'"},
-              unitPrice: {type: "NUMBER", description: "The estimated price per item"},
+              notes: {type: "STRING", description: "e.g., 'extra spicy'"}
             },
-            required: ["itemName", "quantity", "unitPrice"],
+            required: ["itemName", "quantity"],
           },
         },
         aiResponseText: {type: "STRING", description: "A confirmation message to show the user."},

@@ -33,31 +33,27 @@ class AiParsedOrder {
 
 class AiParsedItem {
   final String itemName;
-  final int quantity;
-  final String? notes;
+  final double quantity;
   final double unitPrice;
 
   const AiParsedItem({
     required this.itemName,
     required this.quantity,
-    this.notes,
-    required this.unitPrice,
+    this.unitPrice = 0.0,
   });
 
   factory AiParsedItem.fromMap(Map<String, dynamic> map) {
     return AiParsedItem(
       itemName: map['itemName'] as String,
-      quantity: (map['quantity'] as num).toInt(),
-      notes: map['notes'] as String?,
-      unitPrice: (map['unitPrice'] as num).toDouble(),
+      quantity: (map['quantity'] as num).toDouble(),
+      unitPrice: (map['unitPrice'] as num?)?.toDouble() ?? 0.0,
     );
   }
-  
-  AiParsedItem copyWith({ int? quantity }) {
+
+  AiParsedItem copyWith({String? itemName , double? quantity , double? unitPrice}) {
     return AiParsedItem(
       itemName: this.itemName,
       quantity: quantity ?? this.quantity,
-      notes: this.notes,
       unitPrice: this.unitPrice,
     );
   }

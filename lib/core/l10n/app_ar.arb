@@ -166,5 +166,8 @@
     "authHintConfirmPassword": "أعد تأكيد كلمة المرور...",
     "@authHintConfirmPassword": {
         "description": "نص تلميح عند مطالبة المستخدم بتأكيد كلمة المرور الخاصة به"
-    }
+    },
+    "cancelOrder": "إلغاء الطلب" ,
+    "confirmAndPay" : "تأكيد و الدفع"
+
 }

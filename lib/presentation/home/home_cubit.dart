@@ -224,16 +224,42 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
+  /// --- NEW: Step 3 of the sequence diagram ---
+  /// Submits the AI-parsed items as a "Draft" order to the backend.
+  Future<void> submitDraftOrder(ChatMessageModel message) async {
+    if (message.parsedOrder == null) return;
+
+    _log.i('Submitting draft order to backend.');
+    // Mark the bubble as "waiting for a quote"
+    _markMessageAsActioned(message, status: 'AwaitingQuote');
+
+    try {
+      // This would create a new document in a 'draftOrders' collection
+      // with a status of 'Draft'. The backend would then take over.
+      // For now, we simulate the partner response.
+      await _orderService.createDraftOrder( // <-- Corrected method call
+        message.parsedOrder!,
+        customerId: currentUserId,
+        customerName: currentUserName,
+      );
+      await _addUserMessageToChat("Great! We're checking with nearby partners for price and availability. This may take a moment.", sender: MessageSender.system);
+
+    } catch (e) {
+      _log.e('Failed to submit draft order: $e');
+      _markMessageAsActioned(message, status: 'Draft'); // Revert status
+      await _addUserMessageToChat("Sorry, there was an issue submitting your request. Please try again.", sender: MessageSender.system);
+    }
+  }
   /// Called by the [PendingOrderBubble]'s "Confirm" button.
   /// 
   Future<bool?> confirmAndPayForOrder(BuildContext context, AiParsedOrder parsedOrder, ChatMessageModel message) async {
     emit(state.copyWith(isLoading: true));
 
     // --- 1. Calculate Total ---
-    final double subtotal = parsedOrder.requestedItems.fold( 0.0, (sum, item) => sum + (item.quantity * item.unitPrice));
-    // TODO: Get fee from RemoteConfigService
-    const double deliveryFee = 10.0;
-    final double grandTotal = subtotal + deliveryFee;
+    // final double subtotal = parsedOrder.requestedItems.fold( 0.0, (sum, item) => sum + (item.quantity * item.unitPrice));
+    // // TODO: Get fee from RemoteConfigService
+    // const double deliveryFee = 10.0;
+    // final double grandTotal = subtotal + deliveryFee;
 
     // --- 2. Process Payment (Logic is commented out) ---
     _log.i('Attempting payment for order...');
@@ -268,7 +294,7 @@ class HomeCubit extends Cubit<HomeState> {
         );
 
         // Update the message with the final orderId
-        _markMessageAsActioned(message, status: 'Confirmed', orderId: newOrder.id);
+        _markMessageAsActioned(message, status: 'Paid', orderId: newOrder.id);
 
         final confirmText =
             'Your order #${newOrder.id.substring(0, 6)} is confirmed! We are on it.';
@@ -641,10 +667,15 @@ class HomeCubit extends Cubit<HomeState> {
   }
   
   ChatMessageModel _buildOrderMessage(Map<String, dynamic> args) {
-    final parsedOrder = AiParsedOrder.fromMap(args);
+    // The parsed order details are now nested under the 'parsed_order' key.
+    final parsedOrderMap = args['parsed_order'] as Map<String, dynamic>?;
+    if (parsedOrderMap == null) {
+      return _createAiMessage(content: "Sorry, I couldn't understand the order details.");
+    }
+    final parsedOrder = AiParsedOrder.fromMap(parsedOrderMap);
     return _createAiMessage(
-      content: args['aiResponseText'] as String?,
-      messageType: ChatMessageType.orderConfirmation,
+      content: args['ai_response_text'] as String?,
+      messageType: ChatMessageType.orderConfirmation, // This should be pendingOrder
       parsedOrder: parsedOrder,
     );
   }
@@ -673,8 +704,7 @@ class HomeCubit extends Cubit<HomeState> {
     final items = lastRecipe.recipeIngredients!
         .map((ingredient) => AiParsedItem(
               itemName: ingredient,
-              quantity: 1,
-              unitPrice: 10.0, // Placeholder price
+              quantity: 1, // Price is no longer known at this stage
             ))
         .toList();
 
@@ -744,6 +774,7 @@ class HomeCubit extends Cubit<HomeState> {
       final updatedMessage = updatedMessages[index].copyWith(
         isActioned: true, 
         actionStatus: status,
+        // The orderId is now passed here, linking the chat message to the final order
       );
       updatedMessages[index] = updatedMessage;
       emit(state.copyWith(messages: updatedMessages)); 
