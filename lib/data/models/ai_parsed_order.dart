@@ -34,11 +34,13 @@ class AiParsedOrder {
 class AiParsedItem {
   final String itemName;
   final double quantity;
+  final String? unit;
   final double unitPrice;
 
   const AiParsedItem({
     required this.itemName,
     required this.quantity,
+    this.unit,
     this.unitPrice = 0.0,
   });
 
@@ -46,14 +48,16 @@ class AiParsedItem {
     return AiParsedItem(
       itemName: map['itemName'] as String,
       quantity: (map['quantity'] as num).toDouble(),
+      unit: map['unit'] as String?,
       unitPrice: (map['unitPrice'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
-  AiParsedItem copyWith({String? itemName , double? quantity , double? unitPrice}) {
+  AiParsedItem copyWith({String? itemName , double? quantity , String? unit,double? unitPrice}) {
     return AiParsedItem(
       itemName: this.itemName,
       quantity: quantity ?? this.quantity,
+      unit: this.unit,
       unitPrice: this.unitPrice,
     );
   }

@@ -71,6 +71,7 @@ class OrderItem extends Equatable {
   final String id;
   final String name;
   final double quantity;
+  final String unit;
   final double unitPrice;
   final String? notes;
 
@@ -78,18 +79,20 @@ class OrderItem extends Equatable {
     required this.id,
     required this.name,
     required this.quantity,
+    required this.unit,
     required this.unitPrice,
     this.notes,
   });
 
   @override
-  List<Object?> get props => [id, name, quantity, unitPrice, notes];
+  List<Object?> get props => [id, name, quantity,unit , unitPrice, notes];
 
   factory OrderItem.fromMap(Map<String, dynamic> map) {
     return OrderItem(
       id: map['productId'] as String,
       name: map['name'] as String,
       quantity: (map['quantity'] as num).toDouble(),
+      unit: map['unit'] as String,
       unitPrice: (map['unitPrice'] as num).toDouble(),
       notes: map['notes'] as String?,
     );
@@ -99,6 +102,7 @@ class OrderItem extends Equatable {
     String? id,
     String? name,
     double? quantity,
+    String? unit,
     double? unitPrice,
     String? notes,
   }) {
@@ -106,6 +110,7 @@ class OrderItem extends Equatable {
         id: this.id,
         name: this.name,
         quantity: this.quantity,
+        unit: this.unit,
         unitPrice: this.unitPrice,
         notes: this.notes,
       );
@@ -116,6 +121,7 @@ class OrderItem extends Equatable {
       'id': id,
       'name': name,
       'quantity': quantity,
+      'unit': unit,
       'unitPrice': unitPrice,
       'notes': notes,
     };

@@ -294,7 +294,7 @@ exports.geminiProxy = onCall(
 
         if (toolCall) {
           // It's a tool call! Return the structured JSON.
-          logger.info(`AI is calling tool: ${toolCall.name}`);
+          logger.info(`AI is calling tool: ${toolCall.name} with args: ${JSON.stringify(toolCall.args)}`);
           return {toolCall: {name: toolCall.name, arguments: toolCall.args}};
         }
 

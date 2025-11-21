@@ -17,10 +17,10 @@ class FirebaseAiService {
   /// Gets a structured response from the AI, which will be
   /// either a tool call or a simple text message.
   Future<ToolUseResponse> getStructuredResponse(List<ChatMessageModel> history) async {
-    if (_useMocks) {
-      _log.i("FirebaseAiService: Using MOCK for getStructuredResponse()");
-      return _getMockResponse(history.last.content ?? "");
-    }
+    // if (_useMocks) {
+    //   _log.i("FirebaseAiService: Using MOCK for getStructuredResponse()");
+    //   return _getMockResponse(history.last.content ?? "");
+    // }
 
     try {
       _log.i('Calling geminiProxy with tool definitions...');

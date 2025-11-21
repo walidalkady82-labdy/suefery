@@ -94,6 +94,7 @@ class OrderService {
       return OrderItem(
         id: '', // Placeholder, you'd look this up
         name: aiItem.itemName,
+        unit: aiItem.unit ?? "EA",
         quantity: aiItem.quantity, 
         unitPrice: 0,
       );
@@ -135,6 +136,7 @@ class OrderService {
       return OrderItem(
         id: '', // No product ID at this stage
         name: aiItem.itemName,
+        unit: aiItem.unit ?? "EA",
         quantity: aiItem.quantity,
         unitPrice: 0.0, // Price is unknown in a draft
       );
