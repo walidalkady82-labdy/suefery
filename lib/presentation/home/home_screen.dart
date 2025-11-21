@@ -20,9 +20,6 @@ import 'package:suefery/core/widgets/chat/chat_view.dart';
 import 'package:suefery/core/widgets/chat/models/chat_view_io.dart';
 import 'package:suefery/core/widgets/chat/models/chat_input_bar_io.dart';
 
-// service locator
-import '../../locator.dart';
-import 'verification_view.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -132,6 +129,13 @@ class HomeScreen extends StatelessWidget {
             sender: msg.senderType, 
           );
 
+        case ChatMessageType.error:
+          return ErrorItem(
+            id: msg.id,
+            text: msg.content ?? 'An unknown error occurred.',
+            sender: msg.senderType,
+          );
+
         //TODO: PromotionItem (if you implement this tool)
         case ChatMessageType.promotion:
           return null; // Placeholder
@@ -215,9 +219,7 @@ class HomeScreen extends StatelessWidget {
           }
           if (authState.authState == AuthStatus.failure) {
             // Show a snackbar on login/register failure
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(authState.errorMessage)));
+            homeCubit.showAuthErrorAsBubble(authState.errorMessage);
           }
         },
         child: BlocBuilder<AuthCubit, AuthState>(
@@ -230,15 +232,6 @@ class HomeScreen extends StatelessWidget {
               _log.i("Handle Loading (Initial check & InProgress)");
               return const Center(child: CircularProgressIndicator());
             }
-
-            _log.i("Handle Awaiting Verification)");
-            if (authState.authState == AuthStatus.awaitingVerification) {
-              return VerificationView(
-                onResend: () => context.read<AuthCubit>().sendEmailVerification(),
-                onCancel: () => context.read<AuthCubit>().logOut(),
-              );
-            }
-
             // --- Unauthenticated and Authenticated builders ---
             
             // Both unauthenticated and authenticated users will see a ChatView.

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/core/widgets/chat/models/chat_item.dart';
 import 'package:suefery/core/widgets/chat/models/chat_view_io.dart';
-import '../../../data/enums/auth_form_type.dart';
 import 'bubbles/bubbles.dart';
-import 'bubbles/video_presentation_bubble.dart';
+import 'bubbles/error_bubble.dart';
+import 'bubbles/verification_prompt_bubble.dart';
 
 
 class ChatMessageList extends StatelessWidget {
@@ -21,7 +20,6 @@ class ChatMessageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = context.l10n;
     
     return ListView.builder(
       controller: scrollController,
@@ -42,6 +40,10 @@ class ChatMessageList extends StatelessWidget {
           
           AuthChoiceItem() => AuthChoiceBubble(item: item),
           
+          ErrorItem() => ErrorBubble(item: item),
+          
+          VerificationPromptItem() => VerificationPromptBubble(item: item),  
+
           LoadingChatItem() => const LoadingBubble(),
           
           // Fallback for any unhandled types

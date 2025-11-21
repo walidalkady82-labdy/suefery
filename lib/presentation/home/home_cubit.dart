@@ -465,7 +465,7 @@ class HomeCubit extends Cubit<HomeState> {
       _log.e("Conversational Sign in failed: ${e.code}");
       final failure = LoginEmailPassFirebaseFailure.fromCode(e.code);
       final geminiMessage = _createAiMessage(content: "Login failed: ${failure.message}. Let's try again. What's your email?");
-      emit(state.copyWith(geminiIsLoading: false, authStep: AuthStep.awaitingLoginEmail, authEmail: '', messages: [geminiMessage]));
+      emit(state.copyWith(geminiIsLoading: false, authStep: AuthStep.awaitingLoginEmail, authEmail: '', authPassword: '', messages: [geminiMessage]));
     }
   }
 
@@ -521,7 +521,7 @@ class HomeCubit extends Cubit<HomeState> {
         geminiIsLoading: false, 
         authStep: AuthStep.awaitingRegisterEmail, 
         authEmail: '', 
-        authPassword: '',
+        authPassword: '', 
         messages: [geminiMessage]));
     }
   }
@@ -537,6 +537,18 @@ class HomeCubit extends Cubit<HomeState> {
   /// --- NEW: Simple email validation using regex. ---
   bool _isValidEmail(String email) {
     return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email.trim());
+  }
+
+  /// Displays an authentication-related error message in the chat.
+  void showAuthErrorAsBubble(String errorMessage) {
+    _log.i('Displaying auth error as bubble: $errorMessage');
+    final errorBubble = _createAiMessage(
+      content: errorMessage, 
+      senderType: MessageSender.system,
+      messageType: ChatMessageType.error,
+    );
+    // We add the error to the existing messages without clearing them.
+    emit(state.copyWith(messages: List.from(state.messages)..add(errorBubble)));
   }
 
   // =======================================================================

@@ -45,22 +45,22 @@ enum AppTheme {
 }
 
 /// Extension to convert theme to readable format
-extension AppThemeExtension on AppTheme {
-  String get name {
-    switch (this) {
-      case AppTheme.oceanBlue:
-        return 'Ocean Blue';
-      case AppTheme.sunsetOrange:
-        return 'Sunset Orange';
-    }
-  }
+// extension AppThemeExtension on AppTheme {
+//   String get name {
+//     switch (this) {
+//       case AppTheme.oceanBlue:
+//         return 'Ocean Blue';
+//       case AppTheme.sunsetOrange:
+//         return 'Sunset Orange';
+//     }
+//   }
 
-  ThemeData get themeData {
-    switch (this) {
-      case AppTheme.oceanBlue:
-        return oceanBlueTheme;
-      case AppTheme.sunsetOrange:
-        return sunsetOrangeTheme;
-    }
-  }
-}
+//   ThemeData get themeData {
+//     switch (this) {
+//       case AppTheme.oceanBlue:
+//         return oceanBlueTheme;
+//       case AppTheme.sunsetOrange:
+//         return sunsetOrangeTheme;
+//     }
+//   }
+// }

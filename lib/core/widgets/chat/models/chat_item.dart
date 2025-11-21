@@ -121,6 +121,7 @@ class VideoPresentationItem extends ChatItem {
   }); 
 }
 
+@immutable
 class AuthChoiceItem extends ChatItem {
   final String id;
   final String text;
@@ -134,5 +135,33 @@ class AuthChoiceItem extends ChatItem {
     required this.choices,
     required this.onChoiceSelected,
     this.sender = MessageSender.gemini, // <-- ADDED THIS
+  });
+}
+
+@immutable
+class VerificationPromptItem extends ChatItem {
+  final String id;
+  final String text;
+  final List<String> choices;
+  final Function(String) onChoiceSelected;
+  final MessageSender sender;
+
+  const VerificationPromptItem({
+    required this.id,
+    required this.text,
+    this.choices = const [],
+    required this.onChoiceSelected,
+    required this.sender,
+  });
+}
+@immutable
+class ErrorItem extends ChatItem {
+  final MessageSender sender;
+  final String id;
+  final String text;
+  const ErrorItem({
+    required this.id,
+    required this.text,
+    required this.sender,
   });
 }

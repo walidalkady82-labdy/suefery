@@ -30,7 +30,11 @@ class AuthService {
     if (firebaseUser == null) return null;
     return UserModel.fromFirebaseUser(firebaseUser);
   }
-
+  User? get currentFirebaseUser {
+    final firebaseUser = _authRepository.currentUser;
+    if (firebaseUser == null) return null;
+    return firebaseUser;
+  }
   /// Exposes a stream of [AppUser?]
   ///
   /// This maps the repository's Firebase [User?] stream to your

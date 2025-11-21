@@ -13,6 +13,7 @@ import 'package:suefery/data/enums/auth_status.dart';
 import 'package:suefery/locator.dart';
 import 'package:suefery/presentation/settings/settings_cubit.dart';
 import 'package:suefery/presentation/home/auth_cubit.dart';
+import 'core/utils/themes.dart';
 import 'data/services/pref_service.dart';
 import 'firebase_options.dart';
 import 'presentation/home/customer_app_tour_screen.dart';
@@ -300,22 +301,15 @@ class SUEFERYApp extends StatelessWidget {
         }
       },
       child: BlocProvider(
-        create: (context) => HomeCubit(),
-        child: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, homeState) {
+        create: (context) => HomeCubit(),        
+        child: BlocBuilder<SettingsCubit, SettingsState>(
+          builder: (context, settingsState) {
+            // Access the settings state directly from the builder
             return MaterialApp(
-              onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appTitle,
-              theme: context.read<SettingsCubit>().state.appTheme.themeData,
-              darkTheme: ThemeData(
-                brightness: Brightness.dark,
-                primaryColor: const Color(0xFF00796B),
-                colorScheme: ColorScheme.fromSwatch(
-                  primarySwatch: Colors.teal,
-                  brightness: Brightness.dark,
-                ).copyWith(secondary: const Color(0xFFFFA000)),
-                useMaterial3: true,
-              ),
-              themeMode: context.read<SettingsCubit>().state.themeMode,
+              onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appTitle,              
+              theme: lightTheme, // Always use the defined light theme
+              darkTheme: darkTheme, // Always use the defined dark theme
+              themeMode: settingsState.themeMode, // Use the themeMode from the SettingsCubit
               locale: context.read<SettingsCubit>().state.locale,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
@@ -323,7 +317,7 @@ class SUEFERYApp extends StatelessWidget {
             );
           },
         ),
-      ),
+      )
     );
   }
 }

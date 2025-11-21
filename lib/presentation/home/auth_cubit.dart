@@ -170,16 +170,27 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> checkVerificationStatus() async {
-    final formState = state;
-    emit(formState.copyWith(isLoading: true, errorMessage: ''));
+    emit(state.copyWith(isLoading: true, errorMessage: ''));
     try {
       await _authService.reloadUser();
-      // Listener will catch the verified state and transition to AuthAuthenticated
+      
+      // Manually check the verification status after reloading.
+      final firebaseUser = _authService.currentFirebaseUser;
+      if (firebaseUser != null && firebaseUser.emailVerified) {
+        _log.i('Verification status check: Email is now verified. Emitting authenticated.');
+        // The user is now verified, emit the authenticated state to trigger navigation.
+        emit(state.copyWith(authState: AuthStatus.authenticated, isLoading: false));
+      } else {
+        _log.i('Verification status check: Email is still not verified.');
+      }
     } catch (e) {
-      final errorMessage = 'Sign Out Failed: ${e.toString().split(':').last.trim()}';
-      emit(formState.copyWith(isLoading: false, errorMessage: errorMessage));
+      final errorMessage = 'Failed to check status: ${e.toString()}';
       _log.e(errorMessage);
+      emit(state.copyWith(errorMessage: errorMessage, isLoading: false));
+    }finally{
+      // The isLoading flag is now handled within the try/catch block.
     }
+
   }
 
   Future<void> sendEmailVerification() async {
@@ -189,8 +200,12 @@ class AuthCubit extends Cubit<AuthState> {
       // Listener will catch the verified state and transition to AuthAuthenticated
     } catch (e) {
       final errorMessage = 'Verification Email Failed: ${e.toString().split(':').last.trim()}';
-      emit(state.copyWith(isLoading: false, errorMessage: errorMessage));
+      emit(state.copyWith(errorMessage: errorMessage));
       _log.e(errorMessage);
+    }finally{
+            Future.delayed(const Duration(seconds: 5), () {
+          emit(state.copyWith(isLoading: false,errorMessage: ''));
+      });
     }
   }
   
