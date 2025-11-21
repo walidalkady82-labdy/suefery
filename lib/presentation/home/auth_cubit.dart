@@ -6,6 +6,7 @@ import 'package:suefery/locator.dart';
 import '../../data/enums/auth_status.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/logging_service.dart';
+import '../../data/services/pref_service.dart';
 
 final _log = LoggerRepo('LoginState');
 
@@ -67,6 +68,7 @@ class AuthCubit extends Cubit<AuthState> {
         }
   final AuthService _authService = sl<AuthService>();
   late final StreamSubscription<UserModel?> authSubscription;
+  final PrefService _prefService = sl<PrefService>();
 
   UserModel? get currentUser => _authService.currentAppUser;
 
@@ -200,6 +202,12 @@ class AuthCubit extends Cubit<AuthState> {
       emit(state.copyWith(isLoading: false, errorMessage: errorMessage));
       _log.e(errorMessage);
     }
+  }
+  
+  /// Marks the app tour as seen in preferences.
+  Future<void> markTourAsSeen() async {
+    _log.i('Marking app tour as seen.');
+    await _prefService.setIsFirstLogin(false);
   }
   //TODO check errors message to integrate with strings
   Future<void> signUp(String email, String password) async{

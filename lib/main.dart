@@ -9,10 +9,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_paymob/flutter_paymob.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
+import 'package:suefery/data/enums/auth_status.dart';
 import 'package:suefery/locator.dart';
 import 'package:suefery/presentation/settings/settings_cubit.dart';
 import 'package:suefery/presentation/home/auth_cubit.dart';
+import 'data/services/pref_service.dart';
 import 'firebase_options.dart';
+import 'presentation/home/customer_app_tour_screen.dart';
 import 'data/services/logging_service.dart';
 import 'presentation/home/home_cubit.dart';
 import 'presentation/home/home_screen.dart';
@@ -219,7 +222,7 @@ class _AppContainerState extends State<AppContainer> {
   }
 }
 
-// Simple loading view
+// loading view
 class _LoadingView extends StatelessWidget {
   const _LoadingView();
 
@@ -242,7 +245,7 @@ class _LoadingView extends StatelessWidget {
   }
 }
 
-// Simple error view
+// error view
 class _ErrorView extends StatelessWidget {
   final String message;
   
@@ -281,32 +284,46 @@ class SUEFERYApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {    
-    return BlocProvider(
-            create: (context) => HomeCubit(),
-            child: BlocBuilder<HomeCubit, HomeState>(
-              builder: (context, homeState) {
-                return MaterialApp(
-                  onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appTitle,          
-                  theme: context.read<SettingsCubit>().state.appTheme.themeData,
-                  darkTheme: ThemeData(
-                    brightness: Brightness.dark,
-                    primaryColor: const Color(0xFF00796B),
-                    colorScheme: ColorScheme.fromSwatch(
-                      primarySwatch: Colors.teal,
-                      brightness: Brightness.dark,
-                    ).copyWith(
-                      secondary: const Color(0xFFFFA000),
-                    ),
-                    useMaterial3: true,
-                  ),
-                  themeMode: context.read<SettingsCubit>().state.themeMode, // Use the themeMode from the SettingsCubit
-                  locale: context.read<SettingsCubit>().state.locale, // Use the locale from the SettingsCubit
-                  localizationsDelegates: AppLocalizations.localizationsDelegates,
-                  supportedLocales: AppLocalizations.supportedLocales,
-                  home: HomeScreen(),
-                );
-              },
-            ),
+    final prefs = sl<PrefService>();
+
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state.authState == AuthStatus.authenticated && prefs.isFirstLogin == true) {
+          // Use a post-frame callback to ensure the build is complete
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => const CustomerAppTourScreen(),
+            ));
+            // Mark the tour as seen
+            context.read<AuthCubit>().markTourAsSeen();
+          });
+        }
+      },
+      child: BlocProvider(
+        create: (context) => HomeCubit(),
+        child: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, homeState) {
+            return MaterialApp(
+              onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appTitle,
+              theme: context.read<SettingsCubit>().state.appTheme.themeData,
+              darkTheme: ThemeData(
+                brightness: Brightness.dark,
+                primaryColor: const Color(0xFF00796B),
+                colorScheme: ColorScheme.fromSwatch(
+                  primarySwatch: Colors.teal,
+                  brightness: Brightness.dark,
+                ).copyWith(secondary: const Color(0xFFFFA000)),
+                useMaterial3: true,
+              ),
+              themeMode: context.read<SettingsCubit>().state.themeMode,
+              locale: context.read<SettingsCubit>().state.locale,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: HomeScreen(),
+            );
+          },
+        ),
+      ),
     );
   }
 }

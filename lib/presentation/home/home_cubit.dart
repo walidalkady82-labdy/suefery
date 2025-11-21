@@ -575,27 +575,16 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> _buildFirstTimeAnonymousChat() async {
     _log.i('Building first-time interactive welcome sequence locally.');
-    
-    final firstMessage = _createAiMessage(
-      content: "👋 Welcome to Suefery! Watch this quick video to see how I can help you.",
+    // Simplified welcome flow for anonymous users.
+    // The app tour is now shown after the first successful login.
+    final authChoiceMessage = _createAiMessage(
+      content: "Welcome! To get startet, please sign in or cneate an account.",
+      messageType: ChatMessageType.authChoice,
+      choices: ['Sign In', 'Register'],
       senderType: MessageSender.gemini,
     );
-    emit(state.copyWith(messages: [firstMessage]));
-    
-    await Future.delayed(const Duration(milliseconds: 1200)); 
-
-    final videoMessage = _createAiMessage(
-      content: "Suefery Presentation",
-      senderType: MessageSender.gemini,
-      messageType: ChatMessageType.videoPresentation,
-      mediaUrl: _welcomeVideoUrl,
-    );
-    emit(state.copyWith(messages: [...state.messages, videoMessage]));
-
-    await Future.delayed(const Duration(seconds: 4)); 
-
-    // Automatically trigger the auth sequence
-    await showPostVideoAuthMessages();
+    emit(state.copyWith(
+        messages: [authChoiceMessage], authStep: AuthStep.awaitingChoice));
   }
 
   Future<void> _buildReturningAnonymousChat() async {
@@ -606,7 +595,7 @@ class HomeCubit extends Cubit<HomeState> {
       messageType: ChatMessageType.authChoice, // New message type
       choices: ['Sign In', 'Register'], // The choices for the buttons
     );
-    // --- MODIFIED: Set auth step ---
+    // --- MODIFIED: Set auth step -);
     emit(state.copyWith(
       messages: [authChoiceMessage],
       authStep: AuthStep.awaitingChoice,

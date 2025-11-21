@@ -11,7 +11,6 @@ import 'package:suefery/presentation/settings/settings_screen.dart';
 // Import your BLoCs and States
 import '../../data/enums/auth_status.dart';
 import '../../data/enums/chat_message_type.dart';
-import '../../data/enums/message_sender.dart';
 import '../../data/services/logging_service.dart';
 import 'home_cubit.dart'; 
 import '../../data/enums/auth_step.dart'; // <-- IMPORT AUTH STEP

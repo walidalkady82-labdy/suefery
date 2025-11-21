@@ -42,12 +42,6 @@ class ChatMessageList extends StatelessWidget {
           
           AuthChoiceItem() => AuthChoiceBubble(item: item),
           
-
-          VideoPresentationItem() => VideoPlayerBubble(
-              title: item.title,
-              videoUrl: item.videoUrl,
-              onVideoEnd: item.onVideoEnd,
-            ),
           LoadingChatItem() => const LoadingBubble(),
           
           // Fallback for any unhandled types
