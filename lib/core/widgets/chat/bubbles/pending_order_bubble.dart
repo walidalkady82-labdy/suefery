@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:suefery/core/l10n/l10n_extension.dart';
 
 import '../../../../data/enums/message_sender.dart';
 import '../../../../data/models/ai_parsed_order.dart';
@@ -37,6 +38,7 @@ class _PendingOrderBubbleState extends State<PendingOrderBubble> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = context.l10n;
     final theme = Theme.of(context);
     final order = widget.item.parsedOrder;
     final bubbleTextColor = theme.colorScheme.onSecondaryContainer;
@@ -78,9 +80,9 @@ class _PendingOrderBubbleState extends State<PendingOrderBubble> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
-                onPressed: widget.item.onCancel,
+                onPressed: () => widget.item.onCancel(context),
                 style: TextButton.styleFrom(foregroundColor: bubbleTextColor),
-                child: const Text('Cancel'),
+                child: Text(strings.cancelOrder),
               ),
               const SizedBox(width: 8),
               FilledButton(
@@ -90,7 +92,7 @@ class _PendingOrderBubbleState extends State<PendingOrderBubble> {
                   backgroundColor: theme.colorScheme.onSecondary,
                   foregroundColor: theme.colorScheme.secondary,
                 ),
-                child: const Text('Confirm & Pay'),
+                child: Text(strings.confirmAndPay),
               ),
             ],
           ),

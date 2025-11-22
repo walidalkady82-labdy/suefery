@@ -138,20 +138,23 @@ const functionDeclarations = [
     parameters: {
       type: "OBJECT",
       properties: {
+        aiResponseText: {
+          type: "STRING",
+          description: "A friendly, conversational confirmation message to show the user in their language (e.g., 'You got it! I have your order for... Is that correct?').",
+        },
         items: {
           type: "ARRAY",
           description: "A list of food items to order.",
           items: {
             type: "OBJECT",
             properties: {
-              itemName: {type: "STRING"},
-              quantity: {type: "NUMBER"},
-              notes: {type: "STRING", description: "e.g., 'extra spicy'"}
+              itemName: {type: "STRING", description: "The name of the item."},
+              quantity: {type: "NUMBER", description: "The quantity of the item."},
+              notes: {type: "STRING", description: "Optional notes for the item, like 'large' or 'extra spicy'."}
             },
             required: ["itemName", "quantity"],
           },
         },
-        aiResponseText: {type: "STRING", description: "A confirmation message to show the user."},
       },
       required: ["items", "aiResponseText"],
     },

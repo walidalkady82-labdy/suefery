@@ -241,7 +241,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authHintConfirmPassword => 'أعد تأكيد كلمة المرور...';
 
   @override
-  String get cancelOrder => 'إلغاء الطلب';
+  String get cancelOrder => 'إلغى الطلب';
 
   @override
   String get confirmAndPay => 'تأكيد و الدفع';

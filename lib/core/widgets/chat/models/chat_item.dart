@@ -56,7 +56,7 @@ class PendingOrderChatItem extends ChatItem {
   // Callbacks for the bubble's buttons
   final Future<bool?> Function(BuildContext context) onConfirm;
   final VoidCallback onSubmitDraft;
-  final VoidCallback onCancel;
+  final Future<void> Function(BuildContext context) onCancel;
   final Function(int itemIndex, int change) onUpdateQuantity;
 }
 

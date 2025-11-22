@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
@@ -69,7 +70,7 @@ Future<void> _initEnvironmentVars() async {
  Future<FirebaseApp> _initializeFirebase() async {
     final useEmulatorEnv = dotenv.getBool('USE_FIREBASE_EMULATOR', fallback: false);
     // 1. Get environment variables
-    final  emulatorHost = "localhost";//dotenv.get('local_device_ip');
+    final  emulatorHost = kDebugMode && useEmulatorEnv && defaultTargetPlatform == TargetPlatform.android ?dotenv.get('local_device_ip') : "localhost";
     final firebaseConfigJson = const String.fromEnvironment('__firebase_config', defaultValue: '{}');
     //final appId = const String.fromEnvironment('__app_id', defaultValue: 'default-app-id');
     late final FirebaseApp app;

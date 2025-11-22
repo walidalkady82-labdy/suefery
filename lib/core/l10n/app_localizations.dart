@@ -551,7 +551,7 @@ abstract class AppLocalizations {
   /// No description provided for @cancelOrder.
   ///
   /// In en, this message translates to:
-  /// **'Cancel'**
+  /// **'cancel this order'**
   String get cancelOrder;
 
   /// No description provided for @confirmAndPay.

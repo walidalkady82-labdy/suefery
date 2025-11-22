@@ -181,35 +181,8 @@ final _orderTool =  FunctionDeclaration(
       'Use this function when the user has confirmed an order and you have all the details.',
       // Define the *exact* structure of the arguments (our old JSON)
       parameters:{
-            'ai_response_text': Schema.object(
-              description: 'ai response text.',
-              properties:{
-                'order_confirmed': Schema.boolean(
-                  description: 'Set to true now that the order is being confirmed.'
-                ),
-                'requested_items': Schema.array(
-                    description: 'A list of all items the user wants to order.',
-                    items: Schema.object(
-                      properties: {
-                        'item_name': Schema.string(
-                          description: 'The name of the item.'
-                        ),
-                        'quantity': Schema.integer(
-                          description: 'The number of units.'
-                        ),
-                        'notes': Schema.string(
-                          description: 'Optional notes like "Large" or "Spicy".'
-                        ),
-                        'unit_price': Schema.number(
-                          description: 'The estimated price per unit.'
-                        ),
-                      },
-                      // The 'Schema' class uses a List<String> for required fields
-                      optionalProperties: ['notes'],
-                    ),
-                  )
-              },
-
+            'ai_response_text': Schema.string(
+              description: 'A friendly, conversational confirmation message to show the user in their language (e.g., "You got it! I have your order for... Is that correct?").',
             ),
             'parsed_order': Schema.object(
               description: 'parsed order.',
@@ -223,6 +196,9 @@ final _orderTool =  FunctionDeclaration(
                     properties: {
                     'item_name': Schema.string(
                       description: 'The name of the item.'
+                    ),
+                    'unit': Schema.string(
+                      description: 'The meauring unit of the items.'
                     ),
                     'quantity': Schema.integer(
                       description: 'The number of units.'

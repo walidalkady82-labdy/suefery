@@ -251,6 +251,6 @@
     "@authHintConfirmPassword": {
         "description": "Hint text when asking the user to confirm their password"
     },
-    "cancelOrder" : "Cancel",
+    "cancelOrder" : "cancel this order",
     "confirmAndPay" : "Confirm and Pay"  
 }

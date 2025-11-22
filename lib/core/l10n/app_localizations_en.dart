@@ -242,7 +242,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authHintConfirmPassword => 'Confirm your password...';
 
   @override
-  String get cancelOrder => 'Cancel';
+  String get cancelOrder => 'cancel this order';
 
   @override
   String get confirmAndPay => 'Confirm and Pay';

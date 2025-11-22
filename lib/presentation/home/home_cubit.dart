@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 import 'package:suefery/core/errors/authentication_exception.dart';
+import 'package:suefery/core/l10n/l10n_extension.dart';
 // --- Consolidated Models ---
 import 'package:suefery/data/models/order_model.dart';
 import 'package:suefery/data/models/chat_message_model.dart';
@@ -166,8 +167,14 @@ class HomeCubit extends Cubit<HomeState> {
       final currentHistory = List<ChatMessageModel>.from(state.messages)
         ..add(await _addUserMessageToChat(prompt));
       final aiResponse = await _chatService.processUserMessage(currentHistory);
-      final aiMessageToSave = await _processAiResponse(aiResponse);
-      await _chatService.sendMessage(_currentChatId, aiMessageToSave);
+      final aiMessagesToSave = _processAiResponse(aiResponse);
+      for (final message in aiMessagesToSave) {
+        if (message.messageType == ChatMessageType.orderConfirmation) {
+          await submitDraftOrder(message);
+        }
+        await _chatService.sendMessage(_currentChatId, message);
+      }
+
       emit(state.copyWith(geminiIsSuccessful: true));
     } catch (e) {
       _log.e('Error processing user message: $e');
@@ -242,7 +249,7 @@ class HomeCubit extends Cubit<HomeState> {
         customerId: currentUserId,
         customerName: currentUserName,
       );
-      await _addUserMessageToChat("Great! We're checking with nearby partners for price and availability. This may take a moment.", sender: MessageSender.system);
+      //await _addUserMessageToChat("Great! We're checking with nearby partners for price and availability. This may take a moment.", sender: MessageSender.system);
 
     } catch (e) {
       _log.e('Failed to submit draft order: $e');
@@ -320,12 +327,15 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   /// Called by the [PendingOrderBubble]'s "Cancel" button.
-  Future<void> cancelParsedOrder(ChatMessageModel message) async {
+  Future<void> cancelParsedOrder(BuildContext context, ChatMessageModel message) async {
+    final strings = context.l10n;
     // This is a user-initiated cancellation from a specific bubble.
     _markMessageAsActioned(message, status: 'Cancelled');
     _log.i('User cancelled pending order.');
     // Let the AI confirm the cancellation.
-    await submitOrderPrompt('The user cancelled the proposed order. Please confirm this to them.');
+    final currentHistory = List<ChatMessageModel>.from(state.messages)
+        ..add(await _addUserMessageToChat(strings.cancelOrder, sender: MessageSender.user));
+    await _chatService.sendMessage(_currentChatId, message);
   }
 
   /// Updates the quantity of an item in a [PendingOrderBubble].
@@ -635,29 +645,31 @@ class HomeCubit extends Cubit<HomeState> {
   }
   
 /// Processes the AI's response and returns the ChatMessage to be saved.
-  Future<ChatMessageModel> _processAiResponse(ToolUseResponse aiResponse) async {
+  List<ChatMessageModel> _processAiResponse(ToolUseResponse aiResponse) {
      if (aiResponse.isToolCall) {
       return _handleToolCall(aiResponse);
     } else {
-      return _handleTextResponse(aiResponse);
+      return [_handleTextResponse(aiResponse)];
     }
   }
   
-  ChatMessageModel _handleToolCall(ToolUseResponse response) {
+  List<ChatMessageModel> _handleToolCall(ToolUseResponse response) {
     final args = response.arguments ?? {};
     switch (response.toolName) {
       case 'createOrder':
-        return _buildOrderMessage(args);
+        return _buildOrderMessages(args);
+      case 'confirmOrder':
+        return _buildOrderMessages(args);
       case 'suggestRecipe':
-        return _buildRecipeMessage(args);
+        return [_buildRecipeMessage(args)];
       case 'buildOrderFromRecipe':
-        return _buildOrderFromRecipeMessage(args);
+        return [_buildOrderFromRecipeMessage(args)];
       case 'cancelOrder':
       case 'getHelp':
-        return _buildInfoMessage(args);
+        return [_buildInfoMessage(args)];
       default:
         _log.e('Unknown tool: ${response.toolName}');
-        return _buildUnknownToolMessage(response.toolName);
+        return [_buildUnknownToolMessage(response.toolName)];
     }
   }
   
@@ -667,18 +679,26 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
   
-  ChatMessageModel _buildOrderMessage(Map<String, dynamic> args) {
-    // The parsed order details are now nested under the 'parsed_order' key.
-    final parsedOrderMap = args['parsed_order'] as Map<String, dynamic>?;
-    if (parsedOrderMap == null) {
-      return _createAiMessage(content: "Sorry, I couldn't understand the order details.");
-    }
-    final parsedOrder = AiParsedOrder.fromMap(parsedOrderMap);
-    return _createAiMessage(
-      content: args['ai_response_text'] as String?,
-      messageType: ChatMessageType.orderConfirmation, // This should be pendingOrder
+  List<ChatMessageModel> _buildOrderMessages(Map<String, dynamic> args) {
+    final itemsList = ((args['parsed_order']?['requested_items'] ?? args['items']) as List)
+        .map((item) => AiParsedItem.fromMap(item as Map<String, dynamic>))
+        .toList();
+
+    final aiText = (args['ai_response_text'] as String?)?.isNotEmpty == true
+        ? args['ai_response_text'] as String
+        : 'Please review your order.';
+
+    // Manually construct the AiParsedOrder object.
+    final parsedOrder = AiParsedOrder(
+      requestedItems: itemsList,
+      aiResponseText: aiText,
+    );
+    final orderMessage = _createAiMessage(
+      content: aiText, // Ensure content is not null
+      messageType: ChatMessageType.orderConfirmation,
       parsedOrder: parsedOrder,
     );
+    return [orderMessage];
   }
   
   ChatMessageModel _buildRecipeMessage(Map<String, dynamic> args) {
