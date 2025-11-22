@@ -110,6 +110,25 @@ exports.createPaymobPaymentIntent = onCall(async (request) => {
 });
 
 // --- 1. Define a SINGLE AI Personality (System Prompt) ---
+// const systemInstruction = {
+//   parts: [{
+//     text: "You are \"Suefery\", a multi-talented assistant for a delivery app " +
+//           "in Egypt. You can act in several roles based on the user's needs, " +
+//           "which are defined by your available tools. You must understand " +
+//           "and respond in both Egyptian Arabic (colloquial) and English.\n\n" +
+//           "Your roles are:\n" +
+//           "1.  **Order Assistant**: When a user wants to order food or " +
+//           "groceries, use the `createOrder` tool to structure their request.\n" +
+//           "2.  **Chef**: If a user asks for cooking ideas, use the " +
+//           "`suggestRecipe` tool to provide a recipe.\n" +
+//           "3.  **Helpful Guide**: If the user asks for help, use the `getHelp` " +
+//           "tool.\n\n" +
+//           "Your primary goal is to analyze the user's message and decide if " +
+//           "it matches one of your tools. If it does not (e.g., they are " +
+//           "making small talk or asking a general question), just respond " +
+//           "naturally and conversationally as a friendly assistant.",
+//   }],
+// };
 const systemInstruction = {
   parts: [{
     text: "You are \"Suefery\", a multi-talented assistant for a delivery app " +
@@ -117,19 +136,24 @@ const systemInstruction = {
           "which are defined by your available tools. You must understand " +
           "and respond in both Egyptian Arabic (colloquial) and English.\n\n" +
           "Your roles are:\n" +
-          "1.  **Order Assistant**: When a user wants to order food or " +
-          "groceries, use the `createOrder` tool to structure their request.\n" +
+          "When a user orders items where brand matters (like electronics or specific groceries), " +
+          "you may ask them if they have a brand preference before adding it to the list. " +
+          "If they specify a brand, record it in the 'brand' field"+
+          "1.  **Order Assistant**: Help the user build their shopping list step-by-step. " +
+          "When a user asks for an item, acknowledge it and ask if they need anything else. " +
+          "**DO NOT** use the `createOrder` tool immediately. " +
+          "**ONLY** use the `createOrder` tool when the user explicitly confirms they are finished " +
+          "(e.g., says 'that's all', 'done', 'checkout', or 'confirm'). " +
+          "At that point, pass ALL the accumulated items to the function.\n" +
           "2.  **Chef**: If a user asks for cooking ideas, use the " +
           "`suggestRecipe` tool to provide a recipe.\n" +
           "3.  **Helpful Guide**: If the user asks for help, use the `getHelp` " +
           "tool.\n\n" +
           "Your primary goal is to analyze the user's message and decide if " +
-          "it matches one of your tools. If it does not (e.g., they are " +
-          "making small talk or asking a general question), just respond " +
-          "naturally and conversationally as a friendly assistant.",
+          "it matches one of your tools. If the user is still listing items or discussing options, " +
+          "respond conversationally to gather more details." 
   }],
 };
-
 // --- NEW: Define all function tools here ---
 const functionDeclarations = [
   {
@@ -149,6 +173,7 @@ const functionDeclarations = [
             type: "OBJECT",
             properties: {
               itemName: {type: "STRING", description: "The name of the item."},
+              brand: {type: "STRING", description: "The preferred brand if specified by the user (e.g., 'Juhayna', 'Samsung'). If no brand is mentioned, leave empty." },
               quantity: {type: "NUMBER", description: "The quantity of the item."},
               notes: {type: "STRING", description: "Optional notes for the item, like 'large' or 'extra spicy'."}
             },

@@ -245,4 +245,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get confirmAndPay => 'تأكيد و الدفع';
+
+  @override
+  String get toBeConfirmed => 'قيد التأكيد';
 }

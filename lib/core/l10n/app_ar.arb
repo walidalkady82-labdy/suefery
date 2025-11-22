@@ -168,6 +168,7 @@
         "description": "نص تلميح عند مطالبة المستخدم بتأكيد كلمة المرور الخاصة به"
     },
     "cancelOrder": "إلغى الطلب" ,
-    "confirmAndPay" : "تأكيد و الدفع"
-
+    "confirmAndPay" : "تأكيد و الدفع",
+    "toBeConfirmed" : "قيد التأكيد"
+  
 }

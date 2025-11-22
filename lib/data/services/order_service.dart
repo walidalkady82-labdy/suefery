@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:suefery/data/models/order_model.dart';
 import 'package:suefery/data/enums/order_status.dart';
 
@@ -40,7 +38,7 @@ class OrderService {
     return _firestoreRepo
         .quaryCollection(
           _collectionPath,
-          'userId', // <-- Updated field name
+          'userId', 
           userId,
           quaryOperator: QueryComparisonOperator.eq,
           orderBy: 'createdAt',
@@ -94,6 +92,7 @@ class OrderService {
       return OrderItem(
         id: '', // Placeholder, you'd look this up
         name: aiItem.itemName,
+        brand: aiItem.brand ?? 'unknown',
         unit: aiItem.unit ?? "EA",
         quantity: aiItem.quantity, 
         unitPrice: 0,
@@ -104,9 +103,10 @@ class OrderService {
     final newOrder = OrderModel(
       id: newOrderId,
       userId: customerId,
+      partnerId: null,
       estimatedTotal: estimatedTotal,
       deliveryFee: deliveryFee,
-      deliveryAddress: 'To be confirmed', // Placeholder
+      deliveryAddress: "strings.toBeConfirmed", // Placeholder
       status: OrderStatus.confirmed,
       items: orderItems,
       createdAt: DateTime.now(),
@@ -136,6 +136,7 @@ class OrderService {
       return OrderItem(
         id: '', // No product ID at this stage
         name: aiItem.itemName,
+        brand: aiItem.brand ?? 'unknown',
         unit: aiItem.unit ?? "EA",
         quantity: aiItem.quantity,
         unitPrice: 0.0, // Price is unknown in a draft
@@ -181,7 +182,6 @@ class OrderService {
     _log.w('Deleting order: $orderId');
     return _firestoreRepo.remove(_collectionPath, orderId);
   }
-
   /// Updates the status of an existing order.
   Future<void> updateOrderStatus(String orderId, OrderStatus newStatus) {
     _log.i('Updating order $orderId to status ${newStatus.name}');
@@ -189,7 +189,14 @@ class OrderService {
       'status': newStatus.name,
     });
   }
-  
+  /// Called by the CLIENT App after user reviews the quote and pays successfully.
+  Future<void> confirmOrderPayment(String orderId) async {
+    _log.i('User paid. Confirming order: $orderId');
+    await _firestoreRepo.update(_collectionPath, orderId, {
+      'status': OrderStatus.confirmed.name,
+      // You might also save a 'paymentReferenceId' here
+    });
+  }
   /// Assigns an order to a specific rider.
   Future<void> assignRider(String orderId, String riderId) {
     _log.i('Assigning order $orderId to rider $riderId');

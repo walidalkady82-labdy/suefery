@@ -123,6 +123,28 @@ class RepoFirestore implements IRepoFirestore {
   }
 
   @override
+  Future<void> batchSet(String path, List<Map<String, dynamic>> data) async {
+    try {
+      final batch = _firestore.batch();
+      for (var dataItem in data) {
+        // Ensure the item has an ID.
+        if (dataItem['id'] == null || (dataItem['id'] as String).isEmpty) {
+          _log.w('Skipping item in batch set due to missing ID: $dataItem');
+          continue;
+        }
+        final docId = dataItem['id'] as String;
+        final docRef = _firestore.collection(path).doc(docId);
+        batch.set(docRef, dataItem);
+      }
+      await batch.commit();
+      _log.i('Batch set operation completed successfully for $path.');
+    } catch (e) {
+      _log.e("Error during batch set for path $path: $e");
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> remove(String path, String id) async {
     try {
       await _firestore.collection(path).doc(id).delete().withDefaultTimeout();
@@ -220,4 +242,6 @@ class RepoFirestore implements IRepoFirestore {
         .collection(collectionPath)
         .where(queryFilter).snapshots();
   }
+
+
 }

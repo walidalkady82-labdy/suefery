@@ -246,4 +246,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmAndPay => 'Confirm and Pay';
+
+  @override
+  String get toBeConfirmed => 'To be Confirmed';
 }

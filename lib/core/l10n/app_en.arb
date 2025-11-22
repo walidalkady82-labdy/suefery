@@ -252,5 +252,7 @@
         "description": "Hint text when asking the user to confirm their password"
     },
     "cancelOrder" : "cancel this order",
-    "confirmAndPay" : "Confirm and Pay"  
+    "confirmAndPay" : "Confirm and Pay"  ,
+    "toBeConfirmed": "To be Confirmed"
+    
 }

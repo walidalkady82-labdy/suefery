@@ -559,6 +559,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm and Pay'**
   String get confirmAndPay;
+
+  /// No description provided for @toBeConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'To be Confirmed'**
+  String get toBeConfirmed;
 }
 
 class _AppLocalizationsDelegate

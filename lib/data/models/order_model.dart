@@ -7,6 +7,7 @@ import 'package:suefery/data/enums/order_status.dart';
 class OrderModel extends Equatable {
   final String id; // Was 'orderId'
   final String userId; // Was 'customerId'
+  final String? partnerId;
   final String? riderId;
   final double estimatedTotal;
   final double deliveryFee;
@@ -19,6 +20,7 @@ class OrderModel extends Equatable {
   const OrderModel({
     required this.id,
     required this.userId,
+    this.partnerId,
     this.riderId,
     required this.estimatedTotal,
     required this.deliveryFee,
@@ -30,18 +32,19 @@ class OrderModel extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, userId, riderId, status, items, createdAt];
+  List<Object?> get props => [id, userId, partnerId, riderId, status, items, createdAt];
 
   factory OrderModel.fromMap(Map<String, dynamic> map) {
     return OrderModel(
       id: map['id'] as String,
       userId: map['userId'] as String,
+      partnerId: map['partnerId'] as String?,
       riderId: map['riderId'] as String?,
       estimatedTotal: (map['estimatedTotal'] as num).toDouble(),
       deliveryFee: (map['deliveryFee'] as num).toDouble(),
       deliveryAddress: map['deliveryAddress'] as String,
       status: OrderStatus.values
-          .firstWhere((e) => e.name == map['status'], orElse: () => OrderStatus.pending),
+          .firstWhere((e) => e.name == map['status'], orElse: () => OrderStatus.draft),
       items: (map['items'] as List)
           .map((itemMap) => OrderItem.fromMap(itemMap))
           .toList(),
@@ -54,6 +57,7 @@ class OrderModel extends Equatable {
     return {
       'id': id,
       'userId': userId,
+      'partnerId': partnerId,
       'riderId': riderId,
       'estimatedTotal': estimatedTotal,
       'deliveryFee': deliveryFee,
@@ -70,6 +74,7 @@ class OrderModel extends Equatable {
 class OrderItem extends Equatable {
   final String id;
   final String name;
+  final String brand;
   final double quantity;
   final String unit;
   final double unitPrice;
@@ -78,6 +83,7 @@ class OrderItem extends Equatable {
   const OrderItem({
     required this.id,
     required this.name,
+    required this.brand,
     required this.quantity,
     required this.unit,
     required this.unitPrice,
@@ -89,8 +95,9 @@ class OrderItem extends Equatable {
 
   factory OrderItem.fromMap(Map<String, dynamic> map) {
     return OrderItem(
-      id: map['productId'] as String,
+      id: map['id'] as String,
       name: map['name'] as String,
+      brand: map['brand'] as String,
       quantity: (map['quantity'] as num).toDouble(),
       unit: map['unit'] as String,
       unitPrice: (map['unitPrice'] as num).toDouble(),
@@ -101,6 +108,7 @@ class OrderItem extends Equatable {
   OrderItem copyWith({
     String? id,
     String? name,
+    String? brand,
     double? quantity,
     String? unit,
     double? unitPrice,
@@ -109,6 +117,7 @@ class OrderItem extends Equatable {
       return OrderItem(
         id: this.id,
         name: this.name,
+        brand: this.brand,
         quantity: this.quantity,
         unit: this.unit,
         unitPrice: this.unitPrice,
@@ -120,6 +129,7 @@ class OrderItem extends Equatable {
     return {
       'id': id,
       'name': name,
+      'brand': brand,
       'quantity': quantity,
       'unit': unit,
       'unitPrice': unitPrice,

@@ -92,7 +92,7 @@ class _PendingOrderBubbleState extends State<PendingOrderBubble> {
                   backgroundColor: theme.colorScheme.onSecondary,
                   foregroundColor: theme.colorScheme.secondary,
                 ),
-                child: Text(strings.confirmAndPay),
+                child: Text(strings.cancelOrder.replaceAll('Cancel', 'Confirm')),
               ),
             ],
           ),

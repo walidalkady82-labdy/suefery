@@ -21,6 +21,9 @@ abstract class IRepoFirestore {
   /// Updates an existing document at the specified path and ID.
   Future<void> set(String path, String id, Map<String, dynamic> data);
 
+  /// Updates batch of docs.
+  Future<void> batchSet(String path,List<Map<String, dynamic>> data);
+
   /// Removes a document from the specified path and ID.
   Future<void> remove(String path, String id);
 

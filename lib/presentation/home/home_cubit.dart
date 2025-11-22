@@ -29,6 +29,7 @@ import 'package:suefery/data/enums/message_sender.dart';
 import 'package:suefery/data/enums/chat_message_type.dart';
 
 import '../../data/enums/auth_step.dart';
+import '../../data/enums/order_status.dart';
 
 
 /// --- STATE ---
@@ -255,6 +256,27 @@ class HomeCubit extends Cubit<HomeState> {
       _log.e('Failed to submit draft order: $e');
       _markMessageAsActioned(message, status: 'Draft'); // Revert status
       await _addUserMessageToChat("Sorry, there was an issue submitting your request. Please try again.", sender: MessageSender.system);
+    }
+  }
+
+  /// --- NEW: Called by the "Confirm" button in the bubble ---
+  /// This confirms the user's intent to proceed with the draft order,
+  /// without initiating payment.
+  Future<void> confirmDraftOrder(ChatMessageModel message) async {
+    if (message.parsedOrder == null || message.id.isEmpty) return;
+
+    _log.i('User confirmed draft order. Updating status to pending_quote.');
+
+    try {
+      // The message ID is used as the draft order ID.
+      await _orderService.updateOrderStatus(message.id, OrderStatus.awaitingQuote);
+
+      // Update the bubble to show the new status.
+      _markMessageAsActioned(message, status: 'Confirmed. Awaiting partner quote.');
+
+    } catch (e) {
+      _log.e('Failed to confirm draft order: $e');
+      await _addUserMessageToChat("Sorry, there was an issue confirming your order. Please try again.", sender: MessageSender.system);
     }
   }
   /// Called by the [PendingOrderBubble]'s "Confirm" button.
@@ -725,6 +747,7 @@ class HomeCubit extends Cubit<HomeState> {
     final items = lastRecipe.recipeIngredients!
         .map((ingredient) => AiParsedItem(
               itemName: ingredient,
+              brand: '',
               quantity: 1, // Price is no longer known at this stage
             ))
         .toList();

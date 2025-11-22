@@ -56,6 +56,30 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ])
             ),            
+            // --- TEMPORARY SEED BUTTON ---
+            ListTile(
+              leading: const Icon(Icons.cloud_upload, color: Colors.red),
+              title: const Text(
+                'Upload Brands to Database', 
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)
+              ),
+              subtitle: const Text('Press once to fill database'),
+              onTap: () async {
+                // Show loading indicator or confirm
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Uploading brands...')),
+                );
+                
+                await settingsCubit.seedBrands();
+                
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Success! Brands added.')),
+                  );
+                }
+              },
+            ),
+            // -----------------------------
           ],
         ),
       );
