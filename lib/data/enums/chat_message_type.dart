@@ -7,6 +7,9 @@ enum ChatMessageType {
   error ,
   signInForm , 
   registerForm,
+  verification,
   authChoice,
-  helpChoice
+  helpChoice,
+  paymentSelection,
+  loading
 }

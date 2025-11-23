@@ -165,3 +165,20 @@ class ErrorItem extends ChatItem {
     required this.sender,
   });
 }
+
+@immutable
+class PaymentSelectionItem extends ChatItem {
+  final String id;
+  final double totalAmount;
+  final String currency;
+  final Function(String method) onPaymentMethodSelected; // e.g., 'COD', 'CARD'
+  final MessageSender sender;
+
+  const PaymentSelectionItem({
+    required this.id,
+    required this.totalAmount,
+    this.currency = 'EGP',
+    required this.onPaymentMethodSelected,
+    this.sender = MessageSender.gemini,
+  });
+}

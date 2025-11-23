@@ -11,7 +11,9 @@ import 'package:suefery/presentation/settings/settings_screen.dart';
 // Import your BLoCs and States
 import '../../data/enums/auth_status.dart';
 import '../../data/enums/chat_message_type.dart';
+import '../../data/models/chat_message_model.dart';
 import '../../data/services/logging_service.dart';
+import '../payment_screen/paymob_payment_screen.dart';
 import 'home_cubit.dart'; 
 import '../../data/enums/auth_step.dart'; // <-- IMPORT AUTH STEP
 
@@ -23,6 +25,53 @@ import 'package:suefery/core/widgets/chat/models/chat_input_bar_io.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  // --- NEW: Method to handle order confirmation and payment ---
+  void confirmOrder(BuildContext context, ChatMessageModel message, {required String paymentMethod}) {
+    final homeCubit = context.read<HomeCubit>();
+    if (message.parsedOrder == null) return;
+
+    // This now calls the cubit method to handle the logic
+    homeCubit.confirmAndPayForOrder(context, message.parsedOrder!, message);
+  }
+
+  // --- NEW: Method to handle card payment flow ---
+  Future<void> _handleCardPayment(BuildContext context, ChatMessageModel message) async {
+    final homeCubit = context.read<HomeCubit>();
+    if (message.parsedOrder == null) return;
+
+    // In a real app, you would get this from a PaymentService.
+    // For now, we'll mock it.
+    // final paymentService = sl<PaymentService>();
+    // final String paymentToken = await paymentService.getPaymobToken(message.parsedOrder!.totalPrice);
+    const paymentToken = "mock_payment_token_from_backend"; // Placeholder
+    const iframeId = "976873"; // Example IFrame ID
+
+    // Construct the real Paymob URL
+    final url = "https://accept.paymob.com/api/acceptance/iframes/$iframeId?payment_token=$paymentToken";
+
+    if (context.mounted) {
+      final bool? success = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymobPaymentScreen(
+            paymentUrl: url,
+            redirectUrl: "https://accept.paymobsolutions.com/api/acceptance/post_pay",
+          ),
+        ),
+      );
+
+      if (success == true) {
+        // If payment was successful, confirm the order.
+        confirmOrder(context, message, paymentMethod: 'CARD');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Payment failed or was cancelled.")),
+        );
+      }
+    }
+  }
+
   void _showActionMenu(BuildContext context) {
     final strings = context.l10n;
     showModalBottomSheet(
@@ -83,7 +132,7 @@ class HomeScreen extends StatelessWidget {
 
   /// --- THE CALLBACK MAPPER ---
   /// This is simpler now. It just maps messages.
-  List<ChatItem> _mapHomeStateToChatItems(AppLocalizations strings,HomeState state, HomeCubit cubit) {
+  List<ChatItem> _mapHomeStateToChatItems(BuildContext context,AppLocalizations strings,HomeState state, HomeCubit cubit) {
     
     final items = state.messages.map((msg) {
       // We now switch on the strongly-typed enum
@@ -136,9 +185,35 @@ class HomeScreen extends StatelessWidget {
             sender: msg.senderType,
           );
 
-        //TODO: PromotionItem (if you implement this tool)
+        case ChatMessageType.helpChoice:
+          return ErrorItem(
+            id: msg.id,
+            text: msg.content ?? 'An unknown error occurred.',
+            sender: msg.senderType,
+          );
+        
+        //TODO: PromotionItem 
         case ChatMessageType.promotion:
-          return null; // Placeholder
+          return PromotionItem(
+              id: msg.id, 
+              title: '', 
+              description:'', 
+              promoCode: '',
+              
+          ); 
+
+        case ChatMessageType.paymentSelection:
+          return PaymentSelectionItem(
+                id: 'payment_123',
+                totalAmount: 150.00,
+                onPaymentMethodSelected: (method) {
+                  if (method == 'COD') {
+                    confirmOrder(context, msg, paymentMethod: 'COD');
+                  } else if (method == 'CARD') {
+                    _handleCardPayment(context, msg);
+                  }
+                },
+              ); 
 
         // Default text case
         case ChatMessageType.text:
@@ -245,7 +320,7 @@ class HomeScreen extends StatelessWidget {
                 return BlocBuilder<HomeCubit, HomeState>(
                   builder: (context, homeState) {
                     
-                    final List<ChatItem> chatItems = _mapHomeStateToChatItems(strings, homeState, homeCubit);
+                    final List<ChatItem> chatItems = _mapHomeStateToChatItems(context,strings, homeState, homeCubit);
                     final bool isAuthenticated = authState.authState == AuthStatus.authenticated;
 
                     // --- Configure Callbacks ---

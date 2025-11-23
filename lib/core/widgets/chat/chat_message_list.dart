@@ -3,6 +3,7 @@ import 'package:suefery/core/widgets/chat/models/chat_item.dart';
 import 'package:suefery/core/widgets/chat/models/chat_view_io.dart';
 import 'bubbles/bubbles.dart';
 import 'bubbles/error_bubble.dart';
+import 'bubbles/payment_selection_bubble.dart';
 import 'bubbles/pending_order_bubble.dart';
 import 'bubbles/verification_prompt_bubble.dart';
 
@@ -46,6 +47,8 @@ class ChatMessageList extends StatelessWidget {
           ErrorItem() => ErrorBubble(item: item),
           
           VerificationPromptItem() => VerificationPromptBubble(item: item),  
+
+          PaymentSelectionItem() => PaymentSelectionBubble(item: item),
 
           LoadingChatItem() => const LoadingBubble(),
           

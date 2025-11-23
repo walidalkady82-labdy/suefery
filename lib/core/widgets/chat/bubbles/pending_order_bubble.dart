@@ -48,7 +48,7 @@ class _PendingOrderBubbleState extends State<PendingOrderBubble> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 1. AI's introductory text
-        if (order.aiResponseText != null && order.aiResponseText!.isNotEmpty)
+        if (order.aiResponseText.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 12.0),
             child: Text(order.aiResponseText!),
