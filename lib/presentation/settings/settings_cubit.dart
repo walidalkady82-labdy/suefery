@@ -7,10 +7,36 @@ import 'package:suefery/locator.dart';
 
 import '../../data/repositories/i_repo_firestore.dart';
 
-part 'settings_state.dart';
+class SettingsState extends Equatable {
+  final ThemeMode themeMode;
+  final Locale locale;
 
-Future<void> setTheme(bool isDark) async {
+  const SettingsState({
+    required this.themeMode,
+    required this.locale,
+  });
+
+  factory SettingsState.initial() {
+    return const SettingsState(
+      themeMode: ThemeMode.light,
+      locale: Locale('en'),
+    );
+  }
+
+  SettingsState copyWith({
+    ThemeMode? themeMode,
+    Locale? locale,
+  }) {
+    return SettingsState(
+      themeMode: themeMode ?? this.themeMode,
+      locale: locale ?? this.locale,
+    );
+  }
+
+  @override
+  List<Object> get props => [themeMode, locale];
 }
+
 
 class SettingsCubit extends Cubit<SettingsState> {
   final PrefService _prefService = sl<PrefService>();
@@ -23,12 +49,10 @@ class SettingsCubit extends Cubit<SettingsState> {
   void loadSettings() {
     _log.i('Loading user settings...');
     final isDark = _prefService.isDarkTheme;
-    final theme = _prefService.theme;
     final langCode = _prefService.language;
 
     emit(state.copyWith(
       themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-      appTheme: theme == 'sunsetOrange' ? AppTheme.sunsetOrange: AppTheme.oceanBlue,
       locale: Locale(langCode),
     ));
   }
@@ -39,15 +63,6 @@ class SettingsCubit extends Cubit<SettingsState> {
 
     _prefService.setlanguage(newLocale.languageCode);
     emit(state.copyWith(locale: newLocale));
-  }
-
-  /// Changes the application theme and persists the choice.
-  void changeTheme(AppTheme theme) {
-    if (state.appTheme == theme) return;
-
-    _log.i('Changing theme to ${theme.name}');
-    _prefService.setTheme(theme.name);
-    emit(state.copyWith(appTheme: theme));
   }
 
   /// Toggles dark mode and persists the choice.

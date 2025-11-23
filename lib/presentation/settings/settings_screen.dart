@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
 import 'package:suefery/presentation/settings/settings_cubit.dart';
-import 'package:suefery/presentation/profile/profile_screen.dart';
+import 'package:suefery/presentation/settings/profile/profile_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -19,6 +19,7 @@ class SettingsScreen extends StatelessWidget {
         ),
         body: ListView(
           children: [
+            /// -- user profile --
             ListTile(
               leading: const Icon(Icons.account_circle_outlined),
               title: Text(strings.profileTitle), // Add 'profileTitle' to localizations
@@ -27,36 +28,21 @@ class SettingsScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (_) => const ProfileScreen()));
               },
             ),
+            /// -- language selection --
             ListTile(
               leading: const Icon(Icons.language),
               title: Text(strings.changeLanguage),
               subtitle: Text(strings.currentLanguage(state.locale.languageCode)),
               onTap: () => _showLanguagePickerDialog(context, settingsCubit),
             ),
+            /// -- light/dark theme --
             SwitchListTile(
               title: Text(strings.darkMode),
               value: state.themeMode == ThemeMode.dark,
               onChanged: (isDark) => settingsCubit.toggleDarkMode(isDark),
               secondary: const Icon(Icons.dark_mode_outlined),
             ),
-            RadioGroup<AppTheme>(
-              groupValue: state.appTheme,
-              onChanged: (theme) => settingsCubit.changeTheme(theme!),
-              child: Column(
-              children: <Widget>[
-                RadioListTile<AppTheme>(
-                  value: AppTheme.oceanBlue,
-                  title: Text(AppTheme.oceanBlue.name),
-                  subtitle: Text('colorful blue them'),
-                ),
-                RadioListTile<AppTheme>(
-                  value: AppTheme.sunsetOrange,
-                  title: Text(AppTheme.sunsetOrange.name),
-                  subtitle: Text('colorful orange them'),
-                ),
-              ])
-            ),            
-            // --- TEMPORARY SEED BUTTON ---
+            //TODO: --- TEMPORARY brands seed button ---
             ListTile(
               leading: const Icon(Icons.cloud_upload, color: Colors.red),
               title: const Text(
