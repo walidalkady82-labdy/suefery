@@ -1,11 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:suefery/data/repositories/i_repo_firestore.dart';
-import 'package:suefery/data/services/auth_service.dart';
-import 'package:suefery/data/services/logging_service.dart';
+import 'package:suefery/core/utils/logger.dart';
+import 'package:suefery/data/repository/i_repo_firestore.dart';
+import 'package:suefery/data/service/service_auth.dart';
 import 'package:suefery/locator.dart';
 
-import '../../../data/enums/form_status.dart';
+import '../../../data/enum/form_status.dart';
 
 class ProfileState extends Equatable {
   final FromStatus status;
@@ -57,10 +57,9 @@ class ProfileState extends Equatable {
   List<Object?> get props => [status, name, email, phone, errorMessage, successMessage];
 }
 
-class ProfileCubit extends Cubit<ProfileState> {
-  final AuthService _authService = sl<AuthService>();
+class ProfileCubit extends Cubit<ProfileState> with LogMixin {
+  final ServiceAuth _authService = sl<ServiceAuth>();
   final IRepoFirestore _firestoreRepo = sl<IRepoFirestore>();
-  final _log = LoggerRepo('ProfileCubit');
 
   ProfileCubit() : super(ProfileState.initial()) {
     loadUserProfile();
@@ -70,7 +69,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   void loadUserProfile() {
     final user = _authService.currentAppUser;
     if (user != null) {
-      _log.i('Loading profile for user: ${user.id}');
+      logInfo('Loading profile for user: ${user.id}');
       emit(state.copyWith(
         status: FromStatus.loaded,
         name: user.name,
@@ -78,7 +77,7 @@ class ProfileCubit extends Cubit<ProfileState> {
         phone: user.phone,
       ));
     } else {
-      _log.w('No user found to load profile.');
+      logWarning('No user found to load profile.');
       emit(state.copyWith(status: FromStatus.error, errorMessage: 'User not found.'));
     }
   }
@@ -93,6 +92,8 @@ class ProfileCubit extends Cubit<ProfileState> {
     emit(state.copyWith(phone: phone));
   }
 
+  
+
   /// Saves the updated profile information to Firestore.
   Future<void> saveProfile() async {
     if (state.status == FromStatus.saving) return;
@@ -101,20 +102,20 @@ class ProfileCubit extends Cubit<ProfileState> {
 
     final userId = _authService.currentAppUser?.id;
     if (userId == null) {
-      _log.e('Cannot save profile, user ID is null.');
+      logError('Cannot save profile, user ID is null.');
       emit(state.copyWith(status: FromStatus.error, errorMessage: 'Could not save profile. User not found.'));
       return;
     }
 
     try {
-      _log.i('Saving profile for user: $userId');
+      logInfo('Saving profile for user: $userId');
       final updatedData = {
         'name': state.name,
         'phone': state.phone,
       };
 
       // Use the firestore repository to update the user document
-      await _firestoreRepo.update('users', userId, updatedData);
+      await _firestoreRepo.updateDocument('users', userId, updatedData);
 
       // Also update the user object in the auth service so the whole app sees the change
       await _authService.reloadUser();
@@ -129,7 +130,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       });
 
     } catch (e) {
-      _log.e('Error saving profile: $e');
+      logError('Error saving profile: $e');
       emit(state.copyWith(status: FromStatus.error, errorMessage: 'Failed to save profile.'));
     }
   }

@@ -1,17 +1,23 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:suefery/data/enum/order_status.dart';
+import 'package:suefery/data/model/model_order.dart';
 
-import '../../../../data/enums/message_sender.dart';
-import '../../../../data/enums/promotion_type.dart';
-import '../../../../data/models/ai_parsed_order.dart';
+import '../../../../data/enum/message_sender.dart';
+import '../../../../data/enum/promotion_type.dart';
+import '../../../../data/model/model_ai_parsed_order.dart';
 
 @immutable
-abstract class ChatItem {
+abstract class ChatItem extends Equatable{
   const ChatItem();
 }
 
 @immutable
 class LoadingChatItem extends ChatItem {
   const LoadingChatItem();
+  
+  @override
+  List<Object?> get props => [];
 }
 
 @immutable
@@ -24,17 +30,21 @@ class TextChatItem extends ChatItem {
   final String id;
   final String text;
   final MessageSender sender;
+  
+  @override
+  List<Object?> get props => [id, text, sender];
+  
 }
 
-@immutable
-class SignInFormItem extends ChatItem {
-  const SignInFormItem();
-}
+// @immutable
+// class SignInFormItem extends ChatItem {
+//   const SignInFormItem();
+// }
 
-@immutable
-class RegisterFormItem extends ChatItem {
-  const RegisterFormItem();
-}
+// @immutable
+// class RegisterFormItem extends ChatItem {
+//   const RegisterFormItem();
+// }
 
 @immutable
 class PendingOrderChatItem extends ChatItem {
@@ -43,6 +53,7 @@ class PendingOrderChatItem extends ChatItem {
     required this.parsedOrder,
     required this.isActioned,
     this.actionStatus,
+    this.order, // New field for real-time order data
     required this.onConfirm,
     required this.onSubmitDraft,
     required this.onCancel,
@@ -50,15 +61,18 @@ class PendingOrderChatItem extends ChatItem {
   });
 
   final String messageId;
-  final AiParsedOrder parsedOrder;
+  final ModelAiParsedOrder parsedOrder;
   final bool isActioned;
   final String? actionStatus;
+  final ModelOrder? order; // New field
 
   // Callbacks for the bubble's buttons
-  final Future<void> Function(BuildContext context) onConfirm;
+  final Future<void> Function() onConfirm;
   final VoidCallback onSubmitDraft;
-  final Future<void> Function(BuildContext context) onCancel;
-  final Function(int itemIndex, int change) onUpdateQuantity;
+  final Future<void> Function() onCancel;
+  final Future<void> Function(int itemIndex, int change) onUpdateQuantity;
+  @override
+  List<Object?> get props => [messageId , parsedOrder, isActioned, actionStatus, order, onConfirm, onSubmitDraft, onCancel, onUpdateQuantity];
 }
 
 @immutable
@@ -68,12 +82,15 @@ class OrderSummeryItem extends ChatItem {
     required this.orderNumber,
     required this.itemsSummary, // e.g., "2x Burger, 1x Fries"
     required this.totalPrice,
+
   });
   
   final String id;
   final String orderNumber;
   final String itemsSummary;
   final double totalPrice;
+    @override
+  List<Object?> get props => [id, orderNumber, itemsSummary, totalPrice];
 }
 
 @immutable
@@ -88,6 +105,8 @@ class RecipeSuggestionItem extends ChatItem {
   final String title;
   final String imageUrl;
   final String description;
+    @override
+  List<Object?> get props => [id, title, imageUrl, description];
 }
 
 @immutable
@@ -113,6 +132,8 @@ class PromotionItem extends ChatItem {
 
   /// If type is [itemSpecific], these are the tags shown (e.g. ["Pepsi", "Chips"])
   final List<String> eligibleItems;
+  @override
+  List<Object?> get props => [id, title, description, promoCode, imageUrl, type, eligibleItems];
 }
 
 @immutable
@@ -128,41 +149,45 @@ class VideoPresentationItem extends ChatItem {
     required this.videoUrl,
     this.onVideoEnd,
   }); 
+  @override
+  List<Object?> get props => [id, title, videoUrl, onVideoEnd];
+
 }
 
-@immutable
-class AuthChoiceItem extends ChatItem {
-  final String id;
-  final String text;
-  final List<String> choices;
-  final ValueChanged<String> onChoiceSelected;
-  final MessageSender sender; // <-- ADDED THIS
+// @immutable
+// class AuthChoiceItem extends ChatItem {
+//   final String id;
+//   final String text;
+//   final List<String> choices;
+//   final ValueChanged<String> onChoiceSelected;
+//   final MessageSender sender; // <-- ADDED THIS
 
-  const AuthChoiceItem({
-    required this.id,
-    required this.text,
-    required this.choices,
-    required this.onChoiceSelected,
-    this.sender = MessageSender.gemini, // <-- ADDED THIS
-  });
-}
+//   const AuthChoiceItem({
+//     required this.id,
+//     required this.text,
+//     required this.choices,
+//     required this.onChoiceSelected,
+//     this.sender = MessageSender.gemini, // <-- ADDED THIS
+//   });
+// }
 
-@immutable
-class VerificationPromptItem extends ChatItem {
-  final String id;
-  final String text;
-  final List<String> choices;
-  final Function(String) onChoiceSelected;
-  final MessageSender sender;
+// @immutable
+// class VerificationPromptItem extends ChatItem {
+//   final String id;
+//   final String text;
+//   final List<String> choices;
+//   final Function(String) onChoiceSelected;
+//   final MessageSender sender;
 
-  const VerificationPromptItem({
-    required this.id,
-    required this.text,
-    this.choices = const [],
-    required this.onChoiceSelected,
-    required this.sender,
-  });
-}
+//   const VerificationPromptItem({
+//     required this.id,
+//     required this.text,
+//     this.choices = const [],
+//     required this.onChoiceSelected,
+//     required this.sender,
+//   });
+// }
+
 @immutable
 class ErrorItem extends ChatItem {
   final MessageSender sender;
@@ -173,6 +198,8 @@ class ErrorItem extends ChatItem {
     required this.text,
     required this.sender,
   });
+  @override
+  List<Object?> get props => [id, text, sender];
 }
 
 @immutable
@@ -190,4 +217,36 @@ class PaymentSelectionItem extends ChatItem {
     required this.onPaymentMethodSelected,
     this.sender = MessageSender.gemini,
   });
+  @override
+  List<Object?> get props => [id, totalAmount, currency, onPaymentMethodSelected, sender];
 }
+
+@immutable
+class DraftOrderItem extends ChatItem {
+  const DraftOrderItem({
+    required this.messageId,
+    required this.parsedOrder,
+    this.order, // New field for real-time order data
+    required this.onConfirm,
+    required this.onCancel,
+    required this.onUpdateQuantity,
+    required this.onAddItem,
+    required this.onUpdateItem,
+  });
+
+  final String messageId;
+  final ModelAiParsedOrder parsedOrder;
+  final ModelOrder? order; // New field
+
+  // Callbacks for the bubble's buttons
+  final Future<void> Function() onConfirm;
+  final Future<void> Function() onCancel;
+  final Future<void> Function(int itemIndex, int change) onUpdateQuantity;
+  final Future<void> Function(ModelOrderItem item) onAddItem;
+  final Future<void> Function(int itemIndex, ModelOrderItem item) onUpdateItem;
+
+  @override
+  List<Object?> get props => [messageId, parsedOrder, order, onConfirm, onCancel, onUpdateQuantity, onAddItem, onUpdateItem];
+}
+
+

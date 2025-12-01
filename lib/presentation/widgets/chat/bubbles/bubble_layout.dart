@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:suefery/data/enums/message_sender.dart';
+import 'package:suefery/data/enum/message_sender.dart';
 
 /// A reusable widget that provides the common layout and styling for a chat bubble.
 ///
@@ -36,10 +36,15 @@ class BubbleLayout extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 4.0),
         decoration: BoxDecoration(
           // Use different colors for user and AI
-          color: isUser
-              ? theme.colorScheme.primaryContainer
-              : theme.colorScheme.secondaryContainer,
+          // color: isUser
+          //     ? theme.colorScheme.primaryContainer
+          //     : theme.colorScheme.secondaryContainer,
           borderRadius: BorderRadius.circular(16.0),
+          border: Border.all(
+            color: isUser
+                ? theme.colorScheme.primaryContainer
+                : theme.colorScheme.secondaryContainer,
+          )
         ),
         child: child,
       ),

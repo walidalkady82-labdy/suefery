@@ -8,31 +8,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_paymob/flutter_paymob.dart';
+import 'package:logging/logging.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
-import 'package:suefery/data/enums/auth_status.dart';
 import 'package:suefery/locator.dart';
+import 'package:suefery/presentation/auth/auth_checker.dart';
+import 'package:suefery/presentation/auth/cubit_auth.dart';
 import 'package:suefery/presentation/settings/settings_cubit.dart';
-import 'package:suefery/presentation/home/auth_cubit.dart';
-import 'utils/themes.dart';
-import 'data/services/pref_service.dart';
+import 'core/utils/themes.dart';
 import 'firebase_options.dart';
-import 'presentation/home/customer_app_tour_screen.dart';
-import 'data/services/logging_service.dart';
-import 'presentation/home/home_cubit.dart';
-import 'presentation/home/home_screen.dart';
 
-final _log = LoggerRepo('main');
+
 Future<void> main() async {
+  final log = Logger("main");
+  Logger.root.level = Level.ALL; // defaults to Level.INFO
+  Logger.root.onRecord.listen((record) {
+    debugPrint('${record.level.name}: ${record.time}: ${record.message}');
+  });
   // Ensure Flutter engine is initialized before running the app
-  _log.i('initializing app...');
+  log.info('initializing app...');
   WidgetsFlutterBinding.ensureInitialized();
-  _log.i('Loading app...');
+  log.info('Loading app...');
   runApp(
     MultiBlocProvider(
       providers: [
         // GLOBAL CUBITS (Available to ALL screens/features)
         BlocProvider(
-          create: (context) => AuthCubit(),
+          create: (context) => CubitAuth(),
         ),
         BlocProvider(
           // SettingsCubit loads its own initial state from PrefService
@@ -52,21 +53,23 @@ Future<void> main() async {
       child: const AppContainer(child:SUEFERYApp() ),
     )
   );
-  _log.i('App initialized...');
+  log.info('App initialized...');
 }
 
 Future<void> _initEnvironmentVars() async {
   // DotEnv dotenv = DotEnv() is automatically called during import.
   // If you want to load multiple dotenv files or name your dotenv object differently, you can do the following and import the singleton into the relavant files:
   // DotEnv another_dotenv = DotEnv()
+  final log = Logger("_initEnvironmentVars");
   try {
     await dotenv.load(fileName: "assets/.env");
   } catch (e) {
-    _log.i('Error loading .env file: $e');
+    log.info('Error loading .env file: $e');
   }
 }
 
  Future<FirebaseApp> _initializeFirebase() async {
+  final log = Logger("_initializeFirebase");
     final useEmulatorEnv = dotenv.getBool('USE_FIREBASE_EMULATOR', fallback: false);
     // 1. Get environment variables
     final  emulatorHost = kDebugMode && useEmulatorEnv && defaultTargetPlatform == TargetPlatform.android ?dotenv.get('local_device_ip') : "localhost";
@@ -79,7 +82,7 @@ Future<void> _initEnvironmentVars() async {
     try {
       configMap = jsonDecode(firebaseConfigJson);
     } catch (e) {
-      _log.e('ERROR: Failed to decode Firebase Config: $e');
+      log.shout('ERROR: Failed to decode Firebase Config: $e');
       configMap = {};
     }
 
@@ -144,6 +147,7 @@ void initRemoteConfigurations(){
 /// A wrapper widget that handles the asynchronous initialization of Firebase
 /// and authentication before rendering the main application.
 Future<void> initPayment() async {
+  final log = Logger("initPayment");
   // Securely load keys from environment variables
   final apiKey = dotenv.env['PAYMOB_API_KEY'];
   final integrationId = int.tryParse(dotenv.env['PAYMOB_INTEGRATION_ID'] ?? '');
@@ -151,7 +155,7 @@ Future<void> initPayment() async {
   final iFrameId = int.tryParse(dotenv.env['PAYMOB_IFRAME_ID'] ?? '');
 
   if (apiKey == null || integrationId == null || walletIntegrationId == null || iFrameId == null) {
-    _log.e("FATAL: Paymob environment variables are not set in .env file.");
+    log.shout("FATAL: Paymob environment variables are not set in .env file.");
     // In a real app, you might want to prevent the app from running
     // or disable payment features if the keys are missing.
     return;
@@ -186,17 +190,18 @@ class _AppContainerState extends State<AppContainer> {
   }
   
   Future<void> init() async {
-    _log.i('loading environment variables...');
+    final log = Logger("initPayment");
+    log.info('loading environment variables...');
     await _initEnvironmentVars();
-    _log.i('initializing Firebase...');
+    log.info('initializing Firebase...');
     final app = await _initializeFirebase();
-    _log.i('handling analytics...');
+    log.info('handling analytics...');
     initAnalytics();
-    _log.i('loading sevices...');
+    log.info('loading sevices...');
     await initLocator(app);
-    _log.i('ensuring services are ready...');
+    log.info('ensuring services are ready...');
     await ensureServicesReady();
-    _log.i('initializing payment...');
+    log.info('initializing payment...');
     await initPayment();
   }
   
@@ -285,23 +290,8 @@ class SUEFERYApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {    
-    final prefs = sl<PrefService>();
-
-    return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state.authState == AuthStatus.authenticated && prefs.isFirstLogin == true) {
-          // Use a post-frame callback to ensure the build is complete
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => const CustomerAppTourScreen(),
-            ));
-            // Mark the tour as seen
-            context.read<AuthCubit>().markTourAsSeen();
-          });
-        }
-      },
-      child: BlocProvider(
-        create: (context) => HomeCubit(),        
+    return BlocProvider(
+        create: (context) => CubitAuth(),        
         child: BlocBuilder<SettingsCubit, SettingsState>(
           builder: (context, settingsState) {
             // Access the settings state directly from the builder
@@ -325,11 +315,10 @@ class SUEFERYApp extends StatelessWidget {
               // 3. FALLBACK: If device is French (unsupported), force English
               return supportedLocales.first; 
             },
-              home: HomeScreen(),
+              home: AuthChecker(),
             );
           },
         ),
-      )
-    );
+      );
   }
 }

@@ -1,0 +1,20 @@
+# server:
+#   host: "0.0.0.0" # Defines the binding address <string>
+#   port: 8080 # Specifies the port <int> for the development server
+  # https:
+  #   cert-path: "/path/to/cert.pem" # Path <string> to your TLS certificate
+  #   cert-key-path: "/path/to/key.pem" # Path <string> to TLS certificate key
+  # headers:
+  #     - name: "X-Custom-Header" # Name <string> of the HTTP header
+  #       value: "MyValue" # Value <string> of the HTTP header
+  #     - name: "Cache-Control"
+  #       value: "no-cache, no-store, must-revalidate"
+  # proxy:
+  #   - target: "http://localhost:5000/" # Base URL <string> of your backend
+  #     prefix: "/users/" # Path <string>
+  #   - target: "http://localhost:3000/"
+  #     prefix: "/data/"
+  #     replace: "/report/" # Replacement <string> of path in redirected URL (optional)
+  #   - target: "http://localhost:4000/"
+  #     prefix: "/products/"
+  #     replace: ""

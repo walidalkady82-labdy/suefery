@@ -2,26 +2,27 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
-import 'package:suefery/data/repositories/i_repo_auth.dart';
-import 'package:suefery/data/repositories/i_repo_firestore.dart';
-import 'package:suefery/data/services/firebase_ai_service.dart';
-import 'package:suefery/data/services/user_service.dart';
-import 'package:suefery/data/repositories/repo_firestore.dart';
-import 'data/repositories/i_repo_pref.dart';
-import 'data/services/auth_service.dart';
-import 'data/services/chat_service.dart';
-import 'data/services/order_service.dart';
-import 'data/services/pref_service.dart';
-import 'data/services/remote_config_service.dart';
-import 'data/repositories/repo_auth.dart';
-import 'data/repositories/repo_prefs.dart';
+import 'package:suefery/data/repository/i_repo_auth.dart';
+import 'package:suefery/data/repository/i_repo_firestore.dart';
+import 'package:suefery/data/service/service_firebase_ai.dart';
+import 'package:suefery/data/service/service_suggestion.dart';
+import 'package:suefery/data/service/service_user.dart';
+import 'package:suefery/data/repository/repo_firestore.dart';
+import 'data/repository/i_repo_pref.dart';
+import 'data/service/service_auth.dart';
+import 'data/service/service_chat.dart';
+import 'data/service/service_order.dart';
+import 'data/service/service_pref.dart';
+import 'data/service/service_remote_config.dart';
+import 'data/repository/repo_auth.dart';
+import 'data/repository/repo_prefs.dart';
 
 final sl = GetIt.instance; // sl = Service Locator
 /// Initializes all services and repositories for the app.
 /// This function must be called in main.dart before runApp().
 Future<void> initLocator(FirebaseApp firebaseApp) async {
 
-  final configService = await RemoteConfigService.create();
+  final configService = await ServiceRemoteConfig.create();
   final prefsRepo = await RepoPref.create();
   // --- CONFIGURATION ---
   // Determine if we should use emulators (adjust this logic as needed)
@@ -50,41 +51,44 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
   // --- SERVICES (The "Managers") ---
   
   // Remote Config Service (Async) ---
-  sl.registerSingleton<RemoteConfigService>(configService);
+  sl.registerSingleton<ServiceRemoteConfig>(configService);
 
   // Auth Service
-  sl.registerLazySingleton<AuthService>(() => AuthService(
+  sl.registerLazySingleton<ServiceAuth>(() => ServiceAuth(
         sl<IRepoAuth>(),
-        sl<PrefService>(),
+        sl<IRepoFirestore>(),
+        sl<ServicePref>(),
       ));
 
   // Prefs Service
-  sl.registerLazySingleton<PrefService>(() => PrefService(
+  sl.registerLazySingleton<ServicePref>(() => ServicePref(
         sl<IRepoPref>(), // GetIt finds the registered IPrefsRepository
       ));
       
   // User Service
-  sl.registerLazySingleton<UserService>(() => UserService(
+  sl.registerLazySingleton<ServiceUser>(() => ServiceUser(
         sl<IRepoFirestore>(), // GetIt finds the registered IFirestoreRepository
       ));
 
   // Register Firebase Functions with the correct region
   sl.registerLazySingleton(() => FirebaseFunctions.instanceFor(app: firebaseApp, region: 'us-central1'));
 
-  sl.registerLazySingleton<FirebaseAiService>(() => FirebaseAiService(
+  sl.registerLazySingleton<ServiceFirebaseAi>(() => ServiceFirebaseAi(
        sl<FirebaseFunctions>() , useGeminiMocks
       ));    
   //Order Service
-  sl.registerLazySingleton<OrderService>(() => OrderService(
+  sl.registerLazySingleton<ServiceOrder>(() => ServiceOrder(
         sl<IRepoFirestore>(), // GetIt finds the registered IFirestoreRepository
-        sl<RemoteConfigService>(), // GetIt finds the registered RemoteConfigService
+        sl<ServiceRemoteConfig>(), // GetIt finds the registered RemoteConfigService
       ));
 
     // Chat Service
-  sl.registerLazySingleton<ChatService>(() => ChatService(
+  sl.registerLazySingleton<ServiceChat>(() => ServiceChat(
        sl<IRepoFirestore>() ,
-       sl<FirebaseAiService>()
+       sl<ServiceFirebaseAi>()
       ));
+
+  sl.registerLazySingleton<ServiceSuggestion>(() => ServiceSuggestion());
 }
 
 /// Awaits for all asynchronous singletons to be ready.

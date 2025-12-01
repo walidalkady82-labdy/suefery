@@ -7,6 +7,8 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // others
+    id("com.stripe:strip-android-push-provisioning:12.1.0")
 }
 
 android {

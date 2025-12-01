@@ -34,9 +34,5 @@ class ChatViewCallbacks {
   /// The complete callbacks object to be passed down to the
   /// `ChatInputBar` widget.
   final ChatInputBarCallbacks inputBarCallbacks;
-
-  // --- REMOVED: onSignIn and onRegister ---
-  // final Future<bool> Function(String email, String password)? onSignIn;  
-  // final Future<bool> Function(String email, String password)? onRegister; 
   
 }

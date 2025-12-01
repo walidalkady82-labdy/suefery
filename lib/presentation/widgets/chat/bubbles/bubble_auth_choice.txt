@@ -1,0 +1,42 @@
+import 'package:flutter/material.dart';
+import 'package:suefery/presentation/widgets/chat/models/chat_item.dart';
+
+import 'bubble_layout.dart';
+
+/// This bubble displays a message from Gemini followed by a list
+/// of selectable action buttons (e.g., "Sign In", "Register").
+class BubbleAuthChoice extends StatelessWidget {
+  final AuthChoiceItem item;
+
+  const BubbleAuthChoice({
+    super.key,
+    required this.item,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BubbleLayout(
+      sender: item.sender, // Assuming you add `sender` to AuthChoiceItem
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. The text from the AI
+          Text(item.text),
+
+          // 2. The list of buttons
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8.0, // Horizontal space between buttons
+            runSpacing: 8.0, // Vertical space between button rows
+            children: item.choices.map((choice) {
+              return OutlinedButton(
+                onPressed: () => item.onChoiceSelected(choice),
+                child: Text(choice),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}

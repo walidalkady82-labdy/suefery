@@ -1,11 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:suefery/data/services/logging_service.dart';
-import 'package:suefery/data/services/pref_service.dart';
+import 'package:suefery/core/utils/logger.dart';
+import 'package:suefery/data/service/service_pref.dart';
 import 'package:suefery/locator.dart';
 
-import '../../data/repositories/i_repo_firestore.dart';
+import '../../data/repository/i_repo_firestore.dart';
 
 class SettingsState extends Equatable {
   final ThemeMode themeMode;
@@ -38,16 +38,15 @@ class SettingsState extends Equatable {
 }
 
 
-class SettingsCubit extends Cubit<SettingsState> {
-  final PrefService _prefService = sl<PrefService>();
+class SettingsCubit extends Cubit<SettingsState> with LogMixin{
+  final ServicePref _prefService = sl<ServicePref>();
   final _firestoreRepo = sl<IRepoFirestore>();
-  final _log = LoggerRepo('SettingsCubit');
 
   SettingsCubit() : super(SettingsState.initial());
 
   /// Loads the user's saved settings from preferences.
   void loadSettings() {
-    _log.i('Loading user settings...');
+    logInfo('Loading user settings...');
     final isDark = _prefService.isDarkTheme;
     final langCode = _prefService.language;
 
@@ -73,7 +72,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   Future<void> seedBrands() async {
-    _log.i('Starting brand seeding...');
+    logInfo('Starting brand seeding...');
     // The complete list of Egyptian market brands
     final brands = [
       // --- Dairy ---
@@ -160,6 +159,6 @@ class SettingsCubit extends Cubit<SettingsState> {
 
     // Use the repository to perform the batch write.
     await _firestoreRepo.batchSet('brands',brandsWithIds);
-    _log.i('Brand seeding completed via repository.');
+    logInfo('Brand seeding completed via repository.');
   }
 }

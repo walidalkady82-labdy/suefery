@@ -1,9 +1,0 @@
-
-abstract class IGeminiRepo {
-  Future<Map<String, dynamic>> generateOrderContent(
-      List<Map<String, dynamic>> history);
-
-  Future<Map<String, dynamic>> generateRecipeContent(String prompt);
-
-  Future<String> generateText({required String prompt, List<Map<String, dynamic>>? history});
-}

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/enums/app_string_keys.dart';
+import '../../data/enum/app_string_keys.dart';
 
 mixin FormValidationMixin {
   /// Validates that a field is not empty.

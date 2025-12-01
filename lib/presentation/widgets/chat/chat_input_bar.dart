@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:suefery/presentation/widgets/chat/models/chat_input_bar_io.dart';
-import 'package:suefery/data/services/brand_service.dart';
 import 'package:suefery/locator.dart';
-import 'package:suefery/data/models/suggestion_model.dart'; // Import new model
-import 'package:suefery/data/services/suggestion_service.dart'; // Import new service
-import '../../../data/enums/suggestion_type.dart';
-import '../../../data/models/brand_model.dart';
+import 'package:suefery/data/model/model_suggestion.dart'; // Import new model
+import 'package:suefery/data/service/service_suggestion.dart'; // Import new service
+import '../../../data/enum/suggestion_type.dart';
 
 class ChatInputBar extends StatefulWidget {
   const ChatInputBar({
@@ -62,14 +60,14 @@ class _ChatInputBarState extends State<ChatInputBar> {
           // --- Text Input Field ---
           // --- Autocomplete Text Input ---
           Expanded(
-            child: TypeAheadField<SuggestionModel>(
+            child: TypeAheadField<ModelSuggestion>(
               controller: _controller,
               
               // 1. FETCH SUGGESTIONS
               suggestionsCallback: (pattern) async {
                 if (pattern.trim().isEmpty) return [];
                 // Use the mixed service instead of just brands
-                return await sl<SuggestionService>().getMixedSuggestions(pattern);
+                return await sl<ServiceSuggestion>().getMixedSuggestions(pattern);
               },
 
               // 2. DISPLAY INPUT FIELD
@@ -92,7 +90,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
               },
 
               // 3. CONFIGURE SUGGESTION LIST
-              itemBuilder: (context, SuggestionModel suggestion) {
+              itemBuilder: (context, ModelSuggestion suggestion) {
                 // 1. DECIDE ICON BASED ON TYPE
               IconData icon;
               Color iconColor;
@@ -132,7 +130,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
               },
 
               // 4. HANDLE SELECTION
-              onSelected: (SuggestionModel suggestion) {
+              onSelected: (ModelSuggestion suggestion) {
                 // Append the selected brand to the text
                 // Or simply replace the text if you prefer
                 _controller.text = suggestion.title; 

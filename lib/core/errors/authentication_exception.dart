@@ -1,6 +1,7 @@
 
-import '../../data/services/logging_service.dart';
 
+import 'package:logging/logging.dart';
+import 'package:suefery/core/utils/logger.dart';
 
 enum AuthenticationExceptionCode{
   //------custom exceptions-------------
@@ -100,7 +101,7 @@ class AuthenticationFailure implements Exception{
   AuthenticationFailure(this.message,[this.code=AuthenticationExceptionCode.generalError]);
 
   //AuthenticationFailure.fromCode(this.code,[this.message]);
-  //   message == null?log.e(code.message):log.e(message);
+  //   message == null?log.shout(code.message):log.shout(message);
   //   switch (code) {
   //     case AuthenticationExceptionCode.generalError:
   //       return AuthenticationFailure(
@@ -272,31 +273,31 @@ class EmailMissmatchFailure extends AuthenticationFailure {
       : super(message??AuthenticationExceptionCode.emailNotMatch.message,AuthenticationExceptionCode.emailNotMatch);
 }
 
-class RegisterFirebaseFailure extends AuthenticationFailure {
+class RegisterFirebaseFailure extends AuthenticationFailure{
   RegisterFirebaseFailure(super.message,[super.code]);
-  static final LoggerRepo log = LoggerRepo('RegisterFirebaseFailure');
   factory RegisterFirebaseFailure.fromCode(String code) {
+      final log = Logger('RegisterFirebaseFailure');
       switch (code) {
         case 'no-credentials':
-          log.e(AuthenticationExceptionCode.noCredentials.message);
+          log.shout(AuthenticationExceptionCode.noCredentials.message);
           return RegisterFirebaseFailure(AuthenticationExceptionCode.noCredentials.message,AuthenticationExceptionCode.noCredentials);
         case 'invalid-email':
-          log.e(AuthenticationExceptionCode.invalidEmail.message);
+          log.shout(AuthenticationExceptionCode.invalidEmail.message);
           return RegisterFirebaseFailure(AuthenticationExceptionCode.invalidEmail.message,AuthenticationExceptionCode.invalidEmail);
         case 'user-disabled':
-          log.e(AuthenticationExceptionCode.userDisabled.message);
+          log.shout(AuthenticationExceptionCode.userDisabled.message);
           return RegisterFirebaseFailure(AuthenticationExceptionCode.userDisabled.message,AuthenticationExceptionCode.userDisabled);
         case 'email-already-in-use':
-          log.e(AuthenticationExceptionCode.emailAlreadyInUse.message);
+          log.shout(AuthenticationExceptionCode.emailAlreadyInUse.message);
           return RegisterFirebaseFailure(AuthenticationExceptionCode.emailAlreadyInUse.message,AuthenticationExceptionCode.emailAlreadyInUse);
         case 'operation-not-allowed':
-          log.e(AuthenticationExceptionCode.operationNotAllowed.message);
+          log.shout(AuthenticationExceptionCode.operationNotAllowed.message);
           return RegisterFirebaseFailure(AuthenticationExceptionCode.operationNotAllowed.message,AuthenticationExceptionCode.operationNotAllowed);
         case 'weak-password':
-          log.e(AuthenticationExceptionCode.weakPassword.message);
+          log.shout(AuthenticationExceptionCode.weakPassword.message);
           return RegisterFirebaseFailure(AuthenticationExceptionCode.weakPassword.message,AuthenticationExceptionCode.weakPassword);
         default:
-          log.e(AuthenticationExceptionCode.generalError.message);
+          log.shout(AuthenticationExceptionCode.generalError.message);
           return RegisterFirebaseFailure(AuthenticationExceptionCode.generalError.message,AuthenticationExceptionCode.generalError);
         }
   }
@@ -304,29 +305,30 @@ class RegisterFirebaseFailure extends AuthenticationFailure {
 
 class LoginGoogleFirebaseFailure extends AuthenticationFailure{
   LoginGoogleFirebaseFailure(super.message,[super.code]);
-  static final LoggerRepo log = LoggerRepo('LoginGoogleFirebaseFailure');
+  
   factory LoginGoogleFirebaseFailure.fromCode(String code) {
+    final log = Logger('LoginGoogleFirebaseFailure');
       switch (code) {
         case 'no-credentials':
-          log.e(AuthenticationExceptionCode.noCredentials.message);
+          log.shout(AuthenticationExceptionCode.noCredentials.message);
           return LoginGoogleFirebaseFailure(AuthenticationExceptionCode.noCredentials.message,AuthenticationExceptionCode.noCredentials);              
         case 'account-exists-with-different-credential':
-          log.e(AuthenticationExceptionCode.accountExistsWithDifferentCredential.message);
+          log.shout(AuthenticationExceptionCode.accountExistsWithDifferentCredential.message);
           return LoginGoogleFirebaseFailure(AuthenticationExceptionCode.accountExistsWithDifferentCredential.message,AuthenticationExceptionCode.accountExistsWithDifferentCredential);    
         case 'invalid-credential':
-          log.e(AuthenticationExceptionCode.invalidCredential.message);
+          log.shout(AuthenticationExceptionCode.invalidCredential.message);
             return LoginGoogleFirebaseFailure(AuthenticationExceptionCode.invalidCredential.message,AuthenticationExceptionCode.invalidCredential);     
         case 'operation-not-allowed':
-        log.e(AuthenticationExceptionCode.operationNotAllowed.message);
+        log.shout(AuthenticationExceptionCode.operationNotAllowed.message);
             return LoginGoogleFirebaseFailure(AuthenticationExceptionCode.operationNotAllowed.message,AuthenticationExceptionCode.operationNotAllowed);  
         case 'invalid-verification-code':
-        log.e(AuthenticationExceptionCode.invalidVerificationCode.message);
+        log.shout(AuthenticationExceptionCode.invalidVerificationCode.message);
             return LoginGoogleFirebaseFailure(AuthenticationExceptionCode.invalidVerificationCode.message,AuthenticationExceptionCode.invalidVerificationCode);  
         case 'invalid-verification-id':
-          log.e(AuthenticationExceptionCode.invalidVerificationId.message);
+          log.shout(AuthenticationExceptionCode.invalidVerificationId.message);
             return LoginGoogleFirebaseFailure(AuthenticationExceptionCode.invalidVerificationId.message,AuthenticationExceptionCode.invalidVerificationId);  
         default:
-          log.e(AuthenticationExceptionCode.generalError.message);
+          log.shout(AuthenticationExceptionCode.generalError.message);
           return LoginGoogleFirebaseFailure(AuthenticationExceptionCode.generalError.message,AuthenticationExceptionCode.generalError);
         }
   }
@@ -334,29 +336,29 @@ class LoginGoogleFirebaseFailure extends AuthenticationFailure{
 
 class LoginEmailPassFirebaseFailure extends AuthenticationFailure{
   LoginEmailPassFirebaseFailure(super.message,[super.code]);
-  static final LoggerRepo log = LoggerRepo('LoginEmailPassFirebaseFailure');
+  static final log = Logger('LoginEmailPassFirebaseFailure');
   factory LoginEmailPassFirebaseFailure.fromCode(String code) {
       switch (code) {
         case 'no-credentials':
-          log.e(AuthenticationExceptionCode.noCredentials.message);
+          log.shout(AuthenticationExceptionCode.noCredentials.message);
           return LoginEmailPassFirebaseFailure(AuthenticationExceptionCode.noCredentials.message,AuthenticationExceptionCode.noCredentials);              
         case 'invalid-email':
-          log.e(AuthenticationExceptionCode.invalidEmail.message);
+          log.shout(AuthenticationExceptionCode.invalidEmail.message);
           return LoginEmailPassFirebaseFailure(AuthenticationExceptionCode.invalidEmail.message,AuthenticationExceptionCode.invalidEmail);    
         case 'user-disabled':
-          log.e(AuthenticationExceptionCode.userDisabled.message);
+          log.shout(AuthenticationExceptionCode.userDisabled.message);
             return LoginEmailPassFirebaseFailure(AuthenticationExceptionCode.userDisabled.message,AuthenticationExceptionCode.userDisabled);     
         case 'user-not-found':
-        log.e(AuthenticationExceptionCode.userNotFound.message);
+        log.shout(AuthenticationExceptionCode.userNotFound.message);
             return LoginEmailPassFirebaseFailure(AuthenticationExceptionCode.userNotFound.message,AuthenticationExceptionCode.userNotFound);  
         case 'wrong-password':
-        log.e(AuthenticationExceptionCode.wrongPassword.message);
+        log.shout(AuthenticationExceptionCode.wrongPassword.message);
             return LoginEmailPassFirebaseFailure(AuthenticationExceptionCode.wrongPassword.message,AuthenticationExceptionCode.wrongPassword);   
         case 'invalid-credential':
-          log.e(AuthenticationExceptionCode.invalidCredential.message);
+          log.shout(AuthenticationExceptionCode.invalidCredential.message);
           return LoginEmailPassFirebaseFailure(AuthenticationExceptionCode.invalidCredential.message,AuthenticationExceptionCode.invalidCredential);         
         default:
-          log.e(AuthenticationExceptionCode.generalError.message);
+          log.shout(AuthenticationExceptionCode.generalError.message);
           return LoginEmailPassFirebaseFailure(AuthenticationExceptionCode.generalError.message,AuthenticationExceptionCode.generalError);
         }
   }
@@ -368,20 +370,21 @@ class LogoutFailure extends AuthenticationFailure {
 
 class ResetPassFirebaseFailure extends AuthenticationFailure{
   ResetPassFirebaseFailure(super.message,[super.code]);
-  static final LoggerRepo log = LoggerRepo('ResetPassFirebaseFailure');
+  
   factory ResetPassFirebaseFailure.fromCode(String code) {
+      final log = Logger('ResetPassFirebaseFailure');
       switch (code) {
         case 'user-not-found':
-          log.e(AuthenticationExceptionCode.userNotFound.message);
+          log.shout(AuthenticationExceptionCode.userNotFound.message);
           return ResetPassFirebaseFailure(AuthenticationExceptionCode.userNotFound.message,AuthenticationExceptionCode.userNotFound);              
         case 'invalid-action-code':
-          log.e(AuthenticationExceptionCode.invalidActionCode.message);
+          log.shout(AuthenticationExceptionCode.invalidActionCode.message);
           return ResetPassFirebaseFailure(AuthenticationExceptionCode.invalidActionCode.message,AuthenticationExceptionCode.invalidActionCode);    
         case 'weak-password':
-          log.e(AuthenticationExceptionCode.weakPassword.message);
+          log.shout(AuthenticationExceptionCode.weakPassword.message);
             return ResetPassFirebaseFailure(AuthenticationExceptionCode.weakPassword.message,AuthenticationExceptionCode.weakPassword);        
         default:
-          log.e(AuthenticationExceptionCode.generalError.message);
+          log.shout(AuthenticationExceptionCode.generalError.message);
           return ResetPassFirebaseFailure(AuthenticationExceptionCode.generalError.message,AuthenticationExceptionCode.generalError);
         }
   }
@@ -389,15 +392,16 @@ class ResetPassFirebaseFailure extends AuthenticationFailure{
 
 class DeleteAccountFirebaseFailure extends AuthenticationFailure {
   DeleteAccountFirebaseFailure(super.message,[super.code]);
-  static final LoggerRepo log = LoggerRepo('DeleteAccountFirebaseFailure');
+  
   factory DeleteAccountFirebaseFailure.fromCode(String code) {
+    final log = Logger('DeleteAccountFirebaseFailure');
       switch (code) {
         case 'requires-recent-login':
-          log.e(AuthenticationExceptionCode.requiresRecentLogin.message);
+          log.shout(AuthenticationExceptionCode.requiresRecentLogin.message);
           return DeleteAccountFirebaseFailure(AuthenticationExceptionCode.requiresRecentLogin.message,AuthenticationExceptionCode.requiresRecentLogin);              
                 
         default:
-          log.e(AuthenticationExceptionCode.generalError.message);
+          log.shout(AuthenticationExceptionCode.generalError.message);
           return DeleteAccountFirebaseFailure(AuthenticationExceptionCode.generalError.message,AuthenticationExceptionCode.generalError);
         }
   }
@@ -416,7 +420,7 @@ class DeleteAccountFirebaseFailure extends AuthenticationFailure {
 //   AuthenticationFailure([
 //     this.message = 'An unknown exception occurred.'
 //   ]){
-//     log.e(message);
+//     log.shout(message);
 //   }
 //   final String message;
 // }
@@ -430,31 +434,31 @@ class DeleteAccountFirebaseFailure extends AuthenticationFailure {
 //   factory RegisterUserFailure1.fromCode(String code,{String? message}) {
 //     switch (code) {
 //       case 'no-credentials':
-//         log.e('registriation unsuccessfull , no credentials available!');
+//         log.shout('registriation unsuccessfull , no credentials available!');
 //         return const RegisterUserFailure1(
 //           'no-credentials',
 //           'registriation unsuccessfull , no credentials available!',
 //         );
 //       case 'already-created-organization':
-//         log.e('registriation unsuccessfull , you already have joined an organization!');
+//         log.shout('registriation unsuccessfull , you already have joined an organization!');
 //         return const RegisterUserFailure1(
 //           'already-created-organization',
 //           'registriation unsuccessfull , you already have joined an organization!',
 //         );
 //       case 'organization-creation-failed':
-//         log.e('registriation unsuccessfull , organization could not be created!');
+//         log.shout('registriation unsuccessfull , organization could not be created!');
 //         return const RegisterUserFailure1(
 //           'organization-creation-failed',
 //           'registriation unsuccessfull , organization could not be created!',
 //         );
 //       case 'organization-name-missing':
-//         log.e('registriation unsuccessfull , organization name is missing!');
+//         log.shout('registriation unsuccessfull , organization name is missing!');
 //         return const RegisterUserFailure1(
 //           'organization-name-missing',
 //           'registriation unsuccessfull , organization name is missing!',
 //         );
 //         case 'wrong-user-role':
-//         log.e('registriation unsuccessfull , problem in user role!');
+//         log.shout('registriation unsuccessfull , problem in user role!');
 //         return const RegisterUserFailure1(
 //           'wrong-user-role',
 //           'registriation unsuccessfull , problem in user role!',
@@ -464,38 +468,38 @@ class DeleteAccountFirebaseFailure extends AuthenticationFailure {
 //         /// from a firebase authentication exception code.
 //         /// https://pub.dev/documentation/firebase_auth/latest/firebase_auth/FirebaseAuth/createUserWithEmailAndPassword.html
 //         case 'invalid-email':
-//         log.e('Email is not valid or badly formatted.');
+//         log.shout('Email is not valid or badly formatted.');
 //         return const RegisterUserFailure1(
 //           'invalid-email',
 //           'Email is not valid or badly formatted.',
 //         );
 //         case 'user-disabled':
-//         log.e('This user has been disabled. Please contact support for help.');
+//         log.shout('This user has been disabled. Please contact support for help.');
 //           return const RegisterUserFailure1(
 //             'user-disabled',
 //             'This user has been disabled. Please contact support for help.',
 //           );
 //         case 'email-already-in-use':
-//         log.e('An account already exists for that email.');
+//         log.shout('An account already exists for that email.');
 //           return const RegisterUserFailure1(
 //             'email-already-in-use',
 //             'An account already exists for that email.',
 //           );
 //         case 'operation-not-allowed':
-//         log.e('Operation is not allowed.  Please contact support.');
+//         log.shout('Operation is not allowed.  Please contact support.');
 //           return const RegisterUserFailure1(
 //             'operation-not-allowed',
 //             'Operation is not allowed.  Please contact support.',
 //           );
 //         case 'weak-password':
-//         log.e('Please enter a stronger password.');
+//         log.shout('Please enter a stronger password.');
 //           return const RegisterUserFailure1(
 //             'weak-password',
 //             'Please enter a stronger password.',
 //           );
 //         ///----------------------------------------------------------  
 //         default:
-//           log.e(message??'An unknown exception occurred.');
+//           log.shout(message??'An unknown exception occurred.');
 //           return RegisterUserFailure1(
 //             'general-error',
 //             message??'An unknown exception occurred.'
@@ -515,13 +519,13 @@ class DeleteAccountFirebaseFailure extends AuthenticationFailure {
 //   factory LoginUserFailure.fromCode(String code,{String? message}) {
 //     switch (code) {
 //       case 'no-credentials':
-//         log.e('you are not logged in , log in first!');
+//         log.shout('you are not logged in , log in first!');
 //         return const LoginUserFailure(
 //           'no-credentials',
 //           'you are not logged in , log in first!',
 //         );
 //       case 'not-registeredDb':
-//         log.e('you are not logged in , please register first!');
+//         log.shout('you are not logged in , please register first!');
 //         return const LoginUserFailure(
 //           'not-registeredDb',
 //           'you are not logged in , please register first!',
@@ -529,63 +533,63 @@ class DeleteAccountFirebaseFailure extends AuthenticationFailure {
 //       ///---- firebase exceptions-----------
 //       ///Email password login
 //       case 'invalid-email':
-//       log.e('Email is not valid or badly formatted.');
+//       log.shout('Email is not valid or badly formatted.');
 //         return const LoginUserFailure(
 //           'invalid-email',
 //           'Email is not valid or badly formatted.',
 //         );
 //       case 'user-disabled':
-//       log.e('This user has been disabled. Please contact support for help.');
+//       log.shout('This user has been disabled. Please contact support for help.');
 //         return const LoginUserFailure(
 //           'user-disabled',
 //           'This user has been disabled. Please contact support for help.',
 //         );
 //       case 'user-not-found':
-//       log.e('Email is not found, please create an account.');
+//       log.shout('Email is not found, please create an account.');
 //         return const LoginUserFailure(
 //           'user-not-found',
 //           'Email is not found, please create an account.',
 //         );
 //       case 'wrong-password':
-//       log.e('Incorrect password, please try again.');
+//       log.shout('Incorrect password, please try again.');
 //         return const LoginUserFailure(
 //           'wrong-password',
 //           'Incorrect password, please try again.',
 //         );
 //       ///Google login
 //       case 'account-exists-with-different-credential':
-//       log.e('Account exists with different credentials.');
+//       log.shout('Account exists with different credentials.');
 //         return const LoginUserFailure(
 //           'account-exists-with-different-credential',
 //           'Account exists with different credentials.',
 //         );
 //       case 'invalid-credential':
-//       log.e('The credential received is malformed or has expired.');
+//       log.shout('The credential received is malformed or has expired.');
 //         return const LoginUserFailure(
 //           'invalid-credential',
 //           'The credential received is malformed or has expired.',
 //         );
 //       case 'operation-not-allowed':
-//       log.e('Operation is not allowed.  Please contact support.');
+//       log.shout('Operation is not allowed.  Please contact support.');
 //         return const LoginUserFailure(
 //           'operation-not-allowed',
 //           'Operation is not allowed.  Please contact support.',
 //         );
 //       case 'invalid-verification-code':
-//       log.e('The credential verification code received is invalid.');
+//       log.shout('The credential verification code received is invalid.');
 //         return const LoginUserFailure(
 //           'invalid-verification-code',
 //           'The credential verification code received is invalid.',
 //         );
 //       case 'invalid-verification-id':
-//       log.e('The credential verification ID received is invalid.');
+//       log.shout('The credential verification ID received is invalid.');
 //         return const LoginUserFailure(
 //           'invalid-verification-id',
 //           'The credential verification ID received is invalid.',
 //         );
 //       ///  ------------------------------------------------------
 //       default:
-//         log.e(message??'An unknown exception occurred.');
+//         log.shout(message??'An unknown exception occurred.');
 //         return LoginUserFailure(
 //           'general-error',
 //           message??'An unknown exception occurred.'
@@ -605,55 +609,55 @@ class DeleteAccountFirebaseFailure extends AuthenticationFailure {
 //   factory JoinOrganizationFailure.fromCode(String code,{String? message}) {
 //     switch (code) {
 //       case 'no-credentials':
-//         log.e('you are not logged in , log in first!');
+//         log.shout('you are not logged in , log in first!');
 //         return const JoinOrganizationFailure(
 //           'no-credentials',
 //           'you are not logged in , log in first!',
 //         );
 //       case 'email-not-match':
-//         log.e('Email does not match invitation email!');
+//         log.shout('Email does not match invitation email!');
 //         return const JoinOrganizationFailure(
 //           'email-not-match',
 //           'Email does not match invitation email!',
 //         );
 //       case 'email-not-found':
-//         log.e('Email address cannot be found!');
+//         log.shout('Email address cannot be found!');
 //         return const JoinOrganizationFailure(
 //           'email-not-found',
 //           'Email address cannot be found!',
 //         );
 //       case 'invitation-code':
-//         log.e('Invitaion code error!');
+//         log.shout('Invitaion code error!');
 //         return const JoinOrganizationFailure(
 //           'invitation-code',
 //           'Invitaion code error!',
 //         );
 //       case 'invitation-data':
-//         log.e('Invitaion data error!');
+//         log.shout('Invitaion data error!');
 //         return const JoinOrganizationFailure(
 //           'invitation-data',
 //           'Invitaion data error!',
 //         );
 //       case 'invitation-expired':
-//         log.e('Invitaion expired!');
+//         log.shout('Invitaion expired!');
 //         return const JoinOrganizationFailure(
 //           'invitation-expired',
 //           'Invitaion expired!',
 //         );
 //       case 'organization-not-found':
-//         log.e('Invitation organization not found!');
+//         log.shout('Invitation organization not found!');
 //         return const JoinOrganizationFailure(
 //           'organization-not-found',
 //           'Invitation organization not found!',
 //         );
 //       case 'user-creation-failed':
-//         log.e('Could not join user to organization!');
+//         log.shout('Could not join user to organization!');
 //         return const JoinOrganizationFailure(
 //           'user-creation-failed',
 //           'Could not join user to organization!',
 //         );
 //       default:
-//         log.e(message??'An unknown exception occurred.');
+//         log.shout(message??'An unknown exception occurred.');
 //         return JoinOrganizationFailure(
 //           'general-error',
 //           message??'An unknown exception occurred.'
@@ -710,7 +714,7 @@ class DeleteAccountFirebaseFailure extends AuthenticationFailure {
 //   factory DeleteAccountFailure.fromCode(String code,{String? message}) {
 //     switch (code) {
 //       default:
-//         log.e(message??'An unknown exception occurred.');
+//         log.shout(message??'An unknown exception occurred.');
 //         return DeleteAccountFailure(
 //           'general-error',
 //           message??'An unknown exception occurred.'

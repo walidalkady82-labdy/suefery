@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/presentation/settings/profile/profile_cubit.dart';
 
-import '../../../data/enums/form_status.dart';
+import '../../../data/enum/form_status.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

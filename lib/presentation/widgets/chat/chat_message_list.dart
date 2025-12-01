@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:suefery/presentation/widgets/chat/models/chat_item.dart';
 import 'package:suefery/presentation/widgets/chat/models/chat_view_io.dart';
 import 'bubbles/bubbles.dart';
-import 'bubbles/error_bubble.dart';
-import 'bubbles/payment_selection_bubble.dart';
-import 'bubbles/pending_order_bubble.dart';
-import 'bubbles/verification_prompt_bubble.dart';
+
 
 
 class ChatMessageList extends StatelessWidget {
@@ -29,30 +26,24 @@ class ChatMessageList extends StatelessWidget {
       itemCount: chatItems.length,
       itemBuilder: (context, index) {
         final item = chatItems[index];
-        // --- Use a switch expression for type matching ---
         return switch (item) {
           
-          TextChatItem() => TextBubble(item: item),
+          TextChatItem() => BubbleText(item: item),
           
-          RecipeSuggestionItem() => RecipeBubble(item: item),
+          RecipeSuggestionItem() => BubbleRecipe(item: item),
           
-          PromotionItem() => PromotionBubble(item: item),
+          PromotionItem() => BubblePromotion(item: item),
 
-          //OrderSummeryItem() => OrderSummaryBubble(item: item),
+          PendingOrderChatItem() => BubbleOrderPending(item: item),
+          
+          DraftOrderItem() => BubbleDraftOrder(item: item),
 
-          PendingOrderChatItem() => PendingOrderBubble(item: item),
-          
-          AuthChoiceItem() => AuthChoiceBubble(item: item),
-          
-          ErrorItem() => ErrorBubble(item: item),
-          
-          VerificationPromptItem() => VerificationPromptBubble(item: item),  
+          PaymentSelectionItem() => BubblePaymentSelection(item: item),
 
-          PaymentSelectionItem() => PaymentSelectionBubble(item: item),
-
-          LoadingChatItem() => const LoadingBubble(),
+          LoadingChatItem() => const BubbleLoading(),
           
-          // Fallback for any unhandled types
+          ErrorItem() => BubbleError(item: item),
+          
           _ => const SizedBox.shrink(),
         };
       },

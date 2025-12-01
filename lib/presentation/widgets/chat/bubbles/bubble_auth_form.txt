@@ -1,0 +1,143 @@
+import 'package:flutter/material.dart';
+import 'package:suefery/core/l10n/l10n_extension.dart';
+
+import '../../../../data/enum/auth_form_type.dart';
+
+class BubbleAuthForm extends StatefulWidget {
+  const BubbleAuthForm({
+    super.key,
+    required this.formType,
+     this.onSignIn,
+     this.onRegister,
+    
+    // --- NEW: All UI strings are now parameters ---
+    required this.title,
+    required this.emailHint,
+    required this.passwordHint,
+    this.confirmPasswordHint, // Nullable, only for register
+    required this.buttonText,
+    this.switchFormText,
+  });
+
+  final AuthFormType formType;
+  final Future<bool> Function(String email, String password)? onSignIn;
+  final Future<bool> Function(String email, String password)? onRegister;
+
+  // --- NEW: String fields ---
+  final String title;
+  final String emailHint;
+  final String passwordHint;
+  final String? confirmPasswordHint;
+  final String buttonText;
+  final String? switchFormText;
+
+  @override
+  State<BubbleAuthForm> createState() => _BubbleAuthFormState();
+}
+
+class _BubbleAuthFormState extends State<BubbleAuthForm>  {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      return; 
+    }
+    setState(() => _isLoading = true);
+    
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    bool success = false;
+
+    try {
+      if (widget.formType == AuthFormType.signIn) {
+        success = await widget.onSignIn!(email, password);
+      } else {
+        success = await widget.onRegister!(email, password);
+      }
+      
+      if (!success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('${widget.formType.name} failed. Check credentials.'))
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('Network Error: Please try again.'))
+         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = context.l10n; 
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Text(widget.title, style: Theme.of(context).textTheme.titleLarge), // <-- Use param
+              const SizedBox(height: 16),
+              
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: widget.emailHint), // <-- Use param
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) => validateEmail(strings,value),
+              ),
+
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: widget.passwordHint), // <-- Use param
+                obscureText: true,
+                validator: (value) => validatePassword(value, strings),
+              ),
+              
+              if (widget.formType == AuthFormType.register)
+                TextFormField(
+                  decoration: InputDecoration(labelText: widget.confirmPasswordHint), // <-- Use param
+                  obscureText: true,
+                  validator: (value) => validateConfirmPassword(value, _passwordController.text, strings),
+                ),
+              
+              const SizedBox(height: 20),
+
+              if (_isLoading)
+                const CircularProgressIndicator()
+              else
+                ElevatedButton(
+                  onPressed: _submit,
+                  child: Text(widget.buttonText), // <-- Use param
+                ),
+              
+              if (widget.switchFormText != null)
+                 TextButton(
+                  onPressed: () { /* This is handled by ChatView's logic */ }, 
+                  child: Text(widget.switchFormText!), // <-- Use param
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

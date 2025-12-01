@@ -14,16 +14,8 @@ class ChatInputBarInput {
     this.isLoading = false,
     this.isTyping = false,
     this.hintText = 'Type a message...',
-    this.isDisabled = false, // This can still be used if needed, but not by default
+    this.isDisabled = false, 
   });
-
-  // --- REMOVED: The .disabled() factory is no longer the default for anon users ---
-  // factory ChatInputBarInput.disabled() {
-  //   return const ChatInputBarInput(
-  //     hintText: 'Sign in to chat',
-  //     isDisabled: true,
-  //   );
-  // }
 }
 
 /// This class sends events *out of* the ChatInputBar
