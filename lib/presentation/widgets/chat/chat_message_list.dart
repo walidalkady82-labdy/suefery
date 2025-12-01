@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:suefery/core/widgets/chat/models/chat_item.dart';
-import 'package:suefery/core/widgets/chat/models/chat_view_io.dart';
+import 'package:suefery/presentation/widgets/chat/models/chat_item.dart';
+import 'package:suefery/presentation/widgets/chat/models/chat_view_io.dart';
 import 'bubbles/bubbles.dart';
 import 'bubbles/error_bubble.dart';
 import 'bubbles/payment_selection_bubble.dart';

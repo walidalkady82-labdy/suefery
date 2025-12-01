@@ -67,4 +67,6 @@ class ChatService {
     _log.i('Processing user message...');
     return await _firebaseAiService.getStructuredResponse(chatHistory);
   }
+
+  
 }

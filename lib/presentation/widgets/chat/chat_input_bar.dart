@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:suefery/core/widgets/chat/models/chat_input_bar_io.dart';
+import 'package:suefery/presentation/widgets/chat/models/chat_input_bar_io.dart';
 import 'package:suefery/data/services/brand_service.dart';
 import 'package:suefery/locator.dart';
 import 'package:suefery/data/models/suggestion_model.dart'; // Import new model

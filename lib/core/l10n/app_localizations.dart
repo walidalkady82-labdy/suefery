@@ -67,8 +67,8 @@ abstract class AppLocalizations {
 
   final String localeName;
 
-  static AppLocalizations? of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
   static const LocalizationsDelegate<AppLocalizations> delegate =
@@ -98,329 +98,17 @@ abstract class AppLocalizations {
     Locale('en'),
   ];
 
+  /// No description provided for @sectionA.
+  ///
+  /// In en, this message translates to:
+  /// **'___TITLES_AND_HEADINGS___'**
+  String get sectionA;
+
   /// The main title for the application.
   ///
   /// In en, this message translates to:
   /// **'SUEFERY Multi-Role App'**
   String get appTitle;
-
-  /// The title for the Customer-facing application or section.
-  ///
-  /// In en, this message translates to:
-  /// **'SUEFERY Customer App'**
-  String get customerTitle;
-
-  /// The title for the Rider-facing application or section.
-  ///
-  /// In en, this message translates to:
-  /// **'SUEFERY Rider App (Logistics Moat)'**
-  String get riderTitle;
-
-  /// The title for the Partner-facing application or section.
-  ///
-  /// In en, this message translates to:
-  /// **'SUEFERY Partner App'**
-  String get partnerTitle;
-
-  /// A greeting for the Customer.
-  ///
-  /// In en, this message translates to:
-  /// **'Welcome Customer! Start your Conversational Order (S1)'**
-  String get welcomeCustomer;
-
-  /// A greeting for the Rider.
-  ///
-  /// In en, this message translates to:
-  /// **'Rider Dashboard'**
-  String get welcomeRider;
-
-  /// A greeting for the Partner.
-  ///
-  /// In en, this message translates to:
-  /// **'Partner Dashboard'**
-  String get welcomePartner;
-
-  /// Label for a button/option to switch view to the Rider interface.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch to Rider View'**
-  String get switchRider;
-
-  /// Label for a button/option to switch view to the Customer interface.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch to Customer View'**
-  String get switchCustomer;
-
-  /// Label for a button/option to switch view to the Partner interface.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch to Partner View'**
-  String get switchPartner;
-
-  /// Label for a language selection option, specifically mentioning Arabic.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch Language (العربية)'**
-  String get languageSwitch;
-
-  /// The call-to-action or prompt displayed on the login screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Please Log In'**
-  String get logInPrompt;
-
-  /// scueferey screen title
-  ///
-  /// In en, this message translates to:
-  /// **'SUEFERY LOGIN'**
-  String get logInScreenTitle;
-
-  /// The text for the login button
-  ///
-  /// In en, this message translates to:
-  /// **'\'Log in'**
-  String get loginButton;
-
-  /// The text for the login message text
-  ///
-  /// In en, this message translates to:
-  /// **'\'Already have an account?Log in'**
-  String get loginTextButton;
-
-  /// The text for the logout text
-  ///
-  /// In en, this message translates to:
-  /// **'Log out'**
-  String get logoutTextButton;
-
-  /// The text for the standard sign-up button.
-  ///
-  /// In en, this message translates to:
-  /// **'sign up'**
-  String get signUpButton;
-
-  /// Label for the Google Sign-In option.
-  ///
-  /// In en, this message translates to:
-  /// **'google SignIn'**
-  String get googleSignin;
-
-  /// Label/link for navigating to the Sign Up screen.
-  ///
-  /// In en, this message translates to:
-  /// **'To Signup'**
-  String get toSignup;
-
-  /// Placeholder text for the email input field.
-  ///
-  /// In en, this message translates to:
-  /// **'Email'**
-  String get emailHint;
-
-  /// Placeholder text for the password input field.
-  ///
-  /// In en, this message translates to:
-  /// **'Password'**
-  String get passwordHint;
-
-  /// Placeholder text for the password confirmation input field.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm Password'**
-  String get confirmPasswordHint;
-
-  /// Title for the Order History screen or section.
-  ///
-  /// In en, this message translates to:
-  /// **'Order History'**
-  String get historyTitle;
-
-  /// Text for the button to navigate to the order history.
-  ///
-  /// In en, this message translates to:
-  /// **'View Order History'**
-  String get buttonHistory;
-
-  /// Label/text for viewing the detailed order history.
-  ///
-  /// In en, this message translates to:
-  /// **'Order ID'**
-  String get orderId;
-
-  /// Label for the unique identifier of an order.
-  ///
-  /// In en, this message translates to:
-  /// **'Total'**
-  String get orderTotal;
-
-  /// Label for the current state of an order.
-  ///
-  /// In en, this message translates to:
-  /// **'Status'**
-  String get orderStatus;
-
-  /// Label for a brief overview of an order.
-  ///
-  /// In en, this message translates to:
-  /// **'Summary'**
-  String get orderSummary;
-
-  /// The specific status text indicating an order has been completed.
-  ///
-  /// In en, this message translates to:
-  /// **'Delivered'**
-  String get statusDelivered;
-
-  /// Message displayed while the application is fetching past orders.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading Order History...'**
-  String get loadingHistory;
-
-  /// Message displayed when the user has no previous orders.
-  ///
-  /// In en, this message translates to:
-  /// **'No past orders found.'**
-  String get noHistory;
-
-  /// Error message when the email field is left empty.
-  ///
-  /// In en, this message translates to:
-  /// **'Email is required'**
-  String get emailRequiredErrorMessage;
-
-  /// Error message when the entered email format is incorrect.
-  ///
-  /// In en, this message translates to:
-  /// **'Email is Invalid'**
-  String get emailInvalidErrorMessage;
-
-  /// Error message when the password field is left empty.
-  ///
-  /// In en, this message translates to:
-  /// **'Password is required'**
-  String get passwordRequiredErrorMessage;
-
-  /// Orders tab using Gemini
-  ///
-  /// In en, this message translates to:
-  /// **'AI Orders'**
-  String get tabAIOrder;
-
-  /// Browse stores
-  ///
-  /// In en, this message translates to:
-  /// **'Browse Stores'**
-  String get tabBrowse;
-
-  /// Browse partners stores
-  ///
-  /// In en, this message translates to:
-  /// **'Partner Stores'**
-  String get partnerStore;
-
-  ///
-  ///
-  /// In en, this message translates to:
-  /// **'Total'**
-  String get total;
-
-  /// Fastest Delivery Zone
-  ///
-  /// In en, this message translates to:
-  /// **'Fastest Delivery Zone'**
-  String get fastestDeliveryZone;
-
-  /// A message to the user to ask him to verif the email
-  ///
-  /// In en, this message translates to:
-  /// **'Email is not verified'**
-  String get verificationNeeded;
-
-  /// Check email verification status button
-  ///
-  /// In en, this message translates to:
-  /// **'Check Status'**
-  String get checkStatusButton;
-
-  /// Application welcome message
-  ///
-  /// In en, this message translates to:
-  /// **'Welcome!'**
-  String get welcomeMessage;
-
-  /// suggest recipe button text
-  ///
-  /// In en, this message translates to:
-  /// **'Suggest Recipe'**
-  String get suggestionButton;
-
-  /// Name of the recipe
-  ///
-  /// In en, this message translates to:
-  /// **'Recipe Name'**
-  String get recipeName;
-
-  /// Order history title
-  ///
-  /// In en, this message translates to:
-  /// **'Order history'**
-  String get orderHistoryTitle;
-
-  /// No orders available message
-  ///
-  /// In en, this message translates to:
-  /// **'No Orders'**
-  String get noOrders;
-
-  /// settings Title
-  ///
-  /// In en, this message translates to:
-  /// **'Settings'**
-  String get settingsTitle;
-
-  /// Chnage language button string
-  ///
-  /// In en, this message translates to:
-  /// **'change Language'**
-  String get changeLanguage;
-
-  /// Select language
-  ///
-  /// In en, this message translates to:
-  /// **'Select Language'**
-  String get selectLanguage;
-
-  /// Current Selected language
-  ///
-  /// In en, this message translates to:
-  /// **'Current Language is: {currentLanguage}'**
-  String currentLanguage(String currentLanguage);
-
-  /// Set dark mode
-  ///
-  /// In en, this message translates to:
-  /// **'Set dark mode'**
-  String get darkMode;
-
-  /// profile screen title
-  ///
-  /// In en, this message translates to:
-  /// **'Profile'**
-  String get profileTitle;
-
-  /// pending Orders button text
-  ///
-  /// In en, this message translates to:
-  /// **'Pending Orders'**
-  String get pendingOrdersTextButton;
-
-  /// Orders text button
-  ///
-  /// In en, this message translates to:
-  /// **'Orders'**
-  String get orderTextButton;
 
   /// Main title in the AppBar
   ///
@@ -428,143 +116,587 @@ abstract class AppLocalizations {
   /// **'Gemini Chef'**
   String get appBarTitle;
 
-  /// The first message in the anonymous welcome flow
+  /// Login screen header
   ///
   /// In en, this message translates to:
-  /// **'👋 Welcome to Chef AI!'**
-  String get welcomeTitle;
+  /// **'SUEFERY LOGIN'**
+  String get logInScreenTitle;
 
-  /// The title for the Lottie presentation bubble
-  ///
-  /// In en, this message translates to:
-  /// **'Here\'s a quick look at what I can do:'**
-  String get welcomeLottieTitle;
-
-  /// The final prompt in the anonymous flow asking the user to sign up
-  ///
-  /// In en, this message translates to:
-  /// **'Ready to order? To save your history and place orders, please sign in or register below.'**
-  String get welcomeFirstTimePrompt;
-
-  /// The message shown to a returning anonymous user
-  ///
-  /// In en, this message translates to:
-  /// **'Welcome back! Please sign in or register to continue your session.'**
-  String get welcomeReturningPrompt;
-
-  /// Error message if the Lottie file fails to load
-  ///
-  /// In en, this message translates to:
-  /// **'Could not load animation: {error}'**
-  String animationError(String error);
-
-  /// The title for the Sign In form bubble
+  /// Title for Sign In form bubble
   ///
   /// In en, this message translates to:
   /// **'Sign In'**
   String get signInTitle;
 
-  /// The title for the Register form bubble
+  /// Title for Register form bubble
   ///
   /// In en, this message translates to:
   /// **'Register'**
   String get registerTitle;
 
-  /// Title for the email verification screen
+  /// Profile screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileTitle;
+
+  /// Settings screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// Title for Order History screen
+  ///
+  /// In en, this message translates to:
+  /// **'Order History'**
+  String get historyTitle;
+
+  /// Title for email verification screen
   ///
   /// In en, this message translates to:
   /// **'Verify Your Email'**
   String get verifyEmailTitle;
 
-  /// Body text for the email verification screen
+  /// First message in anonymous welcome flow
   ///
   /// In en, this message translates to:
-  /// **'We\'ve sent a verification link to your email. Please check your inbox (and spam folder) to continue.'**
-  String get verifyEmailBody;
+  /// **'👋 Welcome to SUEFEREY!'**
+  String get welcomeTitle;
 
-  /// Button text to resend the verification email
+  /// Title for Lottie presentation
   ///
   /// In en, this message translates to:
-  /// **'Resend Verification Email'**
-  String get verifyEmailResendButton;
+  /// **'Here\'s a quick look at what I can do:'**
+  String get welcomeLottieTitle;
 
-  /// Button text to go back to the login flow
-  ///
-  /// In en, this message translates to:
-  /// **'Back to Login'**
-  String get verifyEmailBackButton;
-
-  /// Fallback title for a recipe bubble
+  /// Fallback title for recipe bubble
   ///
   /// In en, this message translates to:
   /// **'Recipe'**
   String get recipeTitleFallback;
 
-  /// Fallback text when a recipe has no ingredients
+  /// T&C Header
   ///
   /// In en, this message translates to:
-  /// **'No ingredients listed.'**
-  String get recipeNoIngredients;
+  /// **'Terms and Conditions'**
+  String get pendingOrderTermsTitle;
 
-  /// Error message for an unhandled auth state
+  /// Header for language selection
   ///
   /// In en, this message translates to:
-  /// **'Unknown Authentication State.'**
-  String get unknownAuthState;
+  /// **'Select Language'**
+  String get selectLanguage;
 
-  /// Tooltip for the main menu icon button
+  /// No description provided for @sectionB.
   ///
   /// In en, this message translates to:
-  /// **'Menu'**
-  String get menuTooltip;
+  /// **'___LABELS_AND_GENERAL_TEXTS___'**
+  String get sectionB;
 
-  /// Default hint text for the chat input bar when authenticated
+  /// Title for Customer section
   ///
   /// In en, this message translates to:
-  /// **'Type a message...'**
-  String get chatHint;
+  /// **'SUEFERY Customer App'**
+  String get customerTitle;
 
-  /// Hint text when asking the user to choose between sign in or register
+  /// Title for Rider section
   ///
   /// In en, this message translates to:
-  /// **'Type \'Sign In\' or \'Register\''**
-  String get authHintChoice;
+  /// **'SUEFERY Rider App (Logistics Moat)'**
+  String get riderTitle;
 
-  /// Hint text when asking the user for their email
+  /// Title for Partner section
   ///
   /// In en, this message translates to:
-  /// **'Enter your email...'**
-  String get authHintEmail;
+  /// **'SUEFERY Partner App'**
+  String get partnerTitle;
 
-  /// Hint text when asking the user for their password
+  /// Simple welcome
   ///
   /// In en, this message translates to:
-  /// **'Enter your password...'**
-  String get authHintPassword;
+  /// **'Welcome!'**
+  String get welcomeMessage;
 
-  /// Hint text when asking the user to confirm their password
+  /// Greeting for the Customer
   ///
   /// In en, this message translates to:
-  /// **'Confirm your password...'**
-  String get authHintConfirmPassword;
+  /// **'Welcome Customer! Start your Conversational Order (S1)'**
+  String get welcomeCustomer;
 
-  /// No description provided for @cancelOrder.
+  /// Greeting for the Rider
   ///
   /// In en, this message translates to:
-  /// **'cancel this order'**
+  /// **'Rider Dashboard'**
+  String get welcomeRider;
+
+  /// Greeting for the Partner
+  ///
+  /// In en, this message translates to:
+  /// **'Partner Dashboard'**
+  String get welcomePartner;
+
+  /// Prompt displayed on login screen
+  ///
+  /// In en, this message translates to:
+  /// **'Please Log In'**
+  String get logInPrompt;
+
+  /// Displays current selected language
+  ///
+  /// In en, this message translates to:
+  /// **'Current Language is: {currentLanguage}'**
+  String currentLanguage(String currentLanguage);
+
+  /// Order confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Order Confirmed: #{orderNumber}'**
+  String orderConfirmedTitle(String orderNumber);
+
+  /// Displays item quantity
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity: #{quantity}'**
+  String quantityLabel(int quantity);
+
+  /// Label for recipe name
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe Name'**
+  String get recipeName;
+
+  /// General help prompt
+  ///
+  /// In en, this message translates to:
+  /// **'Need help?'**
+  String get promptHelp;
+
+  /// T&C Body text
+  ///
+  /// In en, this message translates to:
+  /// **'1. All sales are final.\n 2. Delivery times are estimates.\n 3. Prices are subject to change without notice.\n'**
+  String get pendingOrderTermsBody;
+
+  /// Body text for email verification
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent a verification link to your email. Please check your inbox (and spam folder) to continue.'**
+  String get verifyEmailBody;
+
+  /// No description provided for @sectionC.
+  ///
+  /// In en, this message translates to:
+  /// **'___BUTTONS_AND_ACTIONS___'**
+  String get sectionC;
+
+  /// Login button text
+  ///
+  /// In en, this message translates to:
+  /// **'Log in'**
+  String get loginButton;
+
+  /// Standard sign-up button
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up'**
+  String get signUpButton;
+
+  /// Google Sign-In button
+  ///
+  /// In en, this message translates to:
+  /// **'Google SignIn'**
+  String get googleSignin;
+
+  /// Log out button text
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get logoutTextButton;
+
+  /// General Close button
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// General Agree button
+  ///
+  /// In en, this message translates to:
+  /// **'Agree'**
+  String get agree;
+
+  /// General Disagree button
+  ///
+  /// In en, this message translates to:
+  /// **'Disagree'**
+  String get disagree;
+
+  /// Button to switch to Rider interface
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Rider View'**
+  String get switchRider;
+
+  /// Button to switch to Customer interface
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Customer View'**
+  String get switchCustomer;
+
+  /// Button to switch to Partner interface
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Partner View'**
+  String get switchPartner;
+
+  /// Text button to switch to login
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Log in'**
+  String get loginTextButton;
+
+  /// Link to navigate to Sign Up screen
+  ///
+  /// In en, this message translates to:
+  /// **'To Signup'**
+  String get toSignup;
+
+  /// Change language button string
+  ///
+  /// In en, this message translates to:
+  /// **'Change Language'**
+  String get changeLanguage;
+
+  /// Label for language selection option.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch Language (العربية)'**
+  String get languageSwitch;
+
+  /// Button to resend email
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Verification Email'**
+  String get verifyEmailResendButton;
+
+  /// Button to go back to login
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get verifyEmailBackButton;
+
+  /// Check email verification status button
+  ///
+  /// In en, this message translates to:
+  /// **'Check Status'**
+  String get checkStatusButton;
+
+  /// Button to view history
+  ///
+  /// In en, this message translates to:
+  /// **'View Order History'**
+  String get buttonHistory;
+
+  /// Cancel order action
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Order'**
   String get cancelOrder;
 
-  /// No description provided for @confirmAndPay.
+  /// Payment confirmation action
   ///
   /// In en, this message translates to:
   /// **'Confirm and Pay'**
   String get confirmAndPay;
 
-  /// No description provided for @toBeConfirmed.
+  /// Button label for Orders
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get orderTextButton;
+
+  /// Button label for Pending Orders
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Orders'**
+  String get pendingOrdersTextButton;
+
+  /// Button to suggest a recipe
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest Recipe'**
+  String get suggestionButton;
+
+  /// No description provided for @sectionD.
+  ///
+  /// In en, this message translates to:
+  /// **'___LABELS_STATUSES_AND_DATA___'**
+  String get sectionD;
+
+  /// Toggle for dark mode
+  ///
+  /// In en, this message translates to:
+  /// **'Set Dark Mode'**
+  String get darkMode;
+
+  /// Tab for Gemini AI ordering
+  ///
+  /// In en, this message translates to:
+  /// **'AI Orders'**
+  String get tabAIOrder;
+
+  /// Tab for browsing
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Stores'**
+  String get tabBrowse;
+
+  /// Tooltip for menu icon
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get menuTooltip;
+
+  /// Label for order identifier
+  ///
+  /// In en, this message translates to:
+  /// **'Order ID'**
+  String get orderId;
+
+  /// Label for order total
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get orderTotal;
+
+  /// General total label
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get total;
+
+  /// Label for order state
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get orderStatus;
+
+  /// Label for order summary
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get orderSummary;
+
+  /// Status: Delivered
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get statusDelivered;
+
+  /// Status: To be confirmed
   ///
   /// In en, this message translates to:
   /// **'To be Confirmed'**
   String get toBeConfirmed;
+
+  /// Label for fast delivery area
+  ///
+  /// In en, this message translates to:
+  /// **'Fastest Delivery Zone'**
+  String get fastestDeliveryZone;
+
+  /// Label for partner stores
+  ///
+  /// In en, this message translates to:
+  /// **'Partner Stores'**
+  String get partnerStore;
+
+  /// Payment failure message
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed or was cancelled.'**
+  String get paymentFailed;
+
+  /// Payment success message
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Successful'**
+  String get paymentSuccessful;
+
+  /// Payment pending message
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Pending'**
+  String get paymentPending;
+
+  /// Loading state text
+  ///
+  /// In en, this message translates to:
+  /// **'Loading Order History...'**
+  String get loadingHistory;
+
+  /// Empty history state
+  ///
+  /// In en, this message translates to:
+  /// **'No past orders found.'**
+  String get noHistory;
+
+  /// No orders available message
+  ///
+  /// In en, this message translates to:
+  /// **'No Orders'**
+  String get noOrders;
+
+  /// Fallback for empty ingredients
+  ///
+  /// In en, this message translates to:
+  /// **'No ingredients listed.'**
+  String get recipeNoIngredients;
+
+  /// No description provided for @sectionE.
+  ///
+  /// In en, this message translates to:
+  /// **'___HINTS_AND_PROMPTS___'**
+  String get sectionE;
+
+  /// Placeholder for email input
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get emailHint;
+
+  /// Placeholder for password input
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordHint;
+
+  /// Placeholder for password confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPasswordHint;
+
+  /// Default chat input hint
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message...'**
+  String get chatHint;
+
+  /// Prompt for email input
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email'**
+  String get promptEmail;
+
+  /// Prompt for password input
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your password'**
+  String get promptPassword;
+
+  /// Chat hint for password confirm
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your password'**
+  String get promptConfirmPassword;
+
+  /// Chat hint for auth choice
+  ///
+  /// In en, this message translates to:
+  /// **'Type \'Sign In\' or \'Register\''**
+  String get authHintChoice;
+
+  /// Chat hint for email entry
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email'**
+  String get authHintEmail;
+
+  /// Chat hint for password entry
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password'**
+  String get authHintPassword;
+
+  /// Prompt for new anonymous user
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to order? To save your history and place orders, please sign in or register below.'**
+  String get welcomeFirstTimePrompt;
+
+  /// Prompt for returning anonymous user
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back! Please sign in or register to continue your session.'**
+  String get welcomeReturningPrompt;
+
+  /// AI prompt for suggestions
+  ///
+  /// In en, this message translates to:
+  /// **'Would you like to suggest a recipe?'**
+  String get promptSuggestRecipe;
+
+  /// Auth prompt for video posting
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in to post a video'**
+  String get postVideoAuthPrompt;
+
+  /// No description provided for @sectionF.
+  ///
+  /// In en, this message translates to:
+  /// **'___ERRORS_AND_VALIDATION___'**
+  String get sectionF;
+
+  /// Generic error when a field is missing
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is required'**
+  String errorFieldRequired(String field);
+
+  /// Generic error when a field format is wrong
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is Invalid'**
+  String errorFieldInvalid(String field);
+
+  /// Error message for password length
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least {chars} characters long'**
+  String errorPasswordLength(int chars);
+
+  /// Error message for password mismatch
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get errorPasswordMismatch;
+
+  /// User email not verified warning
+  ///
+  /// In en, this message translates to:
+  /// **'Email is not verified'**
+  String get verificationNeeded;
+
+  /// Error for unhandled auth state
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Authentication State.'**
+  String get unknownAuthState;
+
+  /// Lottie loading error
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load animation: {error}'**
+  String animationError(String error);
+
+  /// Error for invalid passwords or token expiration.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorization failed : {errorDetails}'**
+  String errorAuthFailed(String errorDetails, Object currentLanguage);
 }
 
 class _AppLocalizationsDelegate

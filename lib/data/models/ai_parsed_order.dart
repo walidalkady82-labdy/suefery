@@ -24,8 +24,8 @@ class AiParsedOrder {
   String? aiResponseText
   }) {
     return AiParsedOrder(
-      requestedItems: this.requestedItems,
-      aiResponseText: this.aiResponseText,
+      requestedItems: requestedItems ?? this.requestedItems,
+      aiResponseText: aiResponseText ?? this.aiResponseText,
     );
   }
 

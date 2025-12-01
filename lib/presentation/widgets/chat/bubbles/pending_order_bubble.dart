@@ -24,6 +24,7 @@ class PendingOrderBubble extends StatefulWidget {
 
 class _PendingOrderBubbleState extends State<PendingOrderBubble> {
   bool _isConfirming = false;
+  bool _termsAccepted = false;
 
   void _handleConfirm(BuildContext context) async {
     setState(() => _isConfirming = true);
@@ -34,6 +35,25 @@ class _PendingOrderBubbleState extends State<PendingOrderBubble> {
       // in case of a payment failure.
       setState(() => _isConfirming = false);
     }
+  }
+
+  void _showTermsAndConditions(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(context.l10n.pendingOrderTermsTitle),
+          content: SingleChildScrollView(
+            child: Text(context.l10n.pendingOrderTermsBody
+              // Add your full terms and conditions text here in the localization file
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.l10n.close))
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -75,24 +95,51 @@ class _PendingOrderBubbleState extends State<PendingOrderBubble> {
           // Show loading indicator
           const Center(child: CircularProgressIndicator())
         else
-          // Show confirm/cancel buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          // Show T&C and confirm/cancel buttons
+          Column(
             children: [
-              TextButton(
-                onPressed: () => widget.item.onCancel(context),
-                style: TextButton.styleFrom(foregroundColor: bubbleTextColor),
-                child: Text(strings.cancelOrder),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _termsAccepted,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _termsAccepted = value ?? false;
+                      });
+                    },
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => _showTermsAndConditions(context),
+                      child: Text(
+                        strings.agree,
+                        style: TextStyle(decoration: TextDecoration.underline),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              FilledButton(
-                onPressed: () => _handleConfirm(context),
-                // Style button to pop
-                style: FilledButton.styleFrom(
-                  backgroundColor: theme.colorScheme.onSecondary,
-                  foregroundColor: theme.colorScheme.secondary,
-                ),
-                child: Text(strings.cancelOrder.replaceAll('Cancel', 'Confirm')),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => widget.item.onCancel(context),
+                    style: TextButton.styleFrom(foregroundColor: bubbleTextColor),
+                    child: Text(strings.cancelOrder),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: _termsAccepted ? () => _handleConfirm(context) : null,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: theme.colorScheme.onSecondary,
+                      foregroundColor: theme.colorScheme.secondary,
+                    ),
+                    child: Text(strings.confirmAndPay),
+                  ),
+                ],
               ),
             ],
           ),
@@ -108,6 +155,7 @@ class _PendingOrderBubbleState extends State<PendingOrderBubble> {
 
   // Helper to build the list of items with quantity steppers
   List<Widget> _buildItemList(List<AiParsedItem> items, Color iconColor) {
+    final strings = context.l10n;
     return List.generate(items.length, (index) {
       final item = items[index];
       return Padding(
@@ -145,7 +193,7 @@ class _PendingOrderBubbleState extends State<PendingOrderBubble> {
               ),
             if (widget.item.isActioned) // Show final quantity if actioned
               Text(
-                'Qty: ${item.quantity}',
+                strings.quantityLabel(item.quantity.toInt()),
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
           ],

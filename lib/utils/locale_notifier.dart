@@ -7,7 +7,7 @@ import 'package:suefery/locator.dart';
 class LocaleNotifier extends ValueNotifier<Locale> {
   final PrefService _prefService = sl<PrefService>();
 
-  LocaleNotifier(Locale value) : super(value);
+  LocaleNotifier(super.value);
 
   /// Sets a new locale and notifies listeners.
   void setLocale(Locale newLocale) {
@@ -15,4 +15,5 @@ class LocaleNotifier extends ValueNotifier<Locale> {
     value = newLocale;
     _prefService.language;  //('selected_language', newLocale.languageCode)
   }
+  
 }

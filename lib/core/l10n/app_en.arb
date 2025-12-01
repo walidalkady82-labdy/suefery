@@ -1,258 +1,231 @@
 {
   "@@locale": "en",
+
+  "sectionA": "___TITLES_AND_HEADINGS___",
+
   "appTitle": "SUEFERY Multi-Role App",
-  "@appTitle": {"description": "The main title for the application."},
-  
-  "customerTitle": "SUEFERY Customer App",
-  "@customerTitle": {"description": "The title for the Customer-facing application or section."},
-  
-  "riderTitle": "SUEFERY Rider App (Logistics Moat)",
-  "@riderTitle": {"description": "The title for the Rider-facing application or section."},
-  
-  "partnerTitle": "SUEFERY Partner App",
-  "@partnerTitle": {"description": "The title for the Partner-facing application or section."},
-  
-  "welcomeCustomer": "Welcome Customer! Start your Conversational Order (S1)",
-  "@welcomeCustomer": {"description": "A greeting for the Customer."},
-  
-  "welcomeRider": "Rider Dashboard",
-  "@welcomeRider": {"description": "A greeting for the Rider."},
-  
-  "welcomePartner": "Partner Dashboard",
-  "@welcomePartner": {"description": "A greeting for the Partner."},
-  
-  "switchRider": "Switch to Rider View",
-  "@switchRider": {"description": "Label for a button/option to switch view to the Rider interface."},
-  
-  "switchCustomer": "Switch to Customer View",
-  "@switchCustomer": {"description": "Label for a button/option to switch view to the Customer interface."},
-  
-  "switchPartner": "Switch to Partner View",
-  "@switchPartner": {"description": "Label for a button/option to switch view to the Partner interface."},
-  
-  "languageSwitch": "Switch Language (العربية)",
-  "@languageSwitch": {"description": "Label for a language selection option, specifically mentioning Arabic."},
-  
-  "logInPrompt": "Please Log In",
-  "@logInPrompt": {"description": "The call-to-action or prompt displayed on the login screen."},
-  
-  "logInScreenTitle": "SUEFERY LOGIN",
-  "@logInScreenTitle": {"description": "scueferey screen title"},
-
-  "loginButton": "'Log in",
-  "@loginButton": {"description": "The text for the login button"},
-
-  "loginTextButton": "'Already have an account?Log in",
-  "@loginTextButton": {"description": "The text for the login message text"},
-  
-  "logoutTextButton": "Log out",
-  "@logoutTextButton": {"description": "The text for the logout text"},
-
-  "signUpButton": "sign up",
-  "@signUpButton": {"description": "The text for the standard sign-up button."},
-  
-  "googleSignin": "google SignIn",
-  "@googleSignin": {"description": "Label for the Google Sign-In option."},
-  
-  "toSignup": "To Signup",
-  "@toSignup": {"description": "Label/link for navigating to the Sign Up screen."},
-  
-  "emailHint": "Email",
-  "@emailHint": {"description": "Placeholder text for the email input field."},
-  
-  "passwordHint": "Password",
-  "@passwordHint": {"description": "Placeholder text for the password input field."},
-  
-  "confirmPasswordHint": "Confirm Password",
-  "@confirmPasswordHint": {"description": "Placeholder text for the password confirmation input field."},
-  
-  "historyTitle": "Order History",
-  "@historyTitle": {"description": "Title for the Order History screen or section."},
-  
-  "buttonHistory": "View Order History",
-  "@buttonHistory": {"description": "Text for the button to navigate to the order history."},
-  
-  "orderId": "Order ID",
-  "@orderId": {"description": "Label/text for viewing the detailed order history."},
-  
-  "orderTotal": "Total",
-  "@orderTotal": {"description": "Label for the unique identifier of an order."},
-  
-  "orderStatus": "Status",
-  "@orderStatus": {"description": "Label for the current state of an order."},
-  
-  "orderSummary": "Summary",
-  "@orderSummary": {"description": "Label for a brief overview of an order."},
-  
-  "statusDelivered": "Delivered",
-  "@statusDelivered": {"description": "The specific status text indicating an order has been completed."},
-  
-  "loadingHistory": "Loading Order History...",
-  "@loadingHistory": {"description": "Message displayed while the application is fetching past orders."},
-  
-  "noHistory": "No past orders found.",
-  "@noHistory": {"description": "Message displayed when the user has no previous orders."},
-  
-  "emailRequiredErrorMessage": "Email is required",
-  "@emailRequiredErrorMessage": {"description": "Error message when the email field is left empty."},
-  
-  
-"emailInvalidErrorMessage": "Email is Invalid",
-  "@emailInvalidErrorMessage": {"description": "Error message when the entered email format is incorrect."},
-  
-  "passwordRequiredErrorMessage": "Password is required",
-  "@passwordRequiredErrorMessage": {"description": "Error message when the password field is left empty."},
-
-  "tabAIOrder": "AI Orders",
-  "@tabAIOrder": {"description": "Orders tab using Gemini"},
- 
-  "tabBrowse": "Browse Stores",
-  "@tabBrowse": {"description": "Browse stores"},
-
-  "partnerStore": "Partner Stores",
-  "@partnerStore": {"description": "Browse partners stores"},
-
-  "total": "Total",
-  "@total": {"description": ""},
-
-  "fastestDeliveryZone": "Fastest Delivery Zone",
-  "@fastestDeliveryZone": {"description": "Fastest Delivery Zone"},
-
-  "verificationNeeded": "Email is not verified",
-  "@verificationNeeded": {"description": "A message to the user to ask him to verif the email"},
-
-  "checkStatusButton": "Check Status",
-  "@checkStatusButton": {"description": "Check email verification status button"},
-
-  "welcomeMessage": "Welcome!",
-  "@welcomeMessage": {"description": "Application welcome message"},
-
-  "suggestionButton": "Suggest Recipe",
-  "@suggestionButton": {"description": "suggest recipe button text"},
-
-  "recipeName": "Recipe Name",
-  "@recipeName": {"description": "Name of the recipe"},
-
-  "orderHistoryTitle": "Order history",
-  "@orderHistoryTitle": {"description": "Order history title"},
-
-  "noOrders": "No Orders",
-  "@noOrders": {"description": "No orders available message"},
-
-  "settingsTitle": "Settings",
-  "@settingsTitle": {"description": "settings Title"},
-
-  "changeLanguage": "change Language",
-  "@changeLanguage": {"description": "Chnage language button string"},
-
-  "selectLanguage": "Select Language",
-  "@selectLanguage": {"description": "Select language "},
-
-  "currentLanguage": 
-"Current Language is: {currentLanguage}",
-  "@currentLanguage": {
-    "description": "Current Selected language" , 
-    "placeholders": {
-    "currentLanguage": {
-      "type": "String",
-      "example": "en"
-    }
-  }},
-
-  "darkMode": "Set dark mode",
-  "@darkMode": {"description": "Set dark mode"},
-
-  "profileTitle": "Profile",
-  "@profileTitle": {"description": "profile screen title"},
-
-  "pendingOrdersTextButton": "Pending Orders",
-  "@pendingOrdersTextButton": {"description": "pending Orders button text"}, 
-  
-  "orderTextButton": "Orders",
-  "@orderTextButton": {"description": "Orders text button"},
-
+  "@appTitle": { "description": "The main title for the application." },
   "appBarTitle": "Gemini Chef",
-  "@appBarTitle": {"description": "Main title in the AppBar"},
-
-  "welcomeTitle": "👋 Welcome to Chef AI!",
-  "@welcomeTitle": {"description": "The first message in the anonymous welcome flow"},
-
+  "@appBarTitle": { "description": "Main title in the AppBar" },
+  "logInScreenTitle": "SUEFERY LOGIN",
+  "@logInScreenTitle": { "description": "Login screen header" },
+  "signInTitle": "Sign In",
+  "@signInTitle": { "description": "Title for Sign In form bubble" },
+  "registerTitle": "Register",
+  "@registerTitle": { "description": "Title for Register form bubble" },
+  "profileTitle": "Profile",
+  "@profileTitle": { "description": "Profile screen title" },
+  "settingsTitle": "Settings",
+  "@settingsTitle": { "description": "Settings screen title" },
+  "historyTitle": "Order History",
+  "@historyTitle": { "description": "Title for Order History screen" },
+  "verifyEmailTitle": "Verify Your Email",
+  "@verifyEmailTitle": { "description": "Title for email verification screen" },
+  "welcomeTitle": "👋 Welcome to SUEFEREY!",
+  "@welcomeTitle": { "description": "First message in anonymous welcome flow" },
   "welcomeLottieTitle": "Here's a quick look at what I can do:",
-  "@welcomeLottieTitle": {"description": "The title for the Lottie presentation bubble"},
+  "@welcomeLottieTitle": { "description": "Title for Lottie presentation"  },
+  "recipeTitleFallback": "Recipe",
+  "@recipeTitleFallback": { "description": "Fallback title for recipe bubble" },
+  "pendingOrderTermsTitle": "Terms and Conditions",
+  "@pendingOrderTermsTitle": { "description": "T&C Header" },
+  "selectLanguage": "Select Language",
+  "@selectLanguage": { "description": "Header for language selection" },
 
+  "sectionB": "___LABELS_AND_GENERAL_TEXTS___",
+
+  "customerTitle": "SUEFERY Customer App",
+  "@customerTitle": { "description": "Title for Customer section" },
+  "riderTitle": "SUEFERY Rider App (Logistics Moat)",
+  "@riderTitle": { "description": "Title for Rider section" },
+  "partnerTitle": "SUEFERY Partner App",
+  "@partnerTitle": { "description": "Title for Partner section" },
+  "welcomeMessage": "Welcome!",
+  "@welcomeMessage": { "description": "Simple welcome" },
+  "welcomeCustomer": "Welcome Customer! Start your Conversational Order (S1)",
+  "@welcomeCustomer": { "description": "Greeting for the Customer" },
+  "welcomeRider": "Rider Dashboard",
+  "@welcomeRider": { "description": "Greeting for the Rider" },
+  "welcomePartner": "Partner Dashboard",
+  "@welcomePartner": { "description": "Greeting for the Partner" },
+  "logInPrompt": "Please Log In",
+  "@logInPrompt": { "description": "Prompt displayed on login screen" },
+  "currentLanguage": "Current Language is: {currentLanguage}",
+  "@currentLanguage": {
+    "description": "Displays current selected language",
+    "placeholders": { "currentLanguage": { "type": "String", "example": "en" } }
+  },
+  "orderConfirmedTitle": "Order Confirmed: #{orderNumber}",
+  "@orderConfirmedTitle": {
+    "description": "Order confirmation title",
+    "placeholders": { "orderNumber": { "type": "String", "example": "10" } }
+  },
+  "quantityLabel": "Quantity: #{quantity}",
+  "@quantityLabel": {
+    "description": "Displays item quantity",
+    "placeholders": { "quantity": { "type": "int", "example": "10" } }
+  },
+  "recipeName": "Recipe Name",
+  "@recipeName": { "description": "Label for recipe name" },
+  "promptHelp": "Need help?",
+  "@promptHelp": { "description": "General help prompt" },
+  "pendingOrderTermsBody": "1. All sales are final.\n 2. Delivery times are estimates.\n 3. Prices are subject to change without notice.\n",
+  "@pendingOrderTermsBody": { "description": "T&C Body text" },
+  "verifyEmailBody": "We've sent a verification link to your email. Please check your inbox (and spam folder) to continue.",
+  "@verifyEmailBody": { "description": "Body text for email verification"  },
+
+  "sectionC": "___BUTTONS_AND_ACTIONS___",
+
+  "loginButton": "Log in",
+  "@loginButton": { "description": "Login button text" },
+  "signUpButton": "Sign up",
+  "@signUpButton": { "description": "Standard sign-up button" },
+  "googleSignin": "Google SignIn",
+  "@googleSignin": { "description": "Google Sign-In button" },
+  "logoutTextButton": "Log out",
+  "@logoutTextButton": { "description": "Log out button text" },
+  "close": "Close",
+  "@close": { "description": "General Close button" },
+  "agree": "Agree",
+  "@agree": { "description": "General Agree button" },
+  "disagree": "Disagree",
+  "@disagree": { "description": "General Disagree button" },
+  "switchRider": "Switch to Rider View",
+  "@switchRider": { "description": "Button to switch to Rider interface" },
+  "switchCustomer": "Switch to Customer View",
+  "@switchCustomer": { "description": "Button to switch to Customer interface" },
+  "switchPartner": "Switch to Partner View",
+  "@switchPartner": { "description": "Button to switch to Partner interface" },
+  "loginTextButton": "Already have an account? Log in",
+  "@loginTextButton": { "description": "Text button to switch to login" },
+  "toSignup": "To Signup",
+  "@toSignup": { "description": "Link to navigate to Sign Up screen" },
+  "changeLanguage": "Change Language",
+  "@changeLanguage": { "description": "Change language button string" },
+  "languageSwitch": "Switch Language (العربية)",
+  "@languageSwitch": { "description": "Label for language selection option."  },
+  "verifyEmailResendButton": "Resend Verification Email",
+  "@verifyEmailResendButton": { "description": "Button to resend email" },
+  "verifyEmailBackButton": "Back to Login",
+  "@verifyEmailBackButton": { "description": "Button to go back to login" },
+  "checkStatusButton": "Check Status",
+  "@checkStatusButton": { "description": "Check email verification status button" },
+  "buttonHistory": "View Order History",
+  "@buttonHistory": { "description": "Button to view history" },
+  "cancelOrder": "Cancel Order",
+  "@cancelOrder": { "description": "Cancel order action" },
+  "confirmAndPay": "Confirm and Pay",
+  "@confirmAndPay": { "description": "Payment confirmation action"  },
+  "orderTextButton": "Orders",
+  "@orderTextButton": { "description": "Button label for Orders" },
+  "pendingOrdersTextButton": "Pending Orders",
+  "@pendingOrdersTextButton": { "description": "Button label for Pending Orders" },
+  "suggestionButton": "Suggest Recipe",
+  "@suggestionButton": { "description": "Button to suggest a recipe" },
+
+  "sectionD": "___LABELS_STATUSES_AND_DATA___",
+
+  "darkMode": "Set Dark Mode",
+  "@darkMode": { "description": "Toggle for dark mode" },
+  "tabAIOrder": "AI Orders",
+  "@tabAIOrder": { "description": "Tab for Gemini AI ordering" },
+  "tabBrowse": "Browse Stores",
+  "@tabBrowse": { "description": "Tab for browsing" },
+  "menuTooltip": "Menu",
+  "@menuTooltip": { "description": "Tooltip for menu icon"  },
+  "orderId": "Order ID",
+  "@orderId": { "description": "Label for order identifier" },
+  "orderTotal": "Total",
+  "@orderTotal": { "description": "Label for order total" },
+  "total": "Total",
+  "@total": { "description": "General total label" },
+  "orderStatus": "Status",
+  "@orderStatus": { "description": "Label for order state"  },
+  "orderSummary": "Summary",
+  "@orderSummary": { "description": "Label for order summary" },
+  "statusDelivered": "Delivered",
+  "@statusDelivered": { "description": "Status: Delivered" },
+  "toBeConfirmed": "To be Confirmed",
+  "@toBeConfirmed": { "description": "Status: To be confirmed"  },
+  "fastestDeliveryZone": "Fastest Delivery Zone",
+  "@fastestDeliveryZone": { "description": "Label for fast delivery area" },
+  "partnerStore": "Partner Stores",
+  "@partnerStore": { "description": "Label for partner stores" },
+  "paymentFailed": "Payment failed or was cancelled.",
+  "@paymentFailed": { "description": "Payment failure message" },
+  "paymentSuccessful": "Payment Successful",
+  "@paymentSuccessful": { "description": "Payment success message" },
+  "paymentPending": "Payment Pending",
+  "@paymentPending": { "description": "Payment pending message" },
+  "loadingHistory": "Loading Order History...",
+  "@loadingHistory": { "description": "Loading state text" },
+  "noHistory": "No past orders found.",
+  "@noHistory": { "description": "Empty history state" },
+  "noOrders": "No Orders",
+  "@noOrders": { "description": "No orders available message" },
+  "recipeNoIngredients": "No ingredients listed.",
+  "@recipeNoIngredients": { "description": "Fallback for empty ingredients" },
+
+  "sectionE": "___HINTS_AND_PROMPTS___",
+
+  "emailHint": "Email",
+  "@emailHint": { "description": "Placeholder for email input" },
+  "passwordHint": "Password",
+  "@passwordHint": { "description": "Placeholder for password input" },
+  "confirmPasswordHint": "Confirm Password",
+  "@confirmPasswordHint": { "description": "Placeholder for password confirmation" },
+  "chatHint": "Type a message...",
+  "@chatHint": { "description": "Default chat input hint" },
+  "promptEmail" : "Please enter your email",
+  "@promptEmail": { "description": "Prompt for email input"  },
+  "promptPassword" : "Please enter your password",
+  "@promptPassword": { "description": "Prompt for password input" },
+  "promptConfirmPassword": "Confirm your password",
+  "@promptConfirmPassword": { "description": "Chat hint for password confirm"  },
+  "authHintChoice": "Type 'Sign In' or 'Register'",
+  "@authHintChoice": { "description": "Chat hint for auth choice" },
+  "authHintEmail": "Enter your email",
+  "@authHintEmail": { "description": "Chat hint for email entry" },
+  "authHintPassword": "Enter your password",
+  "@authHintPassword": { "description": "Chat hint for password entry" },
   "welcomeFirstTimePrompt": "Ready to order? To save your history and place orders, please sign in or register below.",
-  "@welcomeFirstTimePrompt": {"description": "The final prompt in the anonymous flow asking the user to sign up"},
-
+  "@welcomeFirstTimePrompt": { "description": "Prompt for new anonymous user"  },
   "welcomeReturningPrompt": "Welcome back! Please sign in or register to continue your session.",
-  "@welcomeReturningPrompt": {"description": "The message shown to a returning anonymous user"},
+  "@welcomeReturningPrompt": { "description": "Prompt for returning anonymous user"  },
+  "promptSuggestRecipe": "Would you like to suggest a recipe?",
+  "@promptSuggestRecipe": { "description": "AI prompt for suggestions" },
+  "postVideoAuthPrompt": "Please log in to post a video",
+  "@postVideoAuthPrompt": { "description": "Auth prompt for video posting" },
 
+  "sectionF": "___ERRORS_AND_VALIDATION___",
+
+  "errorFieldRequired": "{field} is required",
+  "@errorFieldRequired": {
+    "description": "Generic error when a field is missing",
+    "placeholders": { "field": { "type": "String", "example": "Email" } }
+  },
+  "errorFieldInvalid": "{field} is Invalid",
+  "@errorFieldInvalid": {
+    "description": "Generic error when a field format is wrong",
+    "placeholders": { "field": { "type": "String", "example": "Email" } }
+  },
+  "errorPasswordLength" : "Password must be at least {chars} characters long",
+  "@errorPasswordLength": { "description": "Error message for password length" ,
+   "placeholders": { "chars": { "type": "int", "example": "6" } } 
+  },
+  "errorPasswordMismatch" : "Passwords do not match",
+  "@errorPasswordMismatch": { "description": "Error message for password mismatch" },
+  "verificationNeeded": "Email is not verified",
+  "@verificationNeeded": { "description": "User email not verified warning" },
+  "unknownAuthState": "Unknown Authentication State.",
+  "@unknownAuthState": { "description": "Error for unhandled auth state" },
   "animationError": "Could not load animation: {error}",
   "@animationError": {
-    "description": "Error message if the Lottie file fails to load",
-    "placeholders": {
-      "error": {
-        "type": "String",
-        "example": "Asset not found"
-      }
-    }
+    "description": "Lottie loading error",
+    "placeholders": { "error": { "type": "String", "example": "Asset not found" } }
   },
+  "errorAuthFailed": "Authorization failed : {errorDetails}",
+  "@errorAuthFailed": { "description": "Error for invalid passwords or token expiration.", 
+                        "placeholders": { "errorDetails": { "type": "String", "example": "bad auth" }}}
 
-  "signInTitle": "Sign In",
-  "@signInTitle": {"description": "The title for the Sign In form bubble"},
-
-  "registerTitle": "Register",
-  "@registerTitle": {"description": "The title for the Register form bubble"},
-
-  "verifyEmailTitle": "Verify Your Email",
-  "@verifyEmailTitle": {"description": "Title for the email verification screen"},
-
-  "verifyEmailBody": "We've sent a verification link to your email. Please check your inbox (and spam folder) to continue.",
-  "@verifyEmailBody": {"description": "Body text for the email verification screen"},
-
-  "verifyEmailResendButton": "Resend Verification Email",
-  "@verifyEmailResendButton": {"description": "Button text to resend the verification email"},
-
-  "verifyEmailBackButton": "Back to Login",
-  "@verifyEmailBackButton": {"description": "Button text to go back to the login flow"},
-
-  "recipeTitleFallback": "Recipe",
-  "@recipeTitleFallback": {"description": "Fallback title for a recipe bubble"},
-
-  "recipeNoIngredients": "No ingredients listed.",
-  "@recipeNoIngredients": {"description": "Fallback text when a recipe has no ingredients"},
-
-  "unknownAuthState": "Unknown Authentication State.",
-  "@unknownAuthState": {"description": "Error message for an unhandled auth state"},
-
-  "menuTooltip": "Menu",
-  "@menuTooltip": {"description": "Tooltip for the main menu icon button"},
-
-    "chatHint": "Type a message...",
-    "@chatHint": {
-        "description": "Default hint text for the chat input bar when authenticated"
-    },
-
-    "authHintChoice": "Type 'Sign In' or 'Register'",
-    "@authHintChoice": {
-        "description": "Hint text when asking the user to choose between sign in or register"
-    },
-
-    "authHintEmail": "Enter your email...",
-    "@authHintEmail": {
-        "description": "Hint text when asking the user for their email"
-    },
-
-    "authHintPassword": "Enter your password...",
-    "@authHintPassword": {
-        "description": "Hint text when asking the user for their password"
-    },
-
-    "authHintConfirmPassword": "Confirm your password...",
-    "@authHintConfirmPassword": {
-        "description": "Hint text when asking the user to confirm their password"
-    },
-    "cancelOrder" : "cancel this order",
-    "confirmAndPay" : "Confirm and Pay"  ,
-    "toBeConfirmed": "To be Confirmed"
-    
 }

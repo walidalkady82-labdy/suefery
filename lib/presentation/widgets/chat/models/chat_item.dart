@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../data/enums/message_sender.dart';
+import '../../../../data/enums/promotion_type.dart';
 import '../../../../data/models/ai_parsed_order.dart';
 
 @immutable
@@ -97,6 +98,8 @@ class PromotionItem extends ChatItem {
     required this.description,
     required this.promoCode,
     this.imageUrl,
+    this.type = PromotionType.customerSpecific, // Default to generic/loyalty
+    this.eligibleItems = const [],
   });
 
   final String id;
@@ -104,6 +107,12 @@ class PromotionItem extends ChatItem {
   final String description;
   final String promoCode;
   final String? imageUrl;
+
+  /// Determines the visual style (Gold vs Blue)
+  final PromotionType type;
+
+  /// If type is [itemSpecific], these are the tags shown (e.g. ["Pepsi", "Chips"])
+  final List<String> eligibleItems;
 }
 
 @immutable

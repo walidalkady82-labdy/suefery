@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
-import 'package:suefery/core/widgets/chat/models/chat_item.dart';
-import 'package:suefery/core/widgets/chat/bubbles/bubble_layout.dart';
+import 'package:suefery/presentation/widgets/chat/models/chat_item.dart';
+import 'package:suefery/presentation/widgets/chat/bubbles/bubble_layout.dart';
 import 'package:suefery/presentation/home/auth_cubit.dart';
 
 class VerificationPromptBubble extends StatefulWidget {

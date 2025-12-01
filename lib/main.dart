@@ -13,7 +13,7 @@ import 'package:suefery/data/enums/auth_status.dart';
 import 'package:suefery/locator.dart';
 import 'package:suefery/presentation/settings/settings_cubit.dart';
 import 'package:suefery/presentation/home/auth_cubit.dart';
-import 'core/utils/themes.dart';
+import 'utils/themes.dart';
 import 'data/services/pref_service.dart';
 import 'firebase_options.dart';
 import 'presentation/home/customer_app_tour_screen.dart';
@@ -313,6 +313,18 @@ class SUEFERYApp extends StatelessWidget {
               locale: context.read<SettingsCubit>().state.locale,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
+              localeResolutionCallback: (locale, supportedLocales) {
+              // 1. If the device locale is null (rare), use English
+              if (locale == null) return supportedLocales.first;
+              // 2. Check if the device locale is supported
+              for (var supportedLocale in supportedLocales) {
+                if (supportedLocale.languageCode == locale.languageCode) {
+                  return supportedLocale;
+                }
+              }
+              // 3. FALLBACK: If device is French (unsupported), force English
+              return supportedLocales.first; 
+            },
               home: HomeScreen(),
             );
           },

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-// Note: You will need to add your l10n import here if you
-// want to use the strings for validation messages.
 import 'package:suefery/core/l10n/l10n_extension.dart';
 
 import '../../../../data/enums/auth_form_type.dart';
-import '../../../l10n/app_localizations.dart'; 
+import '../../../home/validator.dart'; 
 
 class AuthFormBubble extends StatefulWidget {
   const AuthFormBubble({
@@ -38,7 +36,7 @@ class AuthFormBubble extends StatefulWidget {
   State<AuthFormBubble> createState() => _AuthFormBubbleState();
 }
 
-class _AuthFormBubbleState extends State<AuthFormBubble> {
+class _AuthFormBubbleState extends State<AuthFormBubble> with Validator {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -86,40 +84,9 @@ class _AuthFormBubbleState extends State<AuthFormBubble> {
     }
   }
 
-  // --- Validation Helpers (using l10n) ---
-  String? _validateEmail(String? value, AppLocalizations strings) {
-    if (value == null || value.isEmpty) {
-      return strings.emailRequiredErrorMessage; // <-- Use key
-    }
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-      return strings.emailInvalidErrorMessage; // <-- Use key
-    }
-    return null;
-  }
-
-  String? _validatePassword(String? value, AppLocalizations strings) {
-    if (value == null || value.isEmpty) {
-      return strings.passwordRequiredErrorMessage; // <-- Use key
-    }
-    if (widget.formType == AuthFormType.register && value.length < 6) {
-      return 'Password must be at least 6 characters.'; // TODO: Add to l10n
-    }
-    return null;
-  }
-  
-  String? _validateConfirmPassword(String? value, AppLocalizations strings) {
-    if (widget.formType == AuthFormType.register) {
-      if (value != _passwordController.text) {
-        return 'Passwords do not match.'; // TODO: Add to l10n
-      }
-    }
-    return null;
-  }
-
-
   @override
   Widget build(BuildContext context) {
-    final strings = context.l10n; // Get strings for validation
+    final strings = context.l10n; 
 
     return Card(
       elevation: 2,
@@ -136,21 +103,21 @@ class _AuthFormBubbleState extends State<AuthFormBubble> {
                 controller: _emailController,
                 decoration: InputDecoration(labelText: widget.emailHint), // <-- Use param
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) => _validateEmail(value, strings), // Pass strings
+                validator: (value) => validateEmail(strings,value),
               ),
 
               TextFormField(
                 controller: _passwordController,
                 decoration: InputDecoration(labelText: widget.passwordHint), // <-- Use param
                 obscureText: true,
-                validator: (value) => _validatePassword(value, strings), // Pass strings
+                validator: (value) => validatePassword(value, strings),
               ),
               
               if (widget.formType == AuthFormType.register)
                 TextFormField(
                   decoration: InputDecoration(labelText: widget.confirmPasswordHint), // <-- Use param
                   obscureText: true,
-                  validator: (value) => _validateConfirmPassword(value, strings),
+                  validator: (value) => validateConfirmPassword(value, _passwordController.text, strings),
                 ),
               
               const SizedBox(height: 20),

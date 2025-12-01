@@ -1,6 +1,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:suefery/core/l10n/l10n_extension.dart';
 
 import '../../../../data/enums/message_sender.dart';
 import '../models/chat_item.dart';
@@ -17,6 +18,7 @@ class OrderBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final strings = context.l10n;
 
     return BubbleLayout(
       // This could be from MessageSender.system or .gemini
@@ -25,7 +27,7 @@ class OrderBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Order Confirmed: #${item.orderNumber}',
+            strings.orderConfirmedTitle(item.orderNumber),
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               // Use the bubble's default text color

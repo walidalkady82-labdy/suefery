@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:suefery/core/widgets/chat/bubbles/bubble_layout.dart';
+import 'package:suefery/presentation/widgets/chat/bubbles/bubble_layout.dart';
 
 import '../models/chat_item.dart';
 

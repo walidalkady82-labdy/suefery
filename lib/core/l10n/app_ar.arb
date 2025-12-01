@@ -1,174 +1,116 @@
 {
   "@@locale": "ar",
-  
+
+  "sectionA": "___TITLES_AND_HEADINGS___",
+
   "appTitle": "سويفيري تطبيق متعدد الأدوار",
+  "appBarTitle": "الشيف جيميناي",
+  "logInScreenTitle": "تسجيل الدخول بسويفري",
+  "signInTitle": "تسجيل الدخول",
+  "registerTitle": "التسجيل",
+  "profileTitle": "الملف الشخصي",
+  "settingsTitle": "الإعدادات",
+  "historyTitle": "سجل الطلبات",
+  "verifyEmailTitle": "تحقق من بريدك الإلكتروني",
+  "welcomeTitle": "👋 مرحبًا بك في سويفرى!",
+  "welcomeLottieTitle": "إليك نظرة سريعة على ما يمكنني القيام به:",
+  "recipeTitleFallback": "وصفة",
+  "pendingOrderTermsTitle": "الشروط والاحكام",
+  "selectLanguage": "اختر اللغة",
+
+  "sectionB": "___LABELS_AND_GENERAL_TEXTS___",
+
   "customerTitle": "سويفيري تطبيق العميل",
   "riderTitle": "سويفيري تطبيق الراكب (حصن اللوجستيات)",
   "partnerTitle": "سويفيري تطبيق الشريك",
-  
+  "welcomeMessage": "مرحبا!",
   "welcomeCustomer": "أهلاً بك أيها العميل! ابدأ طلبك الحواري (S1)",
   "welcomeRider": "لوحة تحكم الراكب",
   "welcomePartner": "لوحة تحكم الشريك",
-  
+  "logInPrompt": "الرجاء تسجيل الدخول",
+  "currentLanguage": "اللغة الحالية هي: {currentLanguage}",
+  "orderConfirmedTitle": "تم تأكيد الطلب: #{orderNumber}",
+  "quantityLabel": "الكمية: #{quantity}",
+  "recipeName": "اسم الوصفة",
+  "promptHelp": "هل تريد مساعدة؟",
+  "pendingOrderTermsBody": "1. جميع المبيعات نهائية.\n 2. أوقات التسليم تقديرية.\n 3. الأسعار قابلة للتغيير دون إشعار.\n",
+  "verifyEmailBody": "لقد أرسلنا رابط تحقق إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد (ومجلد الرسائل غير المرغوب فيها) للمتابعة.",
+
+  "sectionC": "___BUTTONS_AND_ACTIONS___",
+
+  "loginButton": "تسجيل الدخول",
+  "signUpButton": "التسجيل",
+  "googleSignin": "تسجيل الدخول باستخدام جوجل",
+  "logoutTextButton": "تسجيل الخروج",
+  "close": "إغلاق",
+  "agree": "موافق",
+  "disagree": "غير موافق",
   "switchRider": "التحويل إلى عرض الراكب",
   "switchCustomer": "التحويل إلى عرض العميل",
   "switchPartner": "التحويل إلى عرض الشريك",
-  "languageSwitch": "تبديل اللغة (English)",
-  
-  "logInPrompt": "الرجاء تسجيل الدخول",
-
   "loginTextButton": "هل لديك حساب بالفعل؟ سجل الدخول",
-
-  "signUpButton": "التسجيل",
-
-  "googleSignin": "تسجيل الدخول باستخدام جوجل",
-
- 
- "toSignup": "للتسجيل",
-  
-  "emailHint": "البريد الإلكتروني",
-
-  "passwordHint": "كلمة المرور",
-
-  "confirmPasswordHint": "تأكيد كلمة المرور",
-  
-  "historyTitle": "سجل الطلبات",
-
+  "toSignup": "للتسجيل",
+  "changeLanguage": "تغيير اللغة",
+  "languageSwitch": "تبديل اللغة (English)",
+  "verifyEmailResendButton": "إعادة إرسال بريد التحقق",
+  "verifyEmailBackButton": "العودة لتسجيل الدخول",
+  "checkStatusButton": "تحقق من الحالة",
   "buttonHistory": "عرض سجل الطلبات",
-  
-  "orderId": "معرّف الطلب",
+  "cancelOrder": "إلغاء الطلب",
+  "confirmAndPay": "تأكيد و الدفع",
+  "orderTextButton": "طلبات",
+  "pendingOrdersTextButton": "طلبات قيد الانتظار",
+  "suggestionButton": "مقترحات",
 
-  "orderTotal": "المجموع",
+  "sectionD": "___LABELS_STATUSES_AND_DATA___",
 
-  "orderStatus": "الحالة",
-  
-  "orderSummary": "الملخص",
-  
-  "statusDelivered": "تم التوصيل",
-  "loadingHistory": "جارٍ تحميل سجل الطلبات...",
-  "noHistory": "لم يتم العثور على طلبات سابقة.",
-  
-  "emailRequiredErrorMessage": "البريد الإلكتروني مطلوب",
-  "emailInvalidErrorMessage": "البريد الإلكتروني غير صالح",
-  "passwordRequiredErrorMessage": "كلمة المرور مطلوبة",
-
+  "darkMode": "تفعيل وضع الليلي",
   "tabAIOrder": "أطلب",
   "tabBrowse": "فحص المتاجر",
-
-  "partnerStore": "متجر  شركاء",
-  "total": "الإجمالى",
-  
-"fastestDeliveryZone": "منطقة التوصيل الأسرع",
-  "verificationNeeded": "البريد الإلكتروني لم يتم التحقق",
-  "checkStatusButton": "تحقق من الحالة",
-  "welcomeMessage": "مرحبا!",
-  "suggestionButton": "مقترحات",
-  "recipeName": "اسم الوصف",
-  "orderHistoryTitle": "سجل الطلبات",
-  "noOrders": "لا يوجد طلبات",
-  "settingsTitle": "الإعدادات",
-  "changeLanguage": "تغيير اللغة",
-  "selectLanguage": "اختر اللغة",
-  "currentLanguage": "اللغة الحالية هي: {currentLanguage}",
-  "@currentLanguage": {
-    "description": "اللغة الحالية المحددة",
-    "placeholders": {
-      "currentLanguage": {
-        "type": "String",
-        "example": "ar"
-      }
-    }
-  },
-  "darkMode": "تفعيل وضع الليلي",
-  "profileTitle": "الملف الشخصي",
-  "logInScreenTitle" : "تسجيل الدخول بسويفري",
-  "loginButton" : "تسجيل الدخول",
-  "logoutTextButton" : "تسجيل الخروج",
-  "pendingOrdersTextButton" : "طلبات قيد الانتظار",
-  "orderTextButton" : "طلبات",
-
-  "appBarTitle": "الشيف جيميناي",
-  "@appBarTitle": {"description": "العنوان الرئيسي في شريط التطبيق"},
-
-  "welcomeTitle": "👋 مرحبًا بك في مساعد الشيف!",
-  "@welcomeTitle": {"description": "الرسالة الأولى في تدفق الترحيب المجهول"},
-
-  "welcomeLottieTitle": "إليك نظرة سريعة على ما يمكنني القيام به:",
-  "@welcomeLottieTitle": {"description": "العنوان الخاص بفقاعة عرض اللوتي"},
-
-  "welcomeFirstTimePrompt": "هل أنت مستعد للطلب؟ لحفظ سجل طلباتك ولتتمكن من الطلب، يرجى تسجيل الدخول أو إنشاء حساب أدناه.",
-  "@welcomeFirstTimePrompt": {"description": "المطالبة النهائية في التدفق المجهول التي تطلب من المستخدم التسجيل"},
-
-  "welcomeReturningPrompt": "مرحبًا بعودتك! يرجى تسجيل الدخول أو التسجيل لمتابعة جلستك.",
-  "@welcomeReturningPrompt": {"description": "الرسالة التي تظهر للمستخدم المجهول العائد"},
-
-  "animationError": "لا يمكن تحميل الرسوم المتحركة: {error}",
-  "@animationError": {
-    "description": "رسالة خطأ في حال فشل تحميل ملف اللوتي",
-    "placeholders": {
-      "error": {
-        "type": "String",
-        "example": "الأصل غير موجود"
-      }
-    }
-  },
-
-  "signInTitle": "تسجيل الدخول",
-  "@signInTitle": {"description": "العنوان الخاص بفقاعة نموذج تسجيل الدخول"},
-
-  "registerTitle": "التسجيل",
-  "@registerTitle": {"description": "العنوان الخاص بفقاعة نموذج التسجيل"},
-  
-  "verifyEmailTitle": "تحقق من بريدك الإلكتروني",
-  "@verifyEmailTitle": {"description": "عنوان شاشة التحقق من البريد الإلكتروني"},
-
-  "verifyEmailBody": "لقد أرسلنا رابط تحقق إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد (ومجلد الرسائل غير المرغوب فيها) للمتابعة.",
-  "@verifyEmailBody": {"description": "النص الأساسي لشاشة التحقق من البريد الإلكتروني"},
-
-  "verifyEmailResendButton": "إعادة إرسال بريد التحقق",
-  "@verifyEmailResendButton": {"description": "نص زر إعادة إرسال بريد التحقق"},
-
-  "verifyEmailBackButton": "العودة لتسجيل الدخول",
-  "@verifyEmailBackButton": {"description": "نص زر العودة لتدفق تسجيل الدخول"},
-
-  "recipeTitleFallback": "وصفة",
-  "@recipeTitleFallback": {"description": "عنوان احتياطي لفقاعة الوصفة"},
-
-  "recipeNoIngredients": "لا توجد مكونات مدرجة.",
-  "@recipeNoIngredients": {"description": "نص احتياطي عندما لا تحتوي الوصفة على مكونات"},
-
-  "unknownAuthState": "حالة مصادقة غير معروفة.",
-  "@unknownAuthState": {"description": "رسالة خطأ لحالة مصادقة غير معالجة"},
-
   "menuTooltip": "القائمة",
-  "@menuTooltip": {"description": "تلميح لزر أيقونة القائمة الرئيسية"},
+  "orderId": "معرّف الطلب",
+  "orderTotal": "المجموع",
+  "total": "الإجمالى",
+  "orderStatus": "الحالة",
+  "orderSummary": "الملخص",
+  "statusDelivered": "تم التوصيل",
+  "toBeConfirmed": "قيد التأكيد",
+  "fastestDeliveryZone": "منطقة التوصيل الأسرع",
+  "partnerStore": "متجر شركاء",
+  "paymentFailed": "فشل الدفع أو تم إلغاء الطلب.",
+  "paymentSuccessful": "تم الدفع",
+  "paymentPending": "قيد الانتظار",
+  "loadingHistory": "جارٍ تحميل سجل الطلبات...",
+  "noHistory": "لم يتم العثور على طلبات سابقة.",
+  "noOrders": "لا يوجد طلبات",
+  "recipeNoIngredients": "لا توجد مكونات مدرجة.",
 
-   "chatHint": "اكتب رسالة...",
-    "@chatHint": {
-        "description": "النص التلقائي لشريط إدخال الدردشة عند المصادقة"
-    },
+  "sectionE": "___HINTS_AND_PROMPTS___",
 
-    "authHintChoice": "اكتب 'تسجيل الدخول' أو 'تسجيل'",
-    "@authHintChoice": {
-        "description": "نص تلميح عندما يُطلب من المستخدم الاختيار بين تسجيل الدخول أو التسجيل"
-    },
+  "emailHint": "البريد الإلكتروني",
+  "passwordHint": "كلمة المرور",
+  "confirmPasswordHint": "تأكيد كلمة المرور",
+  "chatHint": "اكتب رسالة...",
+  "promptEmail" : "الرجاء إدخال بريدك الإلكتروني",
+  "promptPassword" : "الرجاء إدخال كلمة المرور الخاصة بك",
+  "promptConfirmPassword": "أعد تأكيد كلمة المرور",
+  "authHintChoice": "اكتب 'تسجيل الدخول' أو 'تسجيل'",
+  "authHintEmail": "أدخل بريدك الإلكتروني",
+  "authHintPassword": "أدخل كلمة المرور الخاصة بك",
+  "welcomeFirstTimePrompt": "هل أنت مستعد للطلب؟ لحفظ سجل طلباتك ولتتمكن من الطلب، يرجى تسجيل الدخول أو إنشاء حساب أدناه.",
+  "welcomeReturningPrompt": "مرحبًا بعودتك! يرجى تسجيل الدخول أو التسجيل لمتابعة جلستك.",
+  "promptSuggestRecipe": "هل ترغب في اقتراح وصفة؟",
+  "postVideoAuthPrompt": "الرجاء تسجيل الدخول لتسليم الفيديو",
 
-    "authHintEmail": "أدخل بريدك الإلكتروني...",
-    "@authHintEmail": {
-        "description": "نص تلميح عند سؤال المستخدم عن بريده الإلكتروني"
-    },
+  "sectionF": "___ERRORS_AND_VALIDATION___",
 
-    "authHintPassword": "أدخل كلمة المرور الخاصة بك...",
-    "@authHintPassword": {
-        "description": "نص تلميح عند سؤال المستخدم عن كلمة المرور الخاصة به"
-    },
+  "errorFieldRequired": "{field} مطلوب",
+  "errorFieldInvalid": "{field} غير صالح",
+  "errorPasswordLength" : "يجب أن تكون كلمة المرور {chars} أحرف أو أكثر",
+  "errorPasswordMismatch" : "كلمات المرور غير متطابقة",
+  "verificationNeeded": "البريد الإلكتروني لم يتم التحقق",
+  "unknownAuthState": "حالة مصادقة غير معروفة.",
+  "animationError": "لا يمكن تحميل الرسوم المتحركة: {error}",
+  "errorAuthFailed": "خطأ في التحقق: {currentLanguage}"
 
-    "authHintConfirmPassword": "أعد تأكيد كلمة المرور...",
-    "@authHintConfirmPassword": {
-        "description": "نص تلميح عند مطالبة المستخدم بتأكيد كلمة المرور الخاصة به"
-    },
-    "cancelOrder": "إلغى الطلب" ,
-    "confirmAndPay" : "تأكيد و الدفع",
-    "toBeConfirmed" : "قيد التأكيد"
-  
 }

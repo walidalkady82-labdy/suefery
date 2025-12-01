@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
-import 'package:suefery/core/widgets/chat/models/chat_item.dart';
+import 'package:suefery/presentation/widgets/chat/models/chat_item.dart';
 import 'package:suefery/presentation/home/auth_cubit.dart';
 import 'package:suefery/presentation/settings/settings_screen.dart';
 
@@ -18,9 +18,9 @@ import 'home_cubit.dart';
 import '../../data/enums/auth_step.dart'; // <-- IMPORT AUTH STEP
 
 // Import your "dumb" UI Kit
-import 'package:suefery/core/widgets/chat/chat_view.dart';
-import 'package:suefery/core/widgets/chat/models/chat_view_io.dart';
-import 'package:suefery/core/widgets/chat/models/chat_input_bar_io.dart';
+import 'package:suefery/presentation/widgets/chat/chat_view.dart';
+import 'package:suefery/presentation/widgets/chat/models/chat_view_io.dart';
+import 'package:suefery/presentation/widgets/chat/models/chat_input_bar_io.dart';
 
 
 class HomeScreen extends StatelessWidget {
@@ -38,6 +38,7 @@ class HomeScreen extends StatelessWidget {
   // --- NEW: Method to handle card payment flow ---
   Future<void> _handleCardPayment(BuildContext context, ChatMessageModel message) async {
     final homeCubit = context.read<HomeCubit>();
+    final strings = context.l10n;
     if (message.parsedOrder == null) return;
 
     // In a real app, you would get this from a PaymentService.
@@ -66,7 +67,7 @@ class HomeScreen extends StatelessWidget {
         confirmOrder(context, message, paymentMethod: 'CARD');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Payment failed or was cancelled.")),
+          SnackBar(content: Text(strings.paymentFailed)),
         );
       }
     }
@@ -174,7 +175,7 @@ class HomeScreen extends StatelessWidget {
             id: msg.id,
             text: msg.content ?? '',
             choices: msg.choices ?? [],
-            onChoiceSelected: (choice) => cubit.handleAuthChoice(choice),
+            onChoiceSelected: (choice) => cubit.handleAuthChoice(choice, strings),
             sender: msg.senderType, 
           );
 
@@ -325,14 +326,12 @@ class HomeScreen extends StatelessWidget {
 
                     // --- Configure Callbacks ---
                     final inputBarCallbacks = ChatInputBarCallbacks(
-                      onSendMessage: homeCubit.submitOrderPrompt, // This now handles auth AND orders
+                      onSendMessage: (prompt) => homeCubit.submitOrderPrompt(prompt), // This now handles auth AND orders
                       onTyping: homeCubit.onTyping,
                       onShowActionMenu: isAuthenticated 
                         ? () => _showActionMenu(buildContext) // Use buildContext
                         : () {}, // No menu for anon
-                      onSendVoiceOrder: isAuthenticated 
-                        ? homeCubit.sendVoiceOrder
-                        : () {}, // No voice for anon
+                      onSendVoiceOrder: isAuthenticated ? homeCubit.sendVoiceOrder : (){}, // No voice for anon
                     );
                     
                     final chatViewCallbacks = ChatViewCallbacks(

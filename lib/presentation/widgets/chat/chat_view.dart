@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:suefery/core/widgets/chat/models/chat_view_io.dart';
+import 'package:suefery/presentation/widgets/chat/models/chat_view_io.dart';
 import 'chat_input_bar.dart';
 import 'chat_message_list.dart';
 
