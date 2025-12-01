@@ -17,10 +17,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get appBarTitle => 'Gemini Chef';
+  String get appBarTitle => 'SUEFERY';
 
   @override
-  String get appTitle => 'SUEFERY Multi-Role App';
+  String get appTitle => 'SUEFERY';
 
   @override
   String get authHintChoice => 'Type \'Sign In\' or \'Register\'';

@@ -8,7 +8,7 @@
  */
 
 const {setGlobalOptions} = require("firebase-functions");
-const {onCall, HttpsError} = require("firebase-functions/v2/https");
+const {onCall, HttpsError} = require("firebase-functions/v2/https"); // eslint-disable-line no-unused-vars
 const logger = require("firebase-functions/logger");
 const axios = require("axios");
 const dotenv = require("dotenv");
@@ -19,6 +19,7 @@ const {
   HarmCategory,
   HarmBlockThreshold,
 } = require("@google-cloud/vertexai");
+const {onDocumentUpdated} = require("firebase-functions/v2/firestore");
 admin.initializeApp();
 
 // Set global options for the functions.
@@ -367,3 +368,70 @@ exports.geminiProxy = onCall(
       }
     },
 );
+
+/**
+ * Sends a push notification to a user when their order quote is ready.
+ * This function triggers when an order document is updated. It checks if the
+ * order status has changed from 'awaitingQuote' to 'quoteReceived'.
+ */
+exports.onOrderPriceUpdate = onDocumentUpdated("orders/{orderId}", async (event) => {
+  logger.info(`Order update detected for orderId: ${event.params.orderId}`);
+
+  // 1. Get data before and after the change
+  const beforeData = event.data.before.data();
+  const afterData = event.data.after.data();
+
+  // 2. Check for the specific status transition
+  const wasAwaitingQuote = beforeData.status === "awaitingQuote";
+  const isQuoteReceived = afterData.status === "quoteReceived";
+
+  if (!wasAwaitingQuote || !isQuoteReceived) {
+    logger.info("Status transition is not 'awaitingQuote' -> 'quoteReceived'. Exiting function.", {
+      before: beforeData.status,
+      after: afterData.status,
+    });
+    return null;
+  }
+
+  logger.info("Quote received for order. Preparing to send notification.");
+
+  // 3. Get the customer's user ID from the order
+  const userId = afterData.userId;
+  if (!userId) {
+    logger.error("Order document is missing 'userId'. Cannot send notification.", {orderId: event.params.orderId});
+    return null;
+  }
+
+  try {
+    // 4. Fetch the user's document to get their FCM token
+    const userDoc = await admin.firestore().collection("users").doc(userId).get();
+    if (!userDoc.exists) {
+      logger.error(`User document not found for userId: ${userId}.`);
+      return null;
+    }
+
+    const fcmToken = userDoc.data().fcmToken;
+    if (!fcmToken) {
+      logger.warn(`User ${userId} does not have an FCM token. Cannot send notification.`);
+      return null;
+    }
+
+    // 5. Construct the notification payload
+    const payload = {
+      notification: {
+        title: "Your Quote is Ready! 🛒",
+        body: `Prices for your order have been updated. Tap to review and complete your purchase.`,
+      },
+      token: fcmToken,
+    };
+
+    // 6. Send the notification
+    logger.info(`Sending notification to user ${userId} with token ${fcmToken}`);
+    await admin.messaging().send(payload);
+    logger.info("Successfully sent notification.");
+    return {success: true};
+  } catch (error) {
+    logger.error("Error sending notification:", error);
+    return null;
+  }
+});

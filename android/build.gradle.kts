@@ -18,7 +18,20 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(":app")
 }
-
+subprojects {
+    subprojects {
+    afterEvaluate {
+        // Check if the project has the Android plugin applied
+        if (extensions.findByName("android") != null) {
+            // Force the configuration using the correct type
+            configure<com.android.build.gradle.BaseExtension> {
+                compileSdkVersion(36)
+                ndkVersion = "28.2.13676358"
+            }
+        }
+    }
+}
+}
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }

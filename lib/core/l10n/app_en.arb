@@ -14,11 +14,11 @@
       }
     }
   },
-  "appBarTitle": "Gemini Chef",
+  "appBarTitle": "SUEFERY",
   "@appBarTitle": {
     "description": "Main title in the AppBar"
   },
-  "appTitle": "SUEFERY Multi-Role App",
+  "appTitle": "SUEFERY",
   "@appTitle": {
     "description": "The main title for the application."
   },

@@ -113,13 +113,13 @@ abstract class AppLocalizations {
   /// Main title in the AppBar
   ///
   /// In en, this message translates to:
-  /// **'Gemini Chef'**
+  /// **'SUEFERY'**
   String get appBarTitle;
 
   /// The main title for the application.
   ///
   /// In en, this message translates to:
-  /// **'SUEFERY Multi-Role App'**
+  /// **'SUEFERY'**
   String get appTitle;
 
   /// Chat hint for auth choice

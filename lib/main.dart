@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:suefery/core/services/user_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +11,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_paymob/flutter_paymob.dart';
 import 'package:logging/logging.dart';
 import 'package:suefery/core/l10n/app_localizations.dart';
+import 'package:suefery/data/service/service_auth.dart';
+import 'package:suefery/data/service/service_user.dart';
 import 'package:suefery/locator.dart';
 import 'package:suefery/presentation/auth/auth_checker.dart';
 import 'package:suefery/presentation/auth/cubit_auth.dart';
@@ -214,7 +215,7 @@ class _AppContainerState extends State<AppContainer> {
       // Save the token to the user's document in Firestore
       final userId = sl<ServiceAuth>().currentAppUser?.id;
       if (userId != null) {
-        await sl<ServiceUser>().updateUser(userId, {'fcmToken': fcmToken});
+        await sl<ServiceUser>().updateUser(userId,fcmToken:fcmToken);
       }
     }
 

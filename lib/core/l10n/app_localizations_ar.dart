@@ -17,10 +17,10 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get appBarTitle => 'الشيف جيميناي';
+  String get appBarTitle => 'سويفيري';
 
   @override
-  String get appTitle => 'سويفيري تطبيق متعدد الأدوار';
+  String get appTitle => 'سويفيري';
 
   @override
   String get authHintChoice => 'اكتب \'تسجيل الدخول\' أو \'تسجيل\'';
