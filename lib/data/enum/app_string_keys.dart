@@ -248,7 +248,6 @@ extension AppStringKeyX on AppStringKey {
       case AppStringKey.errorAuthFailed:
         return strings.errorAuthFailed(
           _getArg(args, 0, 'Error'),
-          _getArg(args, 1, ''),
         );
     }
   }
