@@ -6,7 +6,6 @@ import 'package:suefery/data/enum/order_status.dart';
 import 'package:suefery/data/model/model_order.dart'; // Import ModelOrder
 
 import '../../../../data/enum/message_sender.dart';
-import '../../../../data/model/model_ai_parsed_order.dart';
 import '../models/chat_item.dart';
 import 'bubble_layout.dart';
 
@@ -67,7 +66,7 @@ class _BubbleOrderPendingState extends State<BubbleOrderPending> {
     final realOrder = widget.item.order; // The real-time order data
 
     // Determine which item list to use
-    final itemsToDisplay = realOrder?.items ?? order.requestedItems.map((e) => ModelOrderItem(id: '', description: e.itemName, brand: e.brand ?? '', quantity: e.quantity, unit: e.unit ?? '', unitPrice: e.unitPrice ?? 0.0)).toList();
+    final itemsToDisplay = realOrder?.items ?? order.requestedItems.map((e) => ModelOrderItem(id: '', description: e.itemName, brand: e.brand ?? '', quantity: e.quantity, unit: e.unit ?? '', unitPrice: e.unitPrice )).toList();
 
 
     // Build the content for the bubble
@@ -106,7 +105,7 @@ class _BubbleOrderPendingState extends State<BubbleOrderPending> {
         // 4. Separator
         Divider(
           height: 20,
-          color: bubbleTextColor.withOpacity(0.5),
+          color: bubbleTextColor..withAlpha(128),
         ),
 
         // 5. Action Buttons (or Status)

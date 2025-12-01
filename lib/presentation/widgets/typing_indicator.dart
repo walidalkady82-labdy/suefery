@@ -48,7 +48,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 width: size,
                 height: size,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
                   shape: BoxShape.circle,
                 ),
               ),

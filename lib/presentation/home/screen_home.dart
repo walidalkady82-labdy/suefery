@@ -3,9 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/data/model/model_order.dart';
 import 'package:suefery/presentation/auth/cubit_auth.dart';
-import 'package:suefery/presentation/history/cubit_order_history.dart';
 import 'package:suefery/presentation/history/screen_order_history.dart';
-import 'package:suefery/presentation/pending/cubit_pending_orders.dart';
 import 'package:suefery/presentation/pending/screen_pending_orders.dart';
 
 // --- Services ---

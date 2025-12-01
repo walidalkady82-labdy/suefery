@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:suefery/data/enum/order_status.dart';
 import 'package:suefery/data/model/model_order.dart';
 
 import '../../../../data/enum/message_sender.dart';

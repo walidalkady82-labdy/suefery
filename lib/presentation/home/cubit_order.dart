@@ -211,8 +211,6 @@ class CubitOrder extends Cubit<StateOrder> with LogMixin {
         return false;
       }
     }
-    emit(state.copyWith(isLoading: false));
-    return false;
   }
 
 }

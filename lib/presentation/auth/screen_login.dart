@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/data/enum/auth_status.dart';
 import 'package:suefery/presentation/settings/settings_cubit.dart';
-import '../../core/l10n/app_localizations.dart';
 import 'cubit_auth.dart';
 
 

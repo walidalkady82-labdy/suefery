@@ -34,7 +34,7 @@ class _CustomerSetupView extends StatelessWidget {
       ),
       body: BlocConsumer<CustomerSetupCubit, CustomerSetupState>(
         listener: (context, state) {
-          if (state?.errorMessage != null) {
+          if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage!),

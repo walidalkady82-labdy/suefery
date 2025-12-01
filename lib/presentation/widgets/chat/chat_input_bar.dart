@@ -117,7 +117,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
                   leading: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: iconColor.withOpacity(0.1),
+                      color: iconColor.withAlpha(26),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(icon, size: 18, color: iconColor),

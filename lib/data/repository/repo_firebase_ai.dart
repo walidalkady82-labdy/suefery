@@ -77,7 +77,7 @@ class RepoFirebaseAi with LogMixin implements IRepoFirebaseAi {
 
       // --- REFACTORED: Check for a function call ---
       final functionCalls = response.functionCalls;
-      if (functionCalls != null && functionCalls.isNotEmpty) {
+      if (functionCalls.isNotEmpty) {
         final call = functionCalls.first;
         if (call.name == 'confirmOrder') {
           // The model decided to call our function!

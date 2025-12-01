@@ -5,7 +5,7 @@ class ModelBrand extends Equatable {
   final String category;
   final String? imageUrl;
 
-  ModelBrand({required this.name, required this.category , this.imageUrl});
+  const ModelBrand({required this.name, required this.category , this.imageUrl});
 
   factory ModelBrand.fromMap(Map<String, dynamic> map) {
     return ModelBrand(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
 import 'package:suefery/data/enum/order_status.dart';
 
-import '../../../../data/enum/order_status.dart';
 import '../../../../data/enum/message_sender.dart';
 import '../models/chat_item.dart';
 import 'bubble_layout.dart';

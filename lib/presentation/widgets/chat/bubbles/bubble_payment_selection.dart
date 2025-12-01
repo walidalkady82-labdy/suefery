@@ -40,7 +40,7 @@ class BubblePaymentSelection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: theme.primaryColor.withOpacity(0.1),
+              color: theme.primaryColor..withAlpha(128),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(

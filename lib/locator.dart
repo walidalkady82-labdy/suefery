@@ -34,7 +34,6 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
   // We register a factory that returns the Future<PrefsRepository>
 
   final useEmulatorEnv = dotenv.getBool('USE_FIREBASE_EMULATOR', fallback: false);
-  final useGeminiMocks = dotenv.getBool('gemini_use_mocks', fallback: false);
 
   sl.registerSingleton<IRepoPref>(prefsRepo);
 
@@ -74,7 +73,7 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
   sl.registerLazySingleton(() => FirebaseFunctions.instanceFor(app: firebaseApp, region: 'us-central1'));
 
   sl.registerLazySingleton<ServiceFirebaseAi>(() => ServiceFirebaseAi(
-       sl<FirebaseFunctions>() , useGeminiMocks
+       sl<FirebaseFunctions>() 
       ));    
   //Order Service
   sl.registerLazySingleton<ServiceOrder>(() => ServiceOrder(

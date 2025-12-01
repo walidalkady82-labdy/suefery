@@ -12,7 +12,7 @@ class BubbleLoading extends StatelessWidget {
     final theme = Theme.of(context);
     // Use the bubble's background color for shimmer
     final baseColor = theme.colorScheme.secondaryContainer;
-    final highlightColor = theme.colorScheme.onSecondaryContainer.withOpacity(0.1);
+    final highlightColor = theme.colorScheme.onSecondaryContainer..withAlpha(128);
 
     return BubbleLayout(
       sender: MessageSender.gemini,

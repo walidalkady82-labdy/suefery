@@ -12,7 +12,6 @@ import 'package:suefery/data/model/model_chat_message.dart';
 import 'package:suefery/data/model/model_tool_use_response.dart';
 import 'package:suefery/data/service/service_auth.dart';
 import 'package:suefery/data/service/service_chat.dart';
-import 'package:suefery/data/service/service_order.dart';
 
 import 'package:suefery/locator.dart';
 
@@ -73,7 +72,6 @@ class CubitChat extends Cubit<StateChat> with LogMixin {
   // --- Services ---
   final ServiceChat _chatService = sl<ServiceChat>();
   final ServiceAuth _authService = sl<ServiceAuth>();
-  final ServiceOrder _orderService = sl<ServiceOrder>();
 
   StreamSubscription? _chatSubscription;
 

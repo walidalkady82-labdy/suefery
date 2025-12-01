@@ -82,7 +82,7 @@ class _ScreenCustomerAppTourState extends State<ScreenCustomerAppTour> {
             height: 200,
             width: 200,
             decoration: BoxDecoration(
-              color: theme.primaryColor.withOpacity(0.1),
+              color: theme.primaryColor.withAlpha(128),
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.phonelink_ring, size: 80, color: theme.primaryColor),
@@ -172,7 +172,7 @@ class _ScreenCustomerAppTourState extends State<ScreenCustomerAppTour> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+              colors: [Colors.transparent, Colors.black..withAlpha(128)],
             ),
           ),
         ),
@@ -225,7 +225,7 @@ class _ScreenCustomerAppTourState extends State<ScreenCustomerAppTour> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: theme.primaryColor.withOpacity(0.1),
+          backgroundColor: theme.primaryColor..withAlpha(128),
           child: Icon(icon, color: theme.primaryColor),
         ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),

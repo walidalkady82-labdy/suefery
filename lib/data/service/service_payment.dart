@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:http/http.dart' as http; // For calling the backend
-import 'dart:convert';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_stripe/flutter_stripe.dart';
+// import 'package:http/http.dart' as http; // For calling the backend
+// import 'dart:convert';
 
 
+// ignore: dangling_library_doc_comments
 /// A service to handle payment processing logic.
 // class PaymentService {
 //   final _log = LogRepo('PaymentService');

@@ -2,9 +2,9 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 // The main import should be sufficient as it exports the response model.
 import 'package:flutter_paymob/flutter_paymob.dart';
-import 'package:suefery/locator.dart';
+// import 'package:suefery/locator.dart';
 
-import '../../data/service/service_auth.dart';
+// import '../../data/service/service_auth.dart';
 
 class ScreenPaymobCheckout extends StatefulWidget {
   final double amount;
@@ -17,7 +17,7 @@ class ScreenPaymobCheckout extends StatefulWidget {
 
 class _ScreenPaymobCheckoutState extends State<ScreenPaymobCheckout> {
   bool _isProcessing = false;
-  final ServiceAuth _authService = sl<ServiceAuth>();
+  //final ServiceAuth _authService = sl<ServiceAuth>();
   // --- Pay with Card via Backend ---
   Future<void> _startCardPayment(BuildContext context) async {
     if (_isProcessing) return;
@@ -28,15 +28,15 @@ class _ScreenPaymobCheckoutState extends State<ScreenPaymobCheckout> {
 
     try {
       // 1. Call the Firebase Function to get the payment key.
-      final callable = FirebaseFunctions.instance.httpsCallable('createPaymobPaymentIntent');
+      // final callable = FirebaseFunctions.instance.httpsCallable('createPaymobPaymentIntent');
 
-      final response = await callable.call(<String, dynamic>{
-        'amount': widget.amount,
-        'currency': 'EGP',
-        'billingData': _authService.currentAppUser?.toMap(),
-      });
+      // final response = await callable.call(<String, dynamic>{
+      //   'amount': widget.amount,
+      //   'currency': 'EGP',
+      //   'billingData': _authService.currentAppUser?.toMap(),
+      // });
 
-      final paymentKey = response.data['paymentKey'];
+      //final paymentKey = response.data['paymentKey'];
       // 2. Use the payment key to launch the Paymob SDK
       // await FlutterPaymob.instance.pay(
       //   context: context,
@@ -54,7 +54,7 @@ class _ScreenPaymobCheckoutState extends State<ScreenPaymobCheckout> {
             backgroundColor: Colors.red,
             content: Text("Payment Failed: ${e.message ?? 'An unknown error occurred.'}")),
       );
-    } catch (error, s) {
+    } catch (error) {
       debugPrint("Generic Payment Error: $error");
       // Consider logging the stack trace for more detailed debugging.
       // logger.e("Generic Payment Error", error: error, stackTrace: s);
@@ -82,11 +82,13 @@ class _ScreenPaymobCheckoutState extends State<ScreenPaymobCheckout> {
       );
     } catch (e) {
       debugPrint("Wallet Payment Error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            backgroundColor: Colors.red,
-            content: Text("An unexpected error occurred: $e")),
-      );
+
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //       backgroundColor: Colors.red,
+      //       content: Text("An unexpected error occurred: $e")),
+      // );
+
     }
   }
 

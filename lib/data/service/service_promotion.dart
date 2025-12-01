@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:suefery/core/utils/logger.dart';
 import '../model/model_promotion.dart';
 import '../../presentation/widgets/chat/models/chat_item.dart';
 import '../enum/promotion_type.dart';
 
-class ServicePromotion {
+class ServicePromotion with LogMixin{
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// TRIGGER 1: CONTEXTUAL (Item Specific)
@@ -25,7 +26,7 @@ class ServicePromotion {
           .map((doc) => ModelPromotion.fromFirestore(doc.data(), doc.id).toChatItem())
           .toList();
     } catch (e) {
-      print("Error fetching item promos: $e");
+      logError("Error fetching item promos: $e");
       return [];
     }
   }
@@ -55,7 +56,7 @@ class ServicePromotion {
       }
       return null;
     } catch (e) {
-      print("Error checking loyalty: $e");
+      logError("Error checking loyalty: $e");
       return null;
     }
   }

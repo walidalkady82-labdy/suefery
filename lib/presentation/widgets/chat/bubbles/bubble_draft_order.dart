@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:suefery/core/extensions/is_not_null_or_empty.dart';
 import 'package:suefery/core/l10n/l10n_extension.dart';
-import 'package:suefery/data/model/model_ai_parsed_order.dart';
 import 'package:suefery/data/model/model_order.dart'; // Import ModelOrderItem
 import 'package:suefery/presentation/widgets/chat/dialogs/edit_order_item_dialog.dart'; // Import EditOrderItemDialog
 
@@ -85,7 +84,7 @@ class _BubbleDraftOrderState extends State<BubbleDraftOrder> {
         // 3. Separator
         Divider(
           height: 20,
-          color: bubbleTextColor.withOpacity(0.5),
+          color: bubbleTextColor.withAlpha(128),
         ),
 
         // 4. Action Buttons (or Status)

@@ -3,6 +3,8 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:suefery/core/services/user_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +19,14 @@ import 'package:suefery/presentation/settings/settings_cubit.dart';
 import 'core/utils/themes.dart';
 import 'firebase_options.dart';
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await _initializeFirebase();
+  final log = Logger("firebaseMessagingBackgroundHandler");
+  log.info("Handling a background message: ${message.messageId}");
+}
 
 Future<void> main() async {
   final log = Logger("main");
@@ -189,12 +199,47 @@ class _AppContainerState extends State<AppContainer> {
     _initialization = init();
   }
   
+  Future<void> _initFirebaseMessaging() async {
+    final log = Logger("_initFirebaseMessaging");
+    final messaging = FirebaseMessaging.instance;
+
+    // Request permissions
+    final settings = await messaging.requestPermission();
+    log.info('User granted permission: ${settings.authorizationStatus}');
+
+    // Get token and save it
+    final fcmToken = await messaging.getToken();
+    if (fcmToken != null) {
+      log.info('FCM Token: $fcmToken');
+      // Save the token to the user's document in Firestore
+      final userId = sl<ServiceAuth>().currentAppUser?.id;
+      if (userId != null) {
+        await sl<ServiceUser>().updateUser(userId, {'fcmToken': fcmToken});
+      }
+    }
+
+    // Handle foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      log.info('Got a message whilst in the foreground!');
+      log.info('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        log.info('Message also contained a notification: ${message.notification}');
+      }
+    });
+
+    // Handle background messages
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  }
+
   Future<void> init() async {
     final log = Logger("initPayment");
     log.info('loading environment variables...');
     await _initEnvironmentVars();
     log.info('initializing Firebase...');
     final app = await _initializeFirebase();
+    log.info('initializing Firebase Messaging...');
+    await _initFirebaseMessaging();
     log.info('handling analytics...');
     initAnalytics();
     log.info('loading sevices...');
@@ -296,7 +341,7 @@ class SUEFERYApp extends StatelessWidget {
           builder: (context, settingsState) {
             // Access the settings state directly from the builder
             return MaterialApp(
-              onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appTitle,              
+              onGenerateTitle: (ctx) => AppLocalizations.of(ctx).appTitle,              
               theme: lightTheme, // Always use the defined light theme
               darkTheme: darkTheme, // Always use the defined dark theme
               themeMode: settingsState.themeMode, // Use the themeMode from the SettingsCubit

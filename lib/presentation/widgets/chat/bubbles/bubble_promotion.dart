@@ -57,7 +57,7 @@ class BubblePromotion extends StatelessWidget {
             decoration: BoxDecoration(
               color: lightBg, // <--- Dynamic Background
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: mainColor.withOpacity(0.3)),
+              border: Border.all(color: mainColor..withAlpha(128)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -139,7 +139,7 @@ class BubblePromotion extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 // Dashed border effect simulated with simple border here
                 border: Border.all(
-                  color: mainColor.withOpacity(0.5), // <--- Dynamic Border Color
+                  color: mainColor.withAlpha(128), // <--- Dynamic Border Color
                   width: 1.5,
                 ),
               ),

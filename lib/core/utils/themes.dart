@@ -71,7 +71,7 @@ final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
   ).copyWith(
     secondary: const Color(0xFF81D4FA), // Light Blue accent
-    background: const Color(0xFF121212),
+    //background: const Color(0xFF121212),
     surface: const Color(0xFF1E1E1E), // Slightly lighter for cards/surfaces
     error: Colors.red.shade400,
   ),

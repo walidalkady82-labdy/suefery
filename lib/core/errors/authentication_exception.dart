@@ -1,7 +1,6 @@
 
 
 import 'package:logging/logging.dart';
-import 'package:suefery/core/utils/logger.dart';
 
 enum AuthenticationExceptionCode{
   //------custom exceptions-------------

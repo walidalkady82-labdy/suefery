@@ -1,9 +1,9 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
+import 'package:suefery/core/utils/logger.dart';
 import 'package:suefery/data/service/service_auth.dart';
 import '../../locator.dart';
 
-class ServiceNotification {
+class ServiceNotification with LogMixin{
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final ServiceAuth _authService = sl<ServiceAuth>();
 
@@ -17,23 +17,23 @@ class ServiceNotification {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      debugPrint('User granted permission');
+      logInfo('User granted permission');
       
       // Get the token
       String? token = await _fcm.getToken();
       if (token!.isNotEmpty) {
-        debugPrint("FCM Token: $token");
+        logInfo("FCM Token: $token");
         // Sync token to Firestore User Profile so the backend knows who to message
         await _updateTokenInDatabase(token);
       }
 
       // Listen for foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('Got a message whilst in the foreground!');
-        debugPrint('Message data: ${message.data}');
+        logInfo('Got a message whilst in the foreground!');
+        logInfo('Message data: ${message.data}');
 
         if (message.notification != null) {
-          debugPrint('Message also contained a notification: ${message.notification}');
+          logInfo('Message also contained a notification: ${message.notification}');
           // TODO: Show a local snackbar or in-app update here
         }
       });
@@ -51,7 +51,7 @@ class ServiceNotification {
         }
       }
     } catch (e) {
-      debugPrint("Error updating FCM token: $e");
+      logError("Error updating FCM token: $e");
     }
   }
 }

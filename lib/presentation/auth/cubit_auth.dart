@@ -9,7 +9,6 @@ import 'package:suefery/data/enum/user_role.dart';
 import 'package:suefery/data/model/model_user.dart';
 import 'package:suefery/data/service/service_auth.dart';
 import 'package:suefery/locator.dart';
-import '../../core/utils/geohash.dart';
 
 
 
