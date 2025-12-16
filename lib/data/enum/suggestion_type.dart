@@ -1,0 +1,1 @@
+enum SuggestionType { brand, category, history, command }

@@ -1,0 +1,159 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:suefery/core/l10n/l10n_extension.dart';
+import 'package:suefery/presentation/widgets/chat/models/chat_item.dart';
+import 'package:suefery/presentation/widgets/chat/bubbles/bubble_layout.dart';
+import 'package:suefery/presentation/home/cubit_auth.dart';
+
+class BubbleVerificationPrompt extends StatefulWidget {
+  final VerificationPromptItem item;
+
+  const BubbleVerificationPrompt({
+    super.key,
+    required this.item,
+  });
+
+  @override
+  State<BubbleVerificationPrompt> createState() => _BubbleVerificationPromptState();
+}
+
+class _BubbleVerificationPromptState extends State<BubbleVerificationPrompt> {
+  bool _isEmailVerified = false;
+  User? _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkStatus();
+  }
+
+  void _checkStatus() {
+    // Check the Firebase user's verification status
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        _currentUser = user;
+        // Use the actual Firebase user property
+        _isEmailVerified = user.emailVerified; 
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = context.l10n;
+    final theme = Theme.of(context);
+
+    // 1. SUCCESS STATE: If verified, show a confirmation message inside a bubble.
+    if (_currentUser != null && _isEmailVerified) {
+      return BubbleLayout(
+        // Assuming the system is confirming the user's action
+        sender: widget.item.sender, 
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green),
+            const SizedBox(width: 8),
+            Text(
+              "Email Verified!", 
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.green[800], 
+                fontWeight: FontWeight.bold
+              )
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 2. PROMPT STATE: Show the verification request and actions.
+    return BlocListener<CubitAuth, StateAuth>(
+      listener: (context, state) {
+        // Reload status after any AuthCubit action (like checkVerificationStatus)
+        _checkStatus();
+        if (state.errorMessage.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.errorMessage), backgroundColor: Colors.red),
+          );
+        }
+      },
+      child: BubbleLayout(
+        // Use the specified sender (typically System/Gemini)
+        sender: widget.item.sender, 
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with Icon
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.mark_email_unread_outlined, color: theme.primaryColor, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  strings.verifyEmailTitle,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.primaryColor,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            
+            // Message Text
+            Text(
+              strings.verifyEmailBody,
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+
+            // Action Buttons (Chips/Bubbles)
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: [
+                // Resend Button
+                ActionChip(
+                  avatar: const Icon(Icons.send, size: 16),
+                  label: Text(strings.verifyEmailResendButton),
+                  // Use theme colors for consistency with other system bubbles
+                  backgroundColor: theme.colorScheme.surface, 
+                  elevation: 1,
+                  labelStyle: TextStyle(
+                    color: theme.primaryColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                  onPressed: () {
+                    context.read<CubitAuth>().sendEmailVerification();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Verification email sent!")),
+                    );
+                  },
+                ),
+
+                // Check Status Button (Calls reloadUser)
+                ActionChip(
+                  avatar: const Icon(Icons.refresh, size: 16, color: Colors.white),
+                  label: Text(strings.verifyEmailBackButton),
+                  backgroundColor: theme.primaryColor,
+                  elevation: 1,
+                  labelStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                  onPressed: () async {
+                    await context.read<CubitAuth>().checkVerificationStatus();
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

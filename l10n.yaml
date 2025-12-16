@@ -1,0 +1,10 @@
+arb-dir: lib/core/l10n # Directory for your ARB files
+template-arb-file: app_en.arb # Template file name (usually English)
+output-localization-file: app_localizations.dart # Generated Dart class name
+
+# 1. Ensure keys in AR exist in EN (Strict)
+nullable-getter: false 
+
+# 2. If a key is missing in Arabic, fall back to English value (Recommended)
+use-deferred-loading: false
+suppress-warnings: false

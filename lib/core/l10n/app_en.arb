@@ -1,0 +1,584 @@
+{
+  "@@locale": "en",
+  "agree": "Agree",
+  "@agree": {
+    "description": "General Agree button"
+  },
+  "animationError": "Could not load animation: {error}",
+  "@animationError": {
+    "description": "Lottie loading error",
+    "placeholders": {
+      "error": {
+        "example": "Asset not found",
+        "type": "String"
+      }
+    }
+  },
+  "appBarTitle": "SUEFERY",
+  "@appBarTitle": {
+    "description": "Main title in the AppBar"
+  },
+  "appTitle": "SUEFERY",
+  "@appTitle": {
+    "description": "The main title for the application."
+  },
+  "authHintChoice": "Type 'Sign In' or 'Register'",
+  "@authHintChoice": {
+    "description": "Chat hint for auth choice"
+  },
+  "authHintEmail": "Enter your email",
+  "@authHintEmail": {
+    "description": "Chat hint for email entry"
+  },
+  "authHintPassword": "Enter your password",
+  "@authHintPassword": {
+    "description": "Chat hint for password entry"
+  },
+  "buttonHistory": "View Order History",
+  "@buttonHistory": {
+    "description": "Button to view history"
+  },
+  "cancelOrder": "Cancel Order",
+  "@cancelOrder": {
+    "description": "Cancel order action"
+  },
+  "changeLanguage": "Change Language",
+  "@changeLanguage": {
+    "description": "Change language button string"
+  },
+  "chatHint": "Type a message...",
+  "@chatHint": {
+    "description": "Default chat input hint"
+  },
+  "checkStatusButton": "Check Status",
+  "@checkStatusButton": {
+    "description": "Check email verification status button"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "General Close button"
+  },
+  "confirmAndPay": "Confirm and Pay",
+  "@confirmAndPay": {
+    "description": "Payment confirmation action"
+  },
+  "confirmPasswordHint": "Confirm Password",
+  "@confirmPasswordHint": {
+    "description": "Placeholder for password confirmation"
+  },
+  "confirmPasswordLabel": "Confirm Password",
+  "@confirmPasswordLabel": {
+    "description": "Label for confirm password"
+  },
+  "currentLanguage": "Current Language is: {currentLanguage}",
+  "@currentLanguage": {
+    "description": "Displays current selected language",
+    "placeholders": {
+      "currentLanguage": {
+        "example": "en",
+        "type": "String"
+      }
+    }
+  },
+  "customerTitle": "SUEFERY Customer App",
+  "@customerTitle": {
+    "description": "Title for Customer section"
+  },
+  "darkMode": "Set Dark Mode",
+  "@darkMode": {
+    "description": "Toggle for dark mode"
+  },
+  "disagree": "Disagree",
+  "@disagree": {
+    "description": "General Disagree button"
+  },
+  "email": "email",
+  "@email": {},
+  
+  "emailHint": "Email",
+  "@emailHint": {
+    "description": "Placeholder for email input"
+  },
+  "errorAuthFailed": "Authorization failed : {errorDetails}",
+  "@errorAuthFailed": {
+    "description": "Error for invalid passwords or token expiration.",
+    "placeholders": {
+      "errorDetails": {
+        "example": "bad auth",
+        "type": "String"
+      }
+    }
+  },
+  "errorFieldInvalid": "{field} is Invalid",
+  "@errorFieldInvalid": {
+    "description": "Generic error when a field format is wrong",
+    "placeholders": {
+      "field": {
+        "example": "Email",
+        "type": "String"
+      }
+    }
+  },
+  "errorFieldRequired": "{field} is required",
+  "@errorFieldRequired": {
+    "description": "Generic error when a field is missing",
+    "placeholders": {
+      "field": {
+        "example": "Email",
+        "type": "String"
+      }
+    }
+  },
+  "errorPasswordLength": "Password must be at least {chars} characters long",
+  "@errorPasswordLength": {
+    "description": "Error message for password length",
+    "placeholders": {
+      "chars": {
+        "example": "6",
+        "type": "int"
+      }
+    }
+  },
+  "errorPasswordMismatch": "Passwords do not match",
+  "@errorPasswordMismatch": {
+    "description": "Error message for password mismatch"
+  },
+  "fastestDeliveryZone": "Fastest Delivery Zone",
+  "@fastestDeliveryZone": {
+    "description": "Label for fast delivery area"
+  },
+  "firstNameLabel": "First Name",
+  "@firstNameLabel": {
+    "description": "Label for first name"
+  },
+  "googleSignin": "Google SignIn",
+  "@googleSignin": {
+    "description": "Google Sign-In button"
+  },
+  "historyTitle": "Order History",
+  "@historyTitle": {
+    "description": "Title for Order History screen"
+  },
+  "languageSwitch": "Switch Language (العربية)",
+  "@languageSwitch": {
+    "description": "Label for language selection option."
+  },
+  "lastNameLabel": "Last Name",
+  "@lastNameLabel": {
+    "description": "Label for last name"
+  },
+  "loadingHistory": "Loading Order History...",
+  "@loadingHistory": {
+    "description": "Loading state text"
+  },
+  "loginButton": "Log in",
+  "@loginButton": {
+    "description": "Login button text"
+  },
+  "logInPrompt": "Please Log In",
+  "@logInPrompt": {
+    "description": "Prompt displayed on login screen"
+  },
+  "logInScreenTitle": "SUEFERY LOGIN",
+  "@logInScreenTitle": {
+    "description": "Login screen header"
+  },
+  "loginTextButton": "Already have an account? Log in",
+  "@loginTextButton": {
+    "description": "Text button to switch to login"
+  },
+  "logoutTextButton": "Log out",
+  "@logoutTextButton": {
+    "description": "Log out button text"
+  },
+  "menuTooltip": "Menu",
+  "@menuTooltip": {
+    "description": "Tooltip for menu icon"
+  },
+  "noHistory": "No past orders found.",
+  "@noHistory": {
+    "description": "Empty history state"
+  },
+  "noOrders": "No Orders",
+  "@noOrders": {
+    "description": "No orders available message"
+  },
+  "orderConfirmedTitle": "Order Confirmed: #{orderNumber}",
+  "@orderConfirmedTitle": {
+    "description": "Order confirmation title",
+    "placeholders": {
+      "orderNumber": {
+        "example": "10",
+        "type": "String"
+      }
+    }
+  },
+  "orderId": "Order ID",
+  "@orderId": {
+    "description": "Label for order identifier"
+  },
+  "orderStatus": "Status",
+  "@orderStatus": {
+    "description": "Label for order state"
+  },
+  "orderSummary": "Summary",
+  "@orderSummary": {
+    "description": "Label for order summary"
+  },
+  "orderTextButton": "Orders",
+  "@orderTextButton": {
+    "description": "Button label for Orders"
+  },
+  "orderTotal": "Total",
+  "@orderTotal": {
+    "description": "Label for order total"
+  },
+  "partnerStore": "Partner Stores",
+  "@partnerStore": {
+    "description": "Label for partner stores"
+  },
+  "partnerTitle": "SUEFERY Partner App",
+  "@partnerTitle": {
+    "description": "Title for Partner section"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "password word"
+  },
+  "passwordHint": "Password",
+  "@passwordHint": {
+    "description": "Placeholder for password input"
+  },
+  "paymentFailed": "Payment failed or was cancelled.",
+  "@paymentFailed": {
+    "description": "Payment failure message"
+  },
+  "paymentPending": "Payment Pending",
+  "@paymentPending": {
+    "description": "Payment pending message"
+  },
+  "paymentSuccessful": "Payment Successful",
+  "@paymentSuccessful": {
+    "description": "Payment success message"
+  },
+  "pendingOrdersTextButton": "Pending Orders",
+  "@pendingOrdersTextButton": {
+    "description": "Button label for Pending Orders"
+  },
+  "pendingOrderTermsBody": "1. All sales are final.\n 2. Delivery times are estimates.\n 3. Prices are subject to change without notice.\n",
+  "@pendingOrderTermsBody": {
+    "description": "T&C Body text"
+  },
+  "pendingOrderTermsTitle": "Terms and Conditions",
+  "@pendingOrderTermsTitle": {
+    "description": "T&C Header"
+  },
+  "phoneLabel": "Phone number",
+  "@phoneLabel": {
+    "description": "Label for phone number"
+  },
+  "postVideoAuthPrompt": "Please log in to post a video",
+  "@postVideoAuthPrompt": {
+    "description": "Auth prompt for video posting"
+  },
+  "profileTitle": "Profile",
+  "@profileTitle": {
+    "description": "Profile screen title"
+  },
+  "promptConfirmPassword": "Confirm your password",
+  "@promptConfirmPassword": {
+    "description": "Chat hint for password confirm"
+  },
+  "promptEmail": "Please enter your email",
+  "@promptEmail": {
+    "description": "Prompt for email input"
+  },
+  "promptHelp": "Need help?",
+  "@promptHelp": {
+    "description": "General help prompt"
+  },
+  "promptPassword": "Please enter your password",
+  "@promptPassword": {
+    "description": "Prompt for password input"
+  },
+  "promptSuggestRecipe": "Would you like to suggest a recipe?",
+  "@promptSuggestRecipe": {
+    "description": "AI prompt for suggestions"
+  },
+  "quantityLabel": "Quantity: #{quantity}",
+  "@quantityLabel": {
+    "description": "Displays item quantity",
+    "placeholders": {
+      "quantity": {
+        "example": "10",
+        "type": "int"
+      }
+    }
+  },
+  "recipeName": "Recipe Name",
+  "@recipeName": {
+    "description": "Label for recipe name"
+  },
+  "recipeNoIngredients": "No ingredients listed.",
+  "@recipeNoIngredients": {
+    "description": "Fallback for empty ingredients"
+  },
+  "recipeTitleFallback": "Recipe",
+  "@recipeTitleFallback": {
+    "description": "Fallback title for recipe bubble"
+  },
+  "registerTitle": "Register",
+  "@registerTitle": {
+    "description": "Title for Register form bubble"
+  },
+  "riderTitle": "SUEFERY Rider App (Logistics Moat)",
+  "@riderTitle": {
+    "description": "Title for Rider section"
+  },
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Header for language selection"
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Settings screen title"
+  },
+  "signInTitle": "Sign In",
+  "@signInTitle": {
+    "description": "Title for Sign In form bubble"
+  },
+  "signUpButton": "Sign up",
+  "@signUpButton": {
+    "description": "Standard sign-up button"
+  },
+  "signUpDisclaimer": "By signing up, you agree to our Terms of Service and Privacy Policy.",
+  "@signUpDisclaimer": {
+    "description": "Disclaimer for sign up"
+  },
+  "statusDelivered": "Delivered",
+  "@statusDelivered": {
+    "description": "Status: Delivered"
+  },
+  "suggestionButton": "Suggest Recipe",
+  "@suggestionButton": {
+    "description": "Button to suggest a recipe"
+  },
+  "switchCustomer": "Switch to Customer View",
+  "@switchCustomer": {
+    "description": "Button to switch to Customer interface"
+  },
+  "switchPartner": "Switch to Partner View",
+  "@switchPartner": {
+    "description": "Button to switch to Partner interface"
+  },
+  "switchRider": "Switch to Rider View",
+  "@switchRider": {
+    "description": "Button to switch to Rider interface"
+  },
+  "tabAIOrder": "AI Orders",
+  "@tabAIOrder": {
+    "description": "Tab for Gemini AI ordering"
+  },
+  "tabBrowse": "Browse Stores",
+  "@tabBrowse": {
+    "description": "Tab for browsing"
+  },
+  "toBeConfirmed": "To be Confirmed",
+  "@toBeConfirmed": {
+    "description": "Status: To be confirmed"
+  },
+  "toSignup": "To Signup",
+  "@toSignup": {
+    "description": "Link to navigate to Sign Up screen"
+  },
+  "total": "Total",
+  "@total": {
+    "description": "General total label"
+  },
+  "totalPrice" : "Total Price {price} EGP",
+  "@totalPrice": {
+    "description": "Label for total price",
+    "placeholders": {
+      "price": {
+        "example": "10.00",
+        "type": "double",
+        "format": "compactCurrency",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+
+  "unknownAuthState": "Unknown Authentication State.",
+  "@unknownAuthState": {
+    "description": "Error for unhandled auth state"
+  },
+  "verificationNeeded": "Email is not verified",
+  "@verificationNeeded": {
+    "description": "User email not verified warning"
+  },
+  "verifyEmailBackButton": "Back to Login",
+  "@verifyEmailBackButton": {
+    "description": "Button to go back to login"
+  },
+  "verifyEmailBody": "We've sent a verification link to your email. Please check your inbox (and spam folder) to continue.",
+  "@verifyEmailBody": {
+    "description": "Body text for email verification"
+  },
+  "verifyEmailResendButton": "Resend Verification Email",
+  "@verifyEmailResendButton": {
+    "description": "Button to resend email"
+  },
+  "verifyEmailTitle": "Verify Your Email",
+  "@verifyEmailTitle": {
+    "description": "Title for email verification screen"
+  },
+  "welcomeCustomer": "Welcome Customer! Start your Conversational Order (S1)",
+  "@welcomeCustomer": {
+    "description": "Greeting for the Customer"
+  },
+  "welcomeFirstTimePrompt": "Ready to order? To save your history and place orders, please sign in or register below.",
+  "@welcomeFirstTimePrompt": {
+    "description": "Prompt for new anonymous user"
+  },
+  "welcomeLottieTitle": "Here's a quick look at what I can do:",
+  "@welcomeLottieTitle": {
+    "description": "Title for Lottie presentation"
+  },
+  "welcomeMessage": "Welcome!",
+  "@welcomeMessage": {
+    "description": "Simple welcome"
+  },
+  "welcomePartner": "Partner Dashboard",
+  "@welcomePartner": {
+    "description": "Greeting for the Partner"
+  },
+  "welcomeReturningPrompt": "Welcome back! Please sign in or register to continue your session.",
+  "@welcomeReturningPrompt": {
+    "description": "Prompt for returning anonymous user"
+  },
+  "welcomeRider": "Rider Dashboard",
+  "@welcomeRider": {
+    "description": "Greeting for the Rider"
+  },
+  "welcomeTitle": "👋 Welcome to SUEFEREY!",
+  "@welcomeTitle": {
+    "description": "First message in anonymous welcome flow"
+  },
+
+  "setupTitle" : "Setup",
+  "@setupTitle": {
+    "description": "Title for Setup"
+  },
+
+  "addressLabel" : "Address",
+  "@addressLabel": {
+    "description": "Label for address"
+  },
+
+  "cityLabel" : "City",
+  "@cityLabel": {
+    "description": "Label for city"
+  },
+
+  "stateLabel" : "State",
+  "@stateLabel": {
+    "description": "Label for state"
+  },
+
+  "zipLabel" : "Zip Code",
+  "@zipLabel": {
+    "description": "Label for zip code"},
+
+  "completeSetup" : "Complete Setup",
+  "@completeSetup": {
+    "description": "Button to complete setup"
+  },
+  "confirm": "confirm",
+  "@confirm": {
+    "description": "Label for confirm"
+  },
+  "add": "Add",
+  "@add": {
+    "description": "Label for Add"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Label for Cancel"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Label for Delete"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Label for Edit"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Label for Save"
+  },
+  "setup": "Setup",
+  "@setup": {
+    "description": "Label for Setup"
+  },
+  "orderProgress": "Order Progress",
+  "@orderProgress": {
+    "description": "Label for Order Progress"
+  },
+  "itemName" : "Item Name",
+  "@itemName": {
+    "description": "Label for Item Name"
+  },
+  "itemPrice" : "Item Price",
+  "@itemPrice": {
+    "description": "Label for Item Price"
+  },
+  "quantity" : "Quantity",
+  "@quantity": {
+    "description": "Label for Quantity"
+  },
+  "unit": "Unit",
+  "@unit": {
+    "description": "Label for Unit"
+  },
+  "price" : "Total Price",
+  "@price": {
+    "description": "Label for Total Price"
+  },
+  "brand" : "Brand",
+  "@brand": {
+    "description": "Label for Brand"
+  },
+  "notes" : "Notes",
+  "@notes": {
+    "description": "Label for Notes"
+  },
+  "deleteConfirmationMessage" : "Are you sure you want to delete this item?",
+  "@deleteConfirmationMessage" : {"description": ""},
+
+  "deleteOrderPrompt": "Are you sure you want to delete order {orderNumber}?",
+  "@deleteOrderPrompt": {
+    "description": "Prompt for order deletion",
+    "placeholders": {
+      "orderNumber": {
+        "example": "1xew1",
+        "type": "String"
+      }
+    }
+  },
+  "orderDeletedMessage" : "Order {orderNumber} has been deleted.",
+  "@orderDeletedMessage" : {
+    "description": "Message for order deletion",
+     "placeholders": {
+      "orderNumber": {
+        "example": "1xew1",
+        "type": "String"
+      }
+    }
+  }
+  
+
+
+}
