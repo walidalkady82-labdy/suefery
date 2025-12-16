@@ -281,7 +281,7 @@ class ServiceAuth with LogMixin{
       );
       
       logInfo("UserCredential received successfully.");
-      final user = userCredential?.user;
+      final user = userCredential.user;
       
       if (user == null) return null; // Guard against a null user.
 

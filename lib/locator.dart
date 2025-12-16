@@ -6,6 +6,7 @@ import 'package:suefery/data/repository/i_repo_auth.dart';
 import 'package:suefery/data/repository/i_repo_firestore.dart';
 import 'package:suefery/data/service/service_firebase_ai.dart';
 import 'package:suefery/data/service/service_keep_alive.dart';
+import 'package:suefery/data/service/service_location.dart';
 import 'package:suefery/data/service/service_suggestion.dart';
 import 'package:suefery/data/service/service_user.dart';
 import 'package:suefery/data/repository/repo_firestore.dart';
@@ -94,6 +95,13 @@ Future<void> initLocator(FirebaseApp firebaseApp) async {
   sl.registerLazySingleton<ServiceSuggestion>(() => ServiceSuggestion());
 
   sl.registerLazySingleton<ServiceNotification>(() => ServiceNotification());
+
+  sl.registerLazySingleton<ServiceLocation>(() => ServiceLocation());
+
+  // Keep Alive Service
+  sl.registerLazySingleton<ServiceKeepAlive>(() => ServiceKeepAlive(
+    sl<IRepoFirestore>() 
+  ));
 }
 
 /// Awaits for all asynchronous singletons to be ready.

@@ -4,6 +4,7 @@ import 'package:suefery/data/model/model_chat_message.dart';
 import 'package:suefery/core/errors/database_exception.dart'; // Import DatabaseFailure
 import 'package:suefery/data/model/model_order.dart';
 import 'package:suefery/data/enum/order_status.dart';
+import 'package:suefery/data/model/model_partner.dart';
 
 import '../model/model_ai_parsed_order.dart';
 import '../repository/i_repo_firestore.dart';
@@ -14,7 +15,7 @@ class ServiceOrder with LogMixin{
   final ServiceRemoteConfig _configService;
   final String _collectionPath = 'orders'; 
 
-  ServiceOrder(this._firestoreRepo, this._configService);
+  ServiceOrder(this._firestoreRepo, this._configService,);
 
   /// Gets a stream of a single order, converting it to an [ModelOrder].
   Stream<ModelOrder?> getOrderStream(String orderId) {
@@ -347,6 +348,38 @@ class ServiceOrder with LogMixin{
     // });
     return updateOrderStatus(orderId, OrderStatus.confirmed);
 
+  }
+  
+  /// Finds partners nearby.
+  /// 1. Filters by Geohash Prefix (Database efficiency).
+  /// 2. Sorts by Precise Distance (User Experience).
+  Future<List<ModelPartner>> findNearestPartners(double userLat, double userLng) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 500)); 
+
+    // --- STEP 1: COARSE FILTER (Geohash) ---
+    // In Firestore, you would query: .where('geohash', isGreaterThanOrEqualTo: prefix)
+    
+    // Calculate user's hash and take the first 4 chars (broad area)
+    final String userHash = _locationService.encodeGeohash(userLat, userLng);
+    final String searchPrefix = userHash.length >= 4 ? userHash.substring(0, 4) : userHash;
+    
+    // Filter the mock list
+    List<ModelPartner> candidates = _allPartnersMock.where((p) {
+      return p.geohash.startsWith(searchPrefix);
+    }).toList();
+
+    // --- STEP 2: PRECISE SORT (Haversine) ---
+    // Calculate exact distance for each candidate
+    List<ModelPartner> partnersWithDistance = candidates.map((p) {
+      double dist = _locationService.calculateDistanceInKm(userLat, userLng, p.latitude, p.longitude);
+      return p.copyWithDistance(dist);
+    }).toList();
+
+    // Sort ascending (nearest first)
+    partnersWithDistance.sort((a, b) => a.distanceFromUser!.compareTo(b.distanceFromUser!));
+
+    return partnersWithDistance;
   }
   /// Assigns an order to a specific rider.
   Future<void> assignRider(String orderId, String riderId) {
